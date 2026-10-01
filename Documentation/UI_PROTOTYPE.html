@@ -1,0 +1,2535 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SWON — V3 Vibrant Prototype</title>
+<!-- Image credits (design mockup only — production must use licensed/owned photos):
+  - Construction: Kanyakumari construction workers
+  - Warehouse: Mogadishu aid flight 019
+  - Event: Culture Crew
+  - Delivery: Grab Food Delivery Rider
+  - Cleaning: cleaner with mop and uniform cleaning hall f
+  - Hospitality: Cooks in Italian Village Restaurant kitchen,
+  Sources found via Openverse (Flickr / Wikimedia CDNs). -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Manrope:wght@400..800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SWON V3 — "VIBRANT & DYNAMIC" design tokens
+   Teal identity + controlled contextual accents. Gradients only
+   where they add depth. All values centralized (no scattered hex).
+   ============================================================ */
+:root {
+  /* brand core (locked identity) */
+  --primary: #0F766E; --primary-dark: #115E59; --primary-deep: #0B4540;
+  --primary-light: #CCFBF1; --tint: #EFFCF9;
+  /* semantic (locked) */
+  --success: #15803D; --warning: #B45309; --danger: #B91C1C; --info: #1D4ED8;
+  /* canvas & ink */
+  --canvas: #F6F3EC; --card: #FFFFFF; --line: #EFEAE0; --border: #E4DDD0;
+  --text: #10201E; --muted: #4F5F5C; --on-brand: #FFFFFF; --on-brand-soft: rgba(255,255,255,.82);
+  /* contextual accents (used sparingly, by meaning) */
+  --orange: #F97316; --amber: #F59E0B; --yellow: #FDE047; --coral: #EF5B47;
+  --green: #16A34A; --blue: #2563EB; --lav: #8B7CF6;
+  /* gradients */
+  --g-teal: linear-gradient(135deg, #0F766E 0%, #0B4540 100%);
+  --g-deep: linear-gradient(160deg, #0B4540 0%, #10201E 120%);
+  --g-warm: linear-gradient(135deg, #F97316 0%, #F59E0B 100%);
+  --g-money: linear-gradient(135deg, #16A34A 0%, #0F766E 100%);
+  --g-sun: linear-gradient(135deg, #FDE047 0%, #F97316 100%);
+  --g-home: radial-gradient(120% 90% at 85% 0%, rgba(249,115,22,.28) 0%, rgba(249,115,22,0) 45%), linear-gradient(160deg, #0F766E 0%, #0B4540 78%);
+  /* spacing / radius / elevation */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px;
+  --r-sm: 8px; --r-md: 12px; --r-lg: 18px; --r-xl: 24px; --r-2xl: 30px; --r-pill: 999px;
+  --shadow-card: 0 1px 3px rgba(16,32,30,.10);
+  --shadow-lift: 0 12px 26px -14px rgba(16,32,30,.35);
+  --shadow-btn: 0 8px 18px -8px rgba(15,118,110,.55);
+  --shadow-pop: 0 18px 40px -16px rgba(11,69,64,.55);
+  /* motion */
+  --t-fast: 140ms; --t-med: 220ms; --ease: cubic-bezier(.22,.8,.36,1);
+  /* type */
+  --fs-cap: 12px; --fs-sm: 14px; --fs-body: 16px; --fs-title-sm: 18px;
+  --fs-title: 22px; --fs-display: 30px; --fs-hero: 34px; --fs-mega: 44px;
+  --font: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --display: "Bricolage Grotesque", "Manrope", system-ui, sans-serif;
+  /* brand motif: soaring wing strokes */
+  --motif: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 130'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.14' stroke-width='7' stroke-linecap='round'%3E%3Cpath d='M8 108 Q80 44 192 34'/%3E%3Cpath d='M44 122 Q106 66 194 64'/%3E%3Cpath d='M88 130 Q134 92 196 96'/%3E%3C/g%3E%3C/svg%3E");
+  /* map-dot pattern (discovery / flash backgrounds) */
+  --mapdots: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cg fill='%23ffffff' fill-opacity='.07'%3E%3Ccircle cx='6' cy='6' r='1.6'/%3E%3Ccircle cx='30' cy='18' r='1.6'/%3E%3Ccircle cx='14' cy='34' r='1.6'/%3E%3Ccircle cx='42' cy='40' r='1.6'/%3E%3C/g%3E%3C/svg%3E");
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  font-family: var(--font); background: var(--canvas); color: var(--text);
+  display: grid; grid-template-columns: 264px 1fr; min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; }
+input { font-family: inherit; }
+:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+
+/* ---------- Review rail (control surface — outside the phone) ---------- */
+.rail {
+  background: #0B2422; color: #C7DBD7; padding: 20px 16px; position: sticky; top: 0;
+  height: 100vh; overflow-y: auto; font-size: 13px;
+}
+.rail h1 { font-family: var(--display); font-size: 17px; color: #fff; margin: 0 0 2px; letter-spacing: .02em; }
+.rail .sub { color: #8FB3AE; font-size: 12px; margin-bottom: 14px; line-height: 1.45; }
+.badge-mock {
+  display: inline-block; background: var(--orange); color: #fff; font-size: 11px;
+  font-weight: 800; letter-spacing: .06em; padding: 4px 9px; border-radius: var(--r-pill); margin-bottom: 14px;
+}
+.rail h2 { font-size: 10.5px; text-transform: uppercase; letter-spacing: .12em; color: #5E8681; margin: 18px 0 6px; }
+.rail button.screen-btn {
+  display: block; width: 100%; text-align: left; background: transparent; border: 0;
+  color: #C7DBD7; padding: 8px 10px; border-radius: var(--r-sm); font-size: 13px; margin-bottom: 2px;
+}
+.rail button.screen-btn:hover { background: rgba(255,255,255,.07); }
+.rail button.screen-btn.active { background: var(--primary); color: #fff; font-weight: 700; }
+.rail .note { color: #5E8681; font-size: 11.5px; line-height: 1.5; margin-top: 18px; border-top: 1px solid #173733; padding-top: 12px; }
+.rail .note code { color: #8FB3AE; }
+
+/* ---------- Stage + phone frame (review chrome only) ---------- */
+.stage { display: flex; flex-direction: column; align-items: center; padding: 26px 24px 60px; }
+.stage-head { max-width: 780px; text-align: center; margin-bottom: 16px; }
+.stage-head h2 { font-family: var(--display); margin: 0 0 4px; font-size: var(--fs-title); }
+.stage-head p { margin: 0; color: var(--muted); font-size: var(--fs-sm); }
+.phone {
+  width: 390px; background: #0B1512; border-radius: 44px; padding: 11px;
+  box-shadow: 0 24px 60px -20px rgba(11,36,34,.45), 0 0 0 2px #233;
+}
+.viewport {
+  background: var(--canvas); border-radius: 34px; overflow: hidden; height: 780px;
+  display: flex; flex-direction: column; position: relative;
+}
+.statusbar {
+  height: 30px; display: flex; justify-content: space-between; align-items: center;
+  padding: 0 22px; font-size: 12px; font-weight: 700; color: var(--on-brand);
+  letter-spacing: .02em; background: var(--primary-deep); position: relative; z-index: 5;
+}
+.screen { flex: 1; overflow-y: auto; display: none; flex-direction: column; scrollbar-width: none; }
+.screen::-webkit-scrollbar { display: none; }
+.screen.active { display: flex; }
+.screen-body { flex: 1; min-height: 0; padding: var(--s4); padding-bottom: 92px; }
+
+/* ---------- Headers: full-bleed brand surfaces ---------- */
+.topbar {
+  background: var(--g-teal); color: var(--on-brand); padding: 15px var(--s4) 16px;
+  border-radius: 0 0 var(--r-xl) var(--r-xl); position: relative; overflow: hidden;
+  box-shadow: var(--shadow-card); flex: 0 0 auto;
+}
+.topbar::after {
+  content: ""; position: absolute; right: -26px; top: -34px; width: 210px; height: 130px;
+  background: var(--motif) no-repeat; background-size: contain; pointer-events: none;
+}
+.topbar .title { font-family: var(--display); font-size: 21px; font-weight: 700; color: var(--on-brand); position: relative; }
+.topbar .sub { font-size: var(--fs-cap); color: var(--on-brand-soft); margin-top: 3px; position: relative; font-weight: 600; }
+.topbar .cap { color: var(--on-brand-soft); position: relative; }
+.topbar .row-between > div { min-width: 0; }
+.topbar .sub { overflow-wrap: anywhere; }
+.topbar .tiny-btn { background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.42); color: #fff; position: relative; }
+.topbar .tiny-btn:hover { background: rgba(255,255,255,.26); }
+.topbar.warm { background: var(--g-warm); }
+.topbar.deep { background: var(--g-deep); }
+
+.tabbar {
+  position: absolute; bottom: 0; left: 0; right: 0; background: #FFFFFF;
+  border-top: 1px solid var(--line); display: flex; padding: 7px 4px 10px;
+  box-shadow: 0 -8px 20px -14px rgba(16,32,30,.35); z-index: 6;
+}
+.tabbar button {
+  flex: 1; background: none; border: 0; color: var(--muted); font-size: 10.5px; font-weight: 700;
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 3px 0; min-height: 48px;
+}
+.tabbar button .glyph {
+  display: flex; align-items: center; justify-content: center; width: 56px; height: 28px;
+  border-radius: var(--r-pill); color: var(--muted); transition: background var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+.tabbar button.active { color: var(--primary-dark); font-weight: 800; }
+.tabbar button.active .glyph { background: var(--primary-light); color: var(--primary-dark); transform: translateY(-1px); }
+.tabbar button:active .glyph { transform: scale(.92); }
+.tabbar .dot {
+  position: absolute; top: 4px; margin-left: 20px; width: 7px; height: 7px;
+  background: var(--coral); border-radius: 50%;
+}
+
+/* ---------- Buttons / chips ---------- */
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; border: 0; border-radius: 14px; padding: 13px;
+  font-size: var(--fs-body); font-weight: 800; letter-spacing: .01em; min-height: 48px;
+  transition: transform var(--t-fast) var(--ease), background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+.btn:active { transform: translateY(1px) scale(.99); }
+.btn.primary { background: var(--primary); color: #fff; box-shadow: var(--shadow-btn); }
+.btn.primary:hover { background: var(--primary-dark); }
+.btn.primary:disabled { background: #A7BDB9; box-shadow: none; cursor: default; transform: none; }
+.btn.warm { background: var(--g-warm); color: #fff; box-shadow: 0 8px 18px -8px rgba(249,115,22,.55); }
+.btn.money { background: var(--g-money); color: #fff; box-shadow: 0 8px 18px -8px rgba(22,163,74,.5); }
+.btn.secondary { background: var(--card); color: var(--text); border: 1.5px solid var(--border); box-shadow: var(--shadow-card); }
+.btn.secondary:hover { border-color: var(--primary); color: var(--primary-dark); }
+.btn.ghost { background: transparent; color: var(--muted); font-weight: 700; box-shadow: none; }
+.btn.ghost:hover { color: var(--text); }
+.btn.danger { background: #FEE2E2; color: var(--danger); }
+.btn.on-dark { background: rgba(255,255,255,.14); color: #fff; border: 1.5px solid rgba(255,255,255,.4); box-shadow: none; }
+.btn.on-dark:hover { background: rgba(255,255,255,.24); }
+.btn-row { display: flex; gap: 10px; }
+.btn.sm { min-height: 40px; padding: 9px 14px; font-size: var(--fs-sm); width: auto; }
+
+.chip-row { display: flex; gap: var(--s2); overflow-x: auto; padding-bottom: 4px; margin-bottom: var(--s3); scrollbar-width: none; }
+.chip-row::-webkit-scrollbar { display: none; }
+.chip {
+  flex: 0 0 auto; background: var(--card); border: 1.5px solid var(--border); color: var(--text);
+  border-radius: var(--r-pill); padding: 7px 14px; font-size: var(--fs-sm); font-weight: 700; min-height: 36px;
+  transition: all var(--t-fast) var(--ease);
+}
+.chip:hover { border-color: var(--primary); }
+.chip.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+/* ---------- Badges / status ---------- */
+.status {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 800;
+  letter-spacing: .05em; border-radius: var(--r-pill); padding: 4px 10px; border: 1px solid transparent;
+}
+.st-draft { background: #F1F5F9; color: #475569; border-color: #E2E8F0; }
+.st-open { background: #DCFCE7; color: var(--success); border-color: #86EFAC; }
+.st-hiring { background: #FEF3C7; color: var(--warning); border-color: #FCD34D; }
+.st-filled { background: var(--primary-light); color: var(--primary-dark); border-color: #5EEAD4; }
+.st-cancelled { background: #FEE2E2; color: var(--danger); border-color: #FCA5A5; }
+.st-info { background: #DBEAFE; color: var(--info); border-color: #93C5FD; }
+.st-neutral { background: #F1F5F9; color: #475569; border-color: #CBD5E1; }
+.st-live { background: #DCFCE7; color: var(--success); border-color: #86EFAC; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 800;
+  border-radius: var(--r-pill); padding: 4px 10px;
+}
+.pill.match { background: var(--g-money); color: #fff; box-shadow: 0 4px 10px -4px rgba(22,163,74,.6); }
+.pill.urgent { background: var(--g-warm); color: #fff; box-shadow: 0 4px 10px -4px rgba(249,115,22,.6); }
+.pill.wing { background: linear-gradient(135deg,#EFFCF9,#CCFBF1); color: var(--primary-dark); border: 1px solid #5EEAD4; }
+.pill.today { background: linear-gradient(135deg,#EDE9FE,#DBEAFE); color: var(--info); border: 1px solid #C7D2FE; }
+.pill.dark { background: rgba(16,32,30,.78); color: #fff; backdrop-filter: none; }
+
+.kyc { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-cap); font-weight: 800; color: var(--success); }
+.kyc.pending { color: var(--amber); }
+
+/* ---------- Cards & layout primitives ---------- */
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
+  padding: var(--s4); margin-bottom: 14px; box-shadow: var(--shadow-card);
+}
+.card.feature { border-color: #99F6E4; box-shadow: var(--shadow-card), var(--shadow-lift); }
+.card.flat { box-shadow: none; }
+.card.aside-note { background: #FBF8F1; border-style: dashed; box-shadow: none; }
+.section-head { display: flex; justify-content: space-between; align-items: baseline; margin: 4px 2px 10px; }
+.section-head .sh-title { font-family: var(--display); font-size: 17px; font-weight: 800; }
+.section-head .sh-link { font-size: var(--fs-sm); font-weight: 800; color: var(--primary); background: none; border: 0; padding: 4px 6px; }
+.muted { color: var(--muted); }
+.sm { font-size: var(--fs-sm); }
+.cap { font-size: var(--fs-cap); }
+.row-between { display: flex; justify-content: space-between; align-items: center; gap: var(--s2); }
+.divider { border: 0; border-top: 1px solid var(--line); margin: var(--s3) 0; }
+.hairline { height: 1px; background: var(--line); margin: 12px 0; }
+
+/* ---------- Money (sacred: display face, dominant) ---------- */
+.money { font-family: var(--display); font-variant-numeric: tabular-nums; font-weight: 800; font-size: 17px; letter-spacing: -.01em; }
+.money.md { font-size: 21px; }
+.money.hero { font-size: 29px; line-height: 1.04; }
+.money.mega { font-size: var(--fs-hero); line-height: 1.02; }
+.unit { color: var(--muted); font-weight: 600; font-size: var(--fs-sm); }
+.delta { font-size: var(--fs-cap); font-weight: 800; color: var(--success); background: #DCFCE7; border-radius: var(--r-pill); padding: 3px 8px; }
+
+/* ---------- Home hero (marketplace greeting) ---------- */
+.home-hero {
+  margin: -8px calc(-1 * var(--s4)) 0; padding: 18px var(--s4) 58px;
+  background: var(--g-home); color: var(--on-brand); position: relative; overflow: hidden;
+  border-radius: 0 0 var(--r-2xl) var(--r-2xl);
+}
+.home-hero::after { content: ""; position: absolute; inset: 0; background: var(--mapdots); pointer-events: none; }
+.home-hero .hh-row { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
+.home-hero .hh-greet { flex: 1; min-width: 0; }
+.home-hero .hh-hi { font-size: 13px; color: var(--on-brand-soft); font-weight: 600; }
+.home-hero .hh-name { font-family: var(--display); font-size: 26px; font-weight: 800; line-height: 1.1; margin-top: 1px; }
+.home-hero .hh-tag { font-size: 13px; color: var(--on-brand-soft); margin-top: 3px; font-weight: 600; }
+.hh-loc {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; position: relative; z-index: 1;
+  background: rgba(255,255,255,.16); border: 1.5px solid rgba(255,255,255,.38); color: #fff;
+  border-radius: var(--r-pill); padding: 8px 14px; font-size: 13.5px; font-weight: 800; min-height: 38px;
+}
+.hh-loc:hover { background: rgba(255,255,255,.26); }
+.hh-bell {
+  position: relative; width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.38);
+  background: rgba(255,255,255,.14); color: #fff; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;
+}
+.hh-bell .nub { position: absolute; top: 8px; right: 9px; width: 9px; height: 9px; background: var(--coral); border: 2px solid var(--primary-deep); border-radius: 50%; }
+.avatar-img { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,.55); background: var(--primary-light); flex: 0 0 auto; }
+
+/* search overlapping the hero */
+.searchbar {
+  display: flex; align-items: center; gap: 10px; margin: -34px var(--s4) 14px; position: relative; z-index: 2;
+  background: var(--card); border-radius: var(--r-pill); padding: 13px 16px;
+  box-shadow: 0 10px 24px -10px rgba(16,32,30,.35); border: 1px solid var(--line);
+}
+.searchbar input { flex: 1; border: 0; outline: 0; font-size: 15px; font-weight: 600; background: transparent; color: var(--text); min-width: 0; }
+.searchbar input::placeholder { color: #8A9793; font-weight: 500; }
+.searchbar .s-ic { color: var(--primary); display: flex; }
+
+/* category shortcuts */
+.cats { display: flex; gap: 14px; overflow-x: auto; padding: 2px 2px 8px; margin-bottom: 6px; scrollbar-width: none; }
+.cats::-webkit-scrollbar { display: none; }
+.cat { flex: 0 0 auto; width: 64px; background: none; border: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0; }
+.cat .c-ic {
+  width: 52px; height: 52px; border-radius: 18px; display: flex; align-items: center; justify-content: center;
+  color: #fff; transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+  box-shadow: 0 6px 14px -6px rgba(16,32,30,.4);
+}
+.cat:hover .c-ic { transform: translateY(-2px); }
+.cat:active .c-ic { transform: scale(.93); }
+.cat .c-lb { font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; line-height: 1.2; }
+.cat.on .c-lb { color: var(--primary-dark); font-weight: 800; }
+.ic-teal { background: var(--g-teal); } .ic-warm { background: var(--g-warm); }
+.ic-money { background: var(--g-money); } .ic-blue { background: linear-gradient(135deg,#2563EB,#1D4ED8); }
+.ic-lav { background: linear-gradient(135deg,#8B7CF6,#6D5BD0); } .ic-coral { background: linear-gradient(135deg,#EF5B47,#F97316); }
+
+/* ---------- OpportunityCard (marketplace core component) ---------- */
+.opp {
+  background: var(--card); border-radius: var(--r-lg); overflow: hidden; margin-bottom: 14px;
+  box-shadow: var(--shadow-card), 0 10px 22px -18px rgba(16,32,30,.5); border: 1px solid var(--line);
+  cursor: pointer; transition: transform var(--t-med) var(--ease), box-shadow var(--t-med) var(--ease);
+  animation: cardIn var(--t-med) var(--ease) both;
+}
+.opp:hover { transform: translateY(-2px); box-shadow: var(--shadow-card), var(--shadow-lift); }
+.opp:active { transform: scale(.985); }
+.opp .o-media { position: relative; height: 148px; background: linear-gradient(135deg,#115E59,#0B4540); }
+.opp .o-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.opp .o-media::after { content: ""; position: absolute; inset: auto 0 0 0; height: 55%; background: linear-gradient(to top, rgba(11,21,18,.72), rgba(11,21,18,0)); }
+.opp .o-badges { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; z-index: 2; }
+.opp .o-fav {
+  width: 36px; height: 36px; border-radius: 50%; border: 0; background: rgba(255,255,255,.92);
+  color: var(--muted); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  transition: transform var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.opp .o-fav.on { color: var(--coral); transform: scale(1.08); }
+.opp .o-dist { position: absolute; left: 10px; bottom: 10px; z-index: 2; }
+.opp .o-body { padding: 13px 14px 14px; }
+.opp .o-title { font-family: var(--display); font-size: 17.5px; font-weight: 800; line-height: 1.15; }
+.opp .o-host { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); font-weight: 600; margin-top: 3px; }
+.opp .o-host .star { color: var(--amber); font-weight: 800; }
+.opp .o-meta { display: flex; gap: 12px; font-size: 12.5px; color: var(--muted); font-weight: 700; margin-top: 9px; flex-wrap: wrap; }
+.opp .o-meta .m { display: inline-flex; align-items: center; gap: 4px; }
+.opp .o-pay { display: flex; align-items: baseline; justify-content: space-between; margin-top: 10px; }
+.opp .o-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.opp .o-tags span {
+  font-size: 11.5px; font-weight: 700; background: var(--canvas); color: var(--muted);
+  border: 1px solid var(--line); border-radius: var(--r-pill); padding: 4px 9px;
+}
+.opp .o-cta {
+  display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;
+  margin-top: 12px; min-height: 44px; border-radius: 12px; border: 1.5px solid var(--primary);
+  background: var(--tint); color: var(--primary-dark); font-weight: 800; font-size: 14.5px;
+  transition: background var(--t-fast) var(--ease);
+}
+.opp .o-cta:hover { background: var(--primary-light); }
+.opp.urgent .o-media { background: linear-gradient(135deg,#F97316,#B45309); }
+.opp.compact .o-media { height: 96px; }
+.opp.compact .o-body { padding: 11px 13px; }
+
+/* horizontal rail of opportunities */
+.h-rail { display: flex; gap: 12px; overflow-x: auto; padding: 2px 2px 10px; margin: 0 calc(-1 * var(--s4)); padding-left: var(--s4); padding-right: var(--s4); scrollbar-width: none; }
+.h-rail::-webkit-scrollbar { display: none; }
+.h-rail .opp { width: 262px; flex: 0 0 auto; margin-bottom: 4px; }
+
+/* ---------- Match visualization ---------- */
+.match-ring {
+  width: 64px; height: 64px; border-radius: 50%; flex: 0 0 auto;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: conic-gradient(var(--green) calc(var(--pct, 0) * 1%), #E7E3D8 0);
+  position: relative;
+}
+.match-ring::before { content: ""; position: absolute; inset: 6px; background: var(--card); border-radius: 50%; }
+.match-ring .mr-n { position: relative; font-family: var(--display); font-weight: 800; font-size: 16px; color: var(--success); line-height: 1; }
+.match-ring .mr-l { position: relative; font-size: 8.5px; font-weight: 800; color: var(--muted); letter-spacing: .04em; }
+.match-ring.lg { width: 96px; height: 96px; }
+.match-ring.lg .mr-n { font-size: 26px; } .match-ring.lg .mr-l { font-size: 10px; }
+.match-ring.lg::before { inset: 9px; }
+.match-list { list-style: none; margin: 10px 0 0; padding: 0; font-size: 13.5px; font-weight: 700; color: var(--text); }
+.match-list li { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.match-list li .ok { color: var(--success); font-weight: 900; }
+
+/* headcount seats */
+.seats { display: inline-flex; align-items: center; gap: 8px; }
+.seats .dots { display: inline-flex; gap: 4px; }
+.seats .dots i { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--primary); background: transparent; display: inline-block; }
+.seats .dots i.on { background: var(--primary); }
+.seats .count { font-size: var(--fs-cap); font-weight: 800; color: var(--primary-dark); }
+
+/* ---------- FlashMatch (signature, full-screen energy) ---------- */
+.flash-screen { background: var(--g-deep); position: relative; }
+.flash-screen::before { content: ""; position: absolute; inset: 0; background: var(--mapdots); pointer-events: none; }
+.flash-screen .screen-body { position: relative; z-index: 1; color: #fff; padding-top: 20px; }
+.flash-kicker {
+  display: inline-flex; align-items: center; gap: 8px; font-family: var(--display); font-weight: 800;
+  font-size: 20px; letter-spacing: .06em; color: var(--yellow);
+  animation: flashGlow 2.2s ease-in-out infinite;
+}
+.flash-sub { font-family: var(--display); font-size: 26px; font-weight: 800; line-height: 1.15; margin-top: 10px; color: #fff; }
+.flash-sub em { font-style: normal; color: var(--orange); }
+.count-ring {
+  width: 92px; height: 92px; border-radius: 50%; margin: 18px auto 6px; position: relative;
+  background: conic-gradient(var(--orange) 0 70%, rgba(255,255,255,.14) 70% 100%);
+  display: flex; align-items: center; justify-content: center;
+  animation: pulseRing 1.6s ease-in-out infinite;
+}
+.count-ring::before { content: ""; position: absolute; inset: 8px; background: #0F1D1B; border-radius: 50%; }
+.count-ring .cr-t { position: relative; font-family: var(--display); font-size: 25px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; }
+.flash-card {
+  background: rgba(255,255,255,.07); border: 1.5px solid rgba(255,255,255,.18); border-radius: var(--r-lg);
+  padding: 14px; margin-top: 14px; animation: cardIn var(--t-med) var(--ease) both;
+}
+.flash-card .fc-top { display: flex; gap: 12px; align-items: center; }
+.flash-card .fc-top img { width: 64px; height: 64px; border-radius: 14px; object-fit: cover; flex: 0 0 auto; }
+.flash-card .fc-title { font-family: var(--display); font-size: 17px; font-weight: 800; color: #fff; }
+.flash-card .fc-meta { font-size: 12.5px; color: rgba(255,255,255,.75); font-weight: 600; margin-top: 3px; }
+.flash-card .fc-pay { display: flex; align-items: baseline; justify-content: space-between; margin-top: 12px; }
+.flash-card .fc-pay .money { color: var(--yellow); font-size: 24px; }
+.avatars-mini { display: flex; }
+.avatars-mini .avatar-mini {
+  width: 30px; height: 30px; border-radius: 50%; background: var(--primary-light); color: var(--primary-dark);
+  font-size: 10.5px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+  border: 2px solid #0F1D1B; margin-left: -8px;
+}
+.avatars-mini .avatar-mini:first-child { margin-left: 0; }
+
+/* ---------- Work Mode (live, dark) ---------- */
+.work-screen { background: var(--g-deep); position: relative; }
+.work-screen::before { content: ""; position: absolute; inset: 0; background: var(--mapdots); pointer-events: none; }
+.work-screen .screen-body { position: relative; z-index: 1; color: #fff; }
+.live-tag { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: 13px; letter-spacing: .1em; color: #86EFAC; }
+.live-dot { width: 10px; height: 10px; border-radius: 50%; background: #22C55E; animation: blink 1.4s ease-in-out infinite; }
+.work-timer { font-family: var(--display); font-size: var(--fs-mega); font-weight: 800; letter-spacing: .02em; margin-top: 10px; font-variant-numeric: tabular-nums; }
+.work-ring {
+  width: 150px; height: 150px; border-radius: 50%; margin: 18px auto; position: relative;
+  background: conic-gradient(var(--green) calc(var(--shift, 0) * 1%), rgba(255,255,255,.12) 0);
+  display: flex; align-items: center; justify-content: center;
+}
+.work-ring::before { content: ""; position: absolute; inset: 12px; background: #0F1D1B; border-radius: 50%; }
+.work-ring .wr-inner { position: relative; text-align: center; }
+.work-ring .wr-t { font-family: var(--display); font-size: 30px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; line-height: 1; }
+.work-ring .wr-l { font-size: 11px; color: rgba(255,255,255,.7); font-weight: 700; margin-top: 4px; }
+.work-info { background: rgba(255,255,255,.07); border: 1.5px solid rgba(255,255,255,.16); border-radius: var(--r-lg); padding: 14px 16px; margin-top: 6px; }
+.work-info .wi-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; font-size: 14px; font-weight: 600; color: rgba(255,255,255,.85); }
+.work-info .wi-row b { color: #fff; font-weight: 800; }
+
+/* ---------- Hired moment ---------- */
+.hired-hero {
+  margin: -8px calc(-1 * var(--s4)) 16px; padding: 34px var(--s4) 26px; text-align: center;
+  background: var(--g-money); color: #fff; position: relative; overflow: hidden;
+  border-radius: 0 0 var(--r-2xl) var(--r-2xl);
+}
+.hired-hero::after { content: ""; position: absolute; inset: 0; background: var(--motif) no-repeat -40px -30px/240px; opacity: .8; }
+.hired-hero .hh-badge {
+  width: 74px; height: 74px; margin: 0 auto 12px; border-radius: 50%; background: rgba(255,255,255,.18);
+  border: 2px solid rgba(255,255,255,.6); display: flex; align-items: center; justify-content: center;
+  position: relative; animation: popIn .5s var(--ease) both;
+}
+.hired-hero h2 { font-family: var(--display); font-size: 30px; font-weight: 800; margin: 0; position: relative; }
+.hired-hero p { margin: 6px 0 0; font-size: 14px; color: var(--on-brand-soft); position: relative; font-weight: 600; }
+.confetti { position: absolute; width: 8px; height: 12px; border-radius: 2px; opacity: .9; animation: confetti 1.8s ease-out infinite; }
+
+/* ---------- Formation (team visual) ---------- */
+.formation-stage {
+  background: var(--g-teal); border-radius: var(--r-xl); padding: 22px 16px 18px; position: relative;
+  overflow: hidden; text-align: center; color: #fff;
+}
+.formation-stage::before { content: ""; position: absolute; inset: 0; background: var(--mapdots); }
+.formation-stage .fs-inner { position: relative; }
+.f-cluster { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 14px 0 4px; position: relative; }
+.f-node { position: relative; text-align: center; animation: cardIn .4s var(--ease) both; }
+.f-node .avatar-lg {
+  width: 54px; height: 54px; border-radius: 50%; background: #fff; color: var(--primary-dark);
+  font-family: var(--display); font-weight: 800; font-size: 17px; display: flex; align-items: center; justify-content: center;
+  border: 3px solid var(--primary-light); box-shadow: 0 6px 14px -6px rgba(0,0,0,.5); position: relative;
+}
+.f-node.you .avatar-lg { border-color: var(--yellow); }
+.f-node .fn-name { font-size: 10.5px; font-weight: 700; color: rgba(255,255,255,.85); margin-top: 4px; }
+.f-node .fn-status { position: absolute; right: -2px; top: -2px; width: 16px; height: 16px; border-radius: 50%; border: 2.5px solid var(--primary-deep); background: var(--green); }
+.f-node.pending .fn-status { background: var(--amber); }
+.formation-legend { display: flex; gap: 16px; justify-content: center; margin-top: 12px; font-size: 12.5px; font-weight: 700; position: relative; }
+.formation-legend .lg { display: inline-flex; align-items: center; gap: 6px; }
+.formation-legend .sw { width: 10px; height: 10px; border-radius: 50%; }
+
+/* ---------- TrustScore ---------- */
+.trust-hero { display: flex; align-items: center; gap: 16px; }
+.trust-ring {
+  width: 104px; height: 104px; border-radius: 50%; flex: 0 0 auto; position: relative;
+  background: conic-gradient(var(--primary) calc(var(--trust, 0) * 1%), #E7E3D8 0);
+  display: flex; align-items: center; justify-content: center;
+}
+.trust-ring::before { content: ""; position: absolute; inset: 9px; background: var(--card); border-radius: 50%; }
+.trust-ring .tr-inner { position: relative; text-align: center; }
+.trust-ring .tr-n { font-family: var(--display); font-size: 30px; font-weight: 800; line-height: 1; }
+.trust-ring .tr-l { font-size: 9.5px; font-weight: 800; color: var(--muted); letter-spacing: .05em; }
+.trust-stats { display: flex; gap: 8px; flex-wrap: wrap; }
+.trust-stats .ts { background: var(--canvas); border: 1px solid var(--line); border-radius: var(--r-md); padding: 8px 12px; text-align: center; flex: 1; min-width: 76px; }
+.trust-stats .ts b { font-family: var(--display); font-size: 17px; display: block; }
+.trust-stats .ts span { font-size: 10.5px; color: var(--muted); font-weight: 700; }
+.bars { margin-top: 10px; }
+.bars .bar-row { display: flex; align-items: center; gap: 10px; margin: 7px 0; font-size: 12.5px; font-weight: 700; }
+.bars .bar-row .bl { width: 104px; color: var(--muted); }
+.bars .bar-track { flex: 1; height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+.bars .bar-fill { height: 100%; border-radius: 99px; background: var(--g-teal); transition: width .6s var(--ease); }
+
+/* ---------- Earnings chart & timeline ---------- */
+.chart { display: flex; align-items: flex-end; gap: 8px; height: 118px; margin-top: 12px; }
+.chart .col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+.chart .col .bar {
+  width: 100%; max-width: 34px; border-radius: 8px 8px 4px 4px; background: linear-gradient(to top, var(--primary), #2DD4BF);
+  min-height: 6px; transition: height .6s var(--ease); position: relative;
+}
+.chart .col.peak .bar { background: var(--g-money); box-shadow: 0 4px 10px -4px rgba(22,163,74,.5); }
+.chart .col .cl { font-size: 10px; color: var(--muted); font-weight: 700; }
+.chart .col .cv { font-size: 10px; color: var(--text); font-weight: 800; }
+
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline li { position: relative; padding: 0 0 16px 26px; }
+.timeline li::before { content: ""; position: absolute; left: 7px; top: 18px; bottom: -2px; width: 2px; background: var(--line); }
+.timeline li:last-child { padding-bottom: 0; }
+.timeline li:last-child::before { display: none; }
+.timeline li .tl-dot { position: absolute; left: 0; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--card); border: 3px solid var(--primary); }
+.timeline li.done .tl-dot { background: var(--green); border-color: var(--green); }
+.timeline li.wait .tl-dot { background: var(--amber); border-color: var(--amber); }
+.timeline li .tl-t { font-size: 13.5px; font-weight: 700; }
+.timeline li .tl-s { font-size: 11.5px; color: var(--muted); font-weight: 600; margin-top: 1px; }
+
+/* ---------- Banners / attention rows ---------- */
+.banner {
+  display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line);
+  border-left: 4px solid var(--primary); border-radius: var(--r-md); padding: 12px 14px; margin-bottom: 9px;
+  font-size: 14px; font-weight: 700; width: 100%; text-align: left; box-shadow: var(--shadow-card);
+}
+.banner .bn-ic { width: 34px; height: 34px; border-radius: 11px; display: flex; align-items: center; justify-content: center; color: #fff; flex: 0 0 auto; }
+.banner .bn-txt { flex: 1; min-width: 0; }
+.banner .bn-txt small { display: block; font-weight: 600; color: var(--muted); font-size: 11.5px; margin-top: 1px; }
+.banner.warn { border-left-color: var(--amber); } .banner.warn .bn-ic { background: var(--g-warm); }
+.banner.money { border-left-color: var(--green); } .banner.money .bn-ic { background: var(--g-money); }
+.banner.info { border-left-color: var(--blue); } .banner.info .bn-ic { background: linear-gradient(135deg,#2563EB,#1D4ED8); }
+.banner.hot { border-left-color: var(--coral); } .banner.hot .bn-ic { background: linear-gradient(135deg,#EF5B47,#F97316); }
+.banner .bn-arrow { color: var(--muted); flex: 0 0 auto; }
+
+/* workforce hero (host) */
+.wf-hero { margin: -8px calc(-1 * var(--s4)) 14px; padding: 20px var(--s4) 18px; background: var(--g-home); color: #fff; border-radius: 0 0 var(--r-2xl) var(--r-2xl); position: relative; overflow: hidden; }
+.wf-hero::after { content: ""; position: absolute; inset: 0; background: var(--motif) no-repeat right -30px top -40px/230px; }
+.wf-hero .wf-k { font-size: 11.5px; letter-spacing: .14em; font-weight: 800; color: var(--on-brand-soft); position: relative; }
+.wf-hero .wf-n { font-family: var(--display); font-size: var(--fs-hero); font-weight: 800; position: relative; line-height: 1.05; margin-top: 4px; }
+.wf-hero .wf-n small { font-size: 17px; color: var(--on-brand-soft); font-weight: 700; }
+.wf-hero .wf-remain { font-size: 13.5px; color: var(--on-brand-soft); font-weight: 700; margin-top: 4px; position: relative; }
+.wf-hero .btn { margin-top: 14px; position: relative; }
+.wf-seats { display: flex; gap: 7px; margin-top: 12px; position: relative; }
+.wf-seats i { width: 34px; height: 10px; border-radius: 99px; background: rgba(255,255,255,.25); border: 1.5px solid rgba(255,255,255,.5); }
+.wf-seats i.on { background: var(--yellow); border-color: var(--yellow); }
+
+/* ---------- Queue / worker rows ---------- */
+.w-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow-card); animation: cardIn var(--t-med) var(--ease) both; }
+.w-card .wc-top { display: flex; gap: 12px; align-items: center; }
+.w-card .avatar {
+  width: 48px; height: 48px; border-radius: 50%; background: var(--g-teal); color: #fff;
+  font-family: var(--display); font-weight: 800; font-size: 16px; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;
+}
+.w-card .wc-name { font-family: var(--display); font-size: 16.5px; font-weight: 800; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.w-card .wc-sub { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+.w-card .wc-grid { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.w-card .wc-stat { background: var(--canvas); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 6px 10px; font-size: 11.5px; font-weight: 700; color: var(--muted); }
+.w-card .wc-stat b { color: var(--text); font-weight: 800; }
+.w-card .wc-skills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.w-card .wc-skills span { font-size: 11px; font-weight: 700; background: var(--tint); color: var(--primary-dark); border: 1px solid #99F6E4; border-radius: var(--r-pill); padding: 3px 9px; }
+.w-card .wc-actions { display: flex; gap: 9px; margin-top: 12px; }
+.conflict { display: flex; align-items: center; gap: 7px; background: #FEF2F2; border: 1px solid #FECACA; color: var(--danger); font-size: 12.5px; font-weight: 700; border-radius: var(--r-sm); padding: 8px 10px; margin-top: 10px; }
+
+/* ---------- Detail page ---------- */
+.detail-hero { margin: 0 calc(-1 * var(--s4)); position: relative; height: 210px; background: var(--g-teal); }
+.detail-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.detail-hero::after { content: ""; position: absolute; inset: auto 0 0 0; height: 60%; background: linear-gradient(to top, rgba(11,21,18,.8), transparent); }
+.detail-back {
+  position: absolute; top: 12px; left: 14px; z-index: 3; width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(255,255,255,.94); border: 0; color: var(--text); font-size: 18px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-card);
+}
+.detail-hero .dh-badges { position: absolute; right: 14px; top: 12px; z-index: 3; display: flex; gap: 8px; }
+.sticky-cta {
+  position: sticky; bottom: 0; margin: 14px calc(-1 * var(--s4)) 0; padding: 13px var(--s4) calc(13px + env(safe-area-inset-bottom, 0px));
+  background: rgba(255,255,255,.97); border-top: 1px solid var(--line); box-shadow: 0 -12px 24px -16px rgba(16,32,30,.4); z-index: 7;
+}
+.block-title { font-family: var(--display); font-size: 15px; font-weight: 800; letter-spacing: .02em; margin: 18px 0 8px; display: flex; align-items: center; gap: 8px; }
+.block-title .bt-ic { width: 26px; height: 26px; border-radius: 9px; background: var(--tint); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.when-grid { display: flex; gap: 10px; }
+.when-grid .wg { flex: 1; background: var(--canvas); border: 1px solid var(--line); border-radius: var(--r-md); padding: 11px 12px; }
+.when-grid .wg .wg-l { font-size: 10.5px; font-weight: 800; letter-spacing: .1em; color: var(--muted); }
+.when-grid .wg .wg-v { font-family: var(--display); font-weight: 800; font-size: 15.5px; margin-top: 3px; }
+.get-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.get-list li { display: flex; align-items: center; gap: 9px; background: var(--tint); border: 1px solid #99F6E4; border-radius: var(--r-md); padding: 10px 11px; font-size: 13px; font-weight: 700; }
+.get-list li .g-ic { color: var(--primary); font-weight: 900; }
+.host-strip { display: flex; align-items: center; gap: 12px; background: var(--canvas); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 13px 14px; }
+.host-strip .avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--g-teal); color: #fff; font-family: var(--display); font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.o-media .live-pill { position: absolute; right: 10px; bottom: 10px; z-index: 2; }
+
+/* ---------- Sheets / toasts / overlays ---------- */
+.overlay { position: absolute; inset: 0; background: rgba(11,36,34,.5); opacity: 0; pointer-events: none; transition: opacity var(--t-med) var(--ease); z-index: 8; }
+.overlay.open { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; background: var(--card); border-radius: var(--r-xl) var(--r-xl) 0 0;
+  padding: 10px var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0px)); transform: translateY(103%);
+  transition: transform .3s var(--ease); z-index: 9; max-height: 86%; overflow-y: auto; box-shadow: var(--shadow-pop);
+}
+.sheet.open { transform: translateY(0); }
+.sheet .handle { width: 44px; height: 5px; border-radius: 99px; background: var(--line); margin: 0 auto 14px; }
+.sheet .sheet-title { font-family: var(--display); font-size: 19px; font-weight: 800; margin-bottom: 4px; }
+.sheet .sheet-sub { font-size: 13.5px; color: var(--muted); margin-bottom: 14px; font-weight: 600; }
+.toast {
+  position: absolute; top: 44px; left: 16px; right: 16px; background: #10201E; color: #fff; border-radius: 14px;
+  padding: 13px 15px; font-size: 14px; font-weight: 700; z-index: 12; box-shadow: var(--shadow-pop);
+  transform: translateY(-8px); opacity: 0; pointer-events: none; transition: all .3s var(--ease);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast .t-sub { display: block; font-weight: 600; font-size: 12.5px; color: #B7CFCB; margin-top: 2px; }
+
+/* ---------- Auth / onboarding ---------- */
+.auth-screen { background: var(--g-home); color: #fff; position: relative; }
+.auth-screen::before { content: ""; position: absolute; inset: 0; background: var(--mapdots); pointer-events: none; }
+.auth-screen .screen-body { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100%; padding-top: 46px; }
+.auth-top { text-align: center; margin-bottom: 22px; }
+.brandmark {
+  width: 66px; height: 66px; margin: 0 auto 10px; border-radius: 21px; background: rgba(255,255,255,.15);
+  border: 1.5px solid rgba(255,255,255,.4); display: flex; align-items: center; justify-content: center;
+  font-family: var(--display); font-weight: 800; font-size: 30px; color: #fff; box-shadow: var(--shadow-card);
+}
+.brandmark svg { display: block; }
+.auth-top .wm { font-family: var(--display); font-size: 38px; font-weight: 800; letter-spacing: .1em; line-height: 1; }
+.auth-top .tag { color: var(--on-brand-soft); font-size: 14px; font-weight: 700; margin-top: 7px; }
+.auth-top .ta { font-size: 12.5px; color: rgba(255,255,255,.6); margin-top: 3px; font-weight: 600; letter-spacing: .14em; }
+.auth-card { background: var(--card); border-radius: var(--r-xl); padding: var(--s5) var(--s4) var(--s4); box-shadow: var(--shadow-pop); color: var(--text); }
+.field-label { font-size: 12.5px; font-weight: 800; letter-spacing: .04em; color: var(--muted); margin: 14px 0 6px; }
+.field {
+  display: flex; align-items: center; gap: 8px; background: var(--canvas); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 12px 14px; transition: border-color var(--t-fast) var(--ease);
+}
+.field:focus-within { border-color: var(--primary); background: #fff; }
+.field .pfx { font-weight: 800; color: var(--muted); font-size: 16px; }
+.field input { border: 0; outline: 0; background: transparent; font-size: 16.5px; font-weight: 700; color: var(--text); width: 100%; min-width: 0; }
+.field.err { border-color: var(--danger); background: #FEF2F2; }
+.form-msg { font-size: 13.5px; font-weight: 700; color: var(--danger); margin-top: 10px; display: none; align-items: center; gap: 6px; }
+.form-msg.show { display: flex; }
+.legal { font-size: 11.5px; color: var(--muted); text-align: center; margin-top: 14px; line-height: 1.5; font-weight: 600; }
+.otp-boxes { display: flex; gap: 9px; justify-content: center; margin: 16px 0 4px; }
+.otp-boxes .ob {
+  flex: 1; max-width: 54px; height: 58px; border-radius: 14px; border: 2px solid var(--border); background: var(--canvas);
+  font-family: var(--display); font-size: 24px; font-weight: 800; text-align: center; color: var(--text); transition: all var(--t-fast) var(--ease);
+}
+.otp-boxes .ob:focus { border-color: var(--primary); background: #fff; outline: 0; }
+.otp-boxes .ob.filled { border-color: var(--primary); background: var(--tint); }
+.otp-boxes.err .ob { border-color: var(--danger); background: #FEF2F2; }
+.resend-row { text-align: center; font-size: 13.5px; color: var(--muted); font-weight: 700; margin-top: 14px; }
+.devhint { background: #FFF7ED; border: 1.5px dashed var(--amber); color: #92400E; font-size: 13px; font-weight: 700; border-radius: 12px; padding: 10px 12px; text-align: center; margin-bottom: 14px; }
+.devhint b { font-family: var(--display); font-size: 17px; letter-spacing: .1em; }
+.role-grid { display: grid; gap: 13px; }
+.role-card {
+  border-radius: var(--r-xl); padding: 18px 17px 17px; cursor: pointer; text-align: left;
+  background: var(--card); border: 2.5px solid var(--line); color: var(--text); transition: all var(--t-fast) var(--ease);
+}
+.role-card:hover { transform: translateY(-2px); }
+.role-card.on.primary { border-color: var(--primary); background: var(--tint); box-shadow: var(--shadow-lift); }
+.role-card.on.secondary { border-color: var(--coral); background: #FFF1ED; box-shadow: 0 12px 26px -16px rgba(239,91,71,.6); }
+.role-card .r-top { display: flex; align-items: center; gap: 13px; }
+.role-card .r-ic { width: 52px; height: 52px; border-radius: 17px; display: flex; align-items: center; justify-content: center; color: #fff; flex: 0 0 auto; }
+.role-card.primary .r-ic { background: var(--g-teal); }
+.role-card.secondary .r-ic { background: var(--g-warm); }
+.role-card .r-t { font-family: var(--display); font-size: 19px; font-weight: 800; }
+.role-card .r-s { font-size: 13px; font-weight: 700; color: var(--muted); margin-top: 2px; }
+.role-card .r-flow { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
+.role-card .r-flow span { font-size: 11.5px; font-weight: 700; background: var(--canvas); border: 1px solid var(--line); border-radius: var(--r-pill); padding: 4px 9px; color: var(--muted); }
+
+/* ---------- Empty / loading / error states ---------- */
+.state-box { text-align: center; padding: 34px 20px; }
+.state-box .st-art {
+  width: 92px; height: 92px; margin: 0 auto 15px; border-radius: 30px; background: var(--tint); border: 1.5px dashed #5EEAD4;
+  display: flex; align-items: center; justify-content: center; color: var(--primary);
+}
+.state-box .st-t { font-family: var(--display); font-size: 19px; font-weight: 800; }
+.state-box .st-d { font-size: 14px; color: var(--muted); margin: 6px auto 16px; max-width: 250px; line-height: 1.5; font-weight: 600; }
+.state-box .btn { max-width: 250px; margin: 0 auto; }
+.loading-box { text-align: center; padding: 30px 16px; color: var(--muted); font-weight: 700; font-size: 14.5px; }
+.spin-ring {
+  width: 46px; height: 46px; margin: 0 auto 12px; border-radius: 50%;
+  border: 4px solid var(--primary-light); border-top-color: var(--primary); animation: spin .8s linear infinite;
+}
+.shimmer { background: linear-gradient(90deg, #EFEAE0 25%, #F8F5EE 50%, #EFEAE0 75%); background-size: 300% 100%; animation: shimmer 1.4s infinite; border-radius: var(--r-md); }
+.alert-box { background: #FEF2F2; border: 1.5px solid #FECACA; border-radius: var(--r-md); padding: 12px 14px; font-size: 13.5px; font-weight: 700; color: var(--danger); display: flex; gap: 10px; align-items: flex-start; }
+.alert-box.ok { background: #F0FDF4; border-color: #86EFAC; color: var(--success); }
+
+/* ---------- Misc ---------- */
+.mini-profile { display: flex; align-items: center; gap: 13px; }
+.mini-profile .avatar { width: 58px; height: 58px; border-radius: 50%; background: var(--g-teal); color: #fff; font-family: var(--display); font-weight: 800; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+.mini-profile .mp-name { font-family: var(--display); font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+.mini-profile .mp-sub { font-size: 13px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+.list-row { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md); padding: 13px 14px; margin-bottom: 9px; font-weight: 700; font-size: 14.5px; width: 100%; text-align: left; box-shadow: var(--shadow-card); }
+.list-row .lr-ic { width: 36px; height: 36px; border-radius: 12px; background: var(--tint); color: var(--primary); display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+.list-row .lr-t { flex: 1; min-width: 0; }
+.list-row .lr-t small { display: block; font-weight: 600; color: var(--muted); font-size: 12px; margin-top: 1px; }
+.list-row .lr-arrow { color: var(--muted); }
+.stat-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-bottom: 14px; }
+.stat-tiles .tile { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md); padding: 12px 10px; text-align: center; box-shadow: var(--shadow-card); }
+.stat-tiles .tile b { font-family: var(--display); font-size: 21px; display: block; }
+.stat-tiles .tile span { font-size: 10.5px; color: var(--muted); font-weight: 700; }
+.stat-tiles .tile.warm { background: linear-gradient(135deg,#FFF7ED,#FFEDD5); border-color: #FDBA74; }
+.stat-tiles .tile.money { background: linear-gradient(135deg,#F0FDF4,#DCFCE7); border-color: #86EFAC; }
+
+/* ---------- Motion (state-driven, restrained) ---------- */
+@keyframes cardIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes popIn { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@keyframes pulseRing { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.045); } }
+@keyframes flashGlow { 0%, 100% { text-shadow: 0 0 18px rgba(249,115,22,.35); } 50% { text-shadow: 0 0 34px rgba(249,115,22,.8); } }
+@keyframes shimmer { from { background-position: 300% 0; } to { background-position: -100% 0; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes confetti { 0% { transform: translateY(-6px) rotate(0); opacity: 1; } 100% { transform: translateY(46px) rotate(240deg); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+/* ---------- Review surface responsive ---------- */
+@media (max-width: 940px) {
+  body { grid-template-columns: 1fr; }
+  .rail { position: static; height: auto; }
+  .phone { width: min(390px, calc(100vw - 28px)); }
+  .stage { padding: 14px 10px 46px; }
+}
+@media (max-width: 430px) { .phone { border-radius: 34px; padding: 8px; } .viewport { height: 720px; } }
+</style>
+</head>
+
+<body>
+<style>
+.ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; display: block; flex: 0 0 auto; }
+.ic.s14 { width: 14px; height: 14px; stroke-width: 2.2; }
+.ic.s16 { width: 16px; height: 16px; stroke-width: 2.1; }
+.ic.s18 { width: 18px; height: 18px; }
+.ic.s24 { width: 24px; height: 24px; }
+.ic.s30 { width: 30px; height: 30px; }
+.ic.s40 { width: 40px; height: 40px; stroke-width: 1.5; }
+.ic.fill { fill: currentColor; stroke: none; }
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5 21 21"/></symbol>
+<symbol id="i-left" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+<symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="i-case" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/></symbol>
+<symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1M17 3.2a4 4 0 0 1 0 7.6M22 21v-1a6 6 0 0 0-4-5.7"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></symbol>
+<symbol id="i-qr" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4z"/><path d="M14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z"/></symbol>
+<symbol id="i-cash" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="12" cy="12" r="3"/><path d="M6 10v4M18 10v4"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9L12 2.5z"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></symbol>
+<symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></symbol>
+<symbol id="i-hat" viewBox="0 0 24 24"><path d="M3 18h18M6 18v-4a6 6 0 0 1 12 0v4M10 5h4"/></symbol>
+<symbol id="i-wallet" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="M3 10h18M16 15h2"/></symbol>
+<symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
+<symbol id="i-wing" viewBox="0 0 24 24"><path d="M3 14c6.5.4 11.6-2.6 14.5-8.7.7 3.2 2.6 5.2 5.5 6.2-3.7.8-6.4 2.8-8.2 6L11.5 21l.8-4.2C9.6 17.4 6.6 16.3 3 14z"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8.3-8 9.3C7.5 20.3 4 17 4 12V6l8-3z"/><path d="M8.6 12l2.4 2.4 4.4-4.6"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="i-camera" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="3"/><circle cx="12" cy="13.5" r="3.5"/><path d="M8 7l1.4-3h5.2L16 7"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-trend" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v6"/><path d="M12 16.2h.01" stroke-width="2.6"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1M20.5 3.5v5h-5"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19.5 8.5l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></symbol>
+<symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="5" rx="1.5"/><path d="M5 13v8h14v-8M12 8v13M12 8s-4.5.3-4.5-2.8C7.5 3.4 9 3 10.3 3.4 11.7 3.8 12 8 12 8zM12 8s4.5.3 4.5-2.8C16.5 3.4 15 3 13.7 3.4 12.3 3.8 12 8 12 8z"/></symbol>
+<symbol id="i-map" viewBox="0 0 24 24"><path d="M9 3L3 6v15l6-3 6 3 6-3V3l-6 3-6-3zM9 3v15M15 6v15"/></symbol>
+</svg>
+
+<!-- ============ Review rail (demonstration control surface) ============ -->
+<nav class="rail" aria-label="Screen index">
+  <h1>SWON · V3 Prototype</h1>
+  <div class="sub">Vibrant &amp; Dynamic — Worker ↔ Opportunity ↔ Host marketplace.</div>
+  <span class="badge-mock">● MOCK DATA — REVIEW BUILD</span>
+
+  <h2>Start here</h2>
+  <button class="screen-btn" data-go="s-login">1 · Sign in</button>
+  <button class="screen-btn" data-go="s-otp">2 · Verify code</button>
+  <button class="screen-btn" data-go="s-role">3 · Choose your side</button>
+
+  <h2>Worker</h2>
+  <button class="screen-btn" data-go="w-home">Home — marketplace</button>
+  <button class="screen-btn" data-go="w-feed">Explore opportunities</button>
+  <button class="screen-btn" data-go="w-detail">Opportunity details</button>
+  <button class="screen-btn" data-go="w-offer">⚡ FlashMatch</button>
+  <button class="screen-btn" data-go="w-work">My Work — live mode</button>
+  <button class="screen-btn" data-go="s-hired">Hired moment</button>
+  <button class="screen-btn" data-go="w-formation">Your Formation</button>
+  <button class="screen-btn" data-go="w-earnings">Earnings</button>
+  <button class="screen-btn" data-go="w-activity">Flight requests &amp; activity</button>
+  <button class="screen-btn" data-go="w-me">Profile &amp; TrustScore</button>
+
+  <h2>Host</h2>
+  <button class="screen-btn" data-go="e-dash">Home — workforce</button>
+  <button class="screen-btn" data-go="e-jobs">My Opportunities</button>
+  <button class="screen-btn" data-go="e-queue">Workers / Application queue</button>
+  <button class="screen-btn" data-go="e-attendance">Attendance &amp; roster</button>
+  <button class="screen-btn" data-go="e-pay">Payments</button>
+  <button class="screen-btn" data-go="e-me">Host profile</button>
+
+  <p class="note">Every action is clickable: sign in → OTP → role, search &amp; filters, flight request, FlashMatch timer, check-in/check-out, formation, BOND decisions, QR/manual attendance, approve &amp; record payment. Wrong code, amount mismatch and conflict states are deliberate.
+  <br><br>Imagery: Openverse/Flickr CC photos (see source comment in file). Production build should use licensed or owned photography.</p>
+</nav>
+
+<main class="stage">
+  <header class="stage-head">
+    <h2>SWON — Vibrant &amp; Dynamic UI</h2>
+    <p>Use the left rail to jump between screens; everything inside the phone is interactive.</p>
+  </header>
+
+  <div class="phone">
+    <div class="viewport">
+      <div class="statusbar"><span>9:41</span><span>SWON</span><span>100%</span></div>
+
+
+<!-- ================= AUTH: SIGN IN ================= -->
+<section class="screen auth-screen" id="s-login">
+  <div class="screen-body">
+    <div class="auth-top">
+      <div class="brandmark"><svg class="ic s40" style="color:#fff"><use href="#i-wing"/></svg></div>
+      <div class="wm">SWON</div>
+      <div class="tag">Find work. Build trust. Get paid.</div>
+      <div class="ta">WORKER · OPPORTUNITY · HOST</div>
+    </div>
+    <div class="auth-card">
+      <div style="font-family:var(--display);font-size:19px;font-weight:800">Sign in</div>
+      <div class="sm muted" style="margin-top:4px;font-weight:600">We send a 6-digit code to your phone.</div>
+      <div class="field-label">PHONE NUMBER</div>
+      <label class="field" id="phoneField"><span class="pfx">+91</span><input id="phone" type="tel" placeholder="9003150711" maxlength="10" aria-label="Phone number"></label>
+      <div class="form-msg" id="phoneErr"><svg class="ic s16"><use href="#i-alert"/></svg><span>Enter your 10-digit phone number.</span></div>
+      <button class="btn primary" id="sendOtpBtn" style="margin-top:16px" disabled>Send code <svg class="ic s18"><use href="#i-arrow"/></svg></button>
+      <div class="legal">By continuing you agree to SWON's Terms &amp; Privacy Policy. Location is used only to show nearby opportunities.</div>
+    </div>
+    <div style="text-align:center;margin-top:22px">
+      <div class="row-between" style="gap:8px">
+        <div style="flex:1;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.25);border-radius:16px;padding:11px 6px">
+          <div style="font-family:var(--display);font-size:20px;font-weight:800;color:#fff">12,400+</div>
+          <div style="font-size:10.5px;font-weight:700;color:rgba(255,255,255,.75)">WORKERS IN THE FLOCK</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.25);border-radius:16px;padding:11px 6px">
+          <div style="font-family:var(--display);font-size:20px;font-weight:800;color:#FDE047">3,200</div>
+          <div style="font-size:10.5px;font-weight:700;color:rgba(255,255,255,.75)">OPPORTUNITIES THIS WEEK</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.25);border-radius:16px;padding:11px 6px">
+          <div style="font-family:var(--display);font-size:20px;font-weight:800;color:#86EFAC">4.8★</div>
+          <div style="font-size:10.5px;font-weight:700;color:rgba(255,255,255,.75)">AVG TRUSTSCORE</div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:auto;padding-top:18px">
+      <span class="pill wing" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff">
+        <svg class="ic s14"><use href="#i-shield"/></svg> KYC-protected marketplace
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= AUTH: OTP ================= -->
+<section class="screen auth-screen" id="s-otp">
+  <div class="screen-body">
+    <div class="auth-top" style="margin-bottom:16px">
+      <div class="brandmark" style="width:54px;height:54px;border-radius:18px;font-size:24px"><svg class="ic s30" style="color:#fff"><use href="#i-bell"/></svg></div>
+      <div style="font-family:var(--display);font-size:26px;font-weight:800">Verify your phone</div>
+      <div class="tag" style="font-size:13.5px">Enter the code sent to +91 90031 50711</div>
+    </div>
+    <div class="auth-card">
+      <div class="devhint">DEMO — your code is on screen: <b id="otpCode">284817</b></div>
+      <div class="otp-boxes" id="otpBoxes">
+        <input class="ob" inputmode="numeric" maxlength="1" aria-label="Digit 1">
+        <input class="ob" inputmode="numeric" maxlength="1" aria-label="Digit 2">
+        <input class="ob" inputmode="numeric" maxlength="1" aria-label="Digit 3">
+        <input class="ob" inputmode="numeric" maxlength="1" aria-label="Digit 4">
+        <input class="ob" inputmode="numeric" maxlength="1" aria-label="Digit 5">
+        <input class="ob" inputmode="numeric" maxlength="1" aria-label="Digit 6">
+      </div>
+      <div class="form-msg" id="otpErr"><svg class="ic s16"><use href="#i-alert"/></svg><span>That code didn't match. Try again.</span></div>
+      <div class="resend-row">Resend in <span id="otpResend" style="color:var(--primary-dark)">00:28</span></div>
+      <button class="btn primary" id="verifyBtn" style="margin-top:16px" disabled>Verify &amp; continue</button>
+      <button class="btn ghost" data-go="s-login" style="margin-top:4px">Change phone number</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= AUTH: ROLE ================= -->
+<section class="screen auth-screen" id="s-role">
+  <div class="screen-body">
+    <div class="auth-top" style="margin-bottom:14px">
+      <div style="font-family:var(--display);font-size:26px;font-weight:800">Welcome to SWON 👋</div>
+      <div class="tag" style="font-size:13.5px">How will you use the marketplace?</div>
+    </div>
+    <div class="role-grid">
+      <button class="role-card primary" data-role="WORKER">
+        <div class="r-top">
+          <span class="r-ic"><svg class="ic s24"><use href="#i-hat"/></svg></span>
+          <span><span class="r-t">Find work</span><span class="r-s">I'm a Worker — I join formations</span></span>
+        </div>
+        <div class="r-flow"><span>Discover</span><span>Match</span><span>Flight Request</span><span>Work</span><span>Earnings</span></div>
+      </button>
+      <button class="role-card secondary" data-role="EMPLOYER">
+        <div class="r-top">
+          <span class="r-ic"><svg class="ic s24"><use href="#i-users"/></svg></span>
+          <span><span class="r-t">Hire a Flock</span><span class="r-s">I'm a Host — I post opportunities</span></span>
+        </div>
+        <div class="r-flow"><span>Create</span><span>Discover</span><span>Bond</span><span>Attendance</span><span>Payment</span></div>
+      </button>
+    </div>
+    <div class="card aside-note" style="margin-top:16px;font-size:13.5px;font-weight:600;line-height:1.6">
+      You can switch sides later from <b>Me → Switch role</b>. KYC is required before the first hire either way.
+    </div>
+    <button class="btn primary" id="roleContinue" style="margin-top:4px" disabled>Continue <svg class="ic s18"><use href="#i-arrow"/></svg></button>
+  </div>
+</section>
+
+
+<!-- ================= WORKER HOME ================= -->
+<section class="screen" id="w-home">
+  <div class="screen-body">
+    <div class="home-hero">
+      <div class="hh-row">
+        <img class="avatar-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' rx='48' fill='%230F766E'/%3E%3Ctext x='48' y='60' font-family='Manrope,sans-serif' font-size='36' font-weight='800' fill='%23ffffff' text-anchor='middle'%3EMK%3C/text%3E%3C/svg%3E" alt="Murugan" onerror="this.style.display='none'">
+        <div class="hh-greet">
+          <div class="hh-hi">Good morning,</div>
+          <div class="hh-name">Murugan 👋</div>
+          <div class="hh-tag">Find your next opportunity.</div>
+        </div>
+        <button class="hh-bell" data-go="w-activity" aria-label="Notifications"><svg class="ic s24"><use href="#i-bell"/></svg><span class="nub"></span></button>
+      </div>
+      <button class="hh-loc" aria-label="Change location"><svg class="ic s16"><use href="#i-pin"/></svg> Coimbatore <svg class="ic s14" style="opacity:.8"><use href="#i-right"/></svg></button>
+    </div>
+
+    <label class="searchbar">
+      <span class="s-ic"><svg class="ic s18"><use href="#i-search"/></svg></span>
+      <input type="search" placeholder="Search work, skills or location" aria-label="Search work, skills or location">
+    </label>
+
+    <div class="cats" role="list" aria-label="Categories">
+      <button class="cat on" role="listitem"><span class="c-ic ic-teal"><svg class="ic s24"><use href="#i-pin"/></svg></span><span class="c-lb">Nearby</span></button>
+      <button class="cat" role="listitem"><span class="c-ic ic-blue"><svg class="ic s24"><use href="#i-cal"/></svg></span><span class="c-lb">Today</span></button>
+      <button class="cat" role="listitem"><span class="c-ic ic-money"><svg class="ic s24"><use href="#i-cash"/></svg></span><span class="c-lb">High Pay</span></button>
+      <button class="cat" role="listitem"><span class="c-ic ic-lav"><svg class="ic s24"><use href="#i-clock"/></svg></span><span class="c-lb">Part Time</span></button>
+      <button class="cat" role="listitem"><span class="c-ic ic-coral"><svg class="ic s24"><use href="#i-star"/></svg></span><span class="c-lb">Events</span></button>
+      <button class="cat" role="listitem"><span class="c-ic ic-warm"><svg class="ic s24"><use href="#i-box"/></svg></span><span class="c-lb">Warehouse</span></button>
+      <button class="cat" role="listitem"><span class="c-ic ic-teal"><svg class="ic s24"><use href="#i-hat"/></svg></span><span class="c-lb">Construction</span></button>
+      <button class="cat" role="listitem"><span class="c-ic ic-blue"><svg class="ic s24"><use href="#i-bolt"/></svg></span><span class="c-lb">Delivery</span></button>
+    </div>
+
+    <!-- FlashMatch strip (contextual, high-priority) -->
+    <button class="banner hot" data-go="w-offer" style="background:linear-gradient(135deg,#FFF7ED,#FFEDD5);border:1.5px solid #FDBA74;border-left:4px solid var(--coral);margin-top:4px">
+      <span class="bn-ic"><svg class="ic s18"><use href="#i-bolt"/></svg></span>
+      <span class="bn-txt"><b style="font-family:var(--display);letter-spacing:.04em">⚡ FLASHMATCH</b><small>3 urgent opportunities near you right now</small></span>
+      <span class="bn-arrow"><svg class="ic s18"><use href="#i-right"/></svg></span>
+    </button>
+
+    <div class="section-head">
+      <span class="sh-title">Recommended for you</span>
+      <button class="sh-link" data-go="w-feed">See all</button>
+    </div>
+
+    <article class="opp" data-go="w-detail">
+      <div class="o-media">
+        <img src="https://live.staticflickr.com/6071/6058871675_b09506262f_b.jpg" alt="Warehouse workers packing boxes" loading="lazy" onerror="this.style.display='none'">
+        <div class="o-badges">
+          <span class="pill match">✓ <span data-countup="94">94</span>% MATCH</span>
+          <button class="o-fav" aria-label="Save opportunity"><svg class="ic s18"><use href="#i-heart"/></svg></button>
+        </div>
+        <span class="o-dist pill dark"><svg class="ic s14"><use href="#i-pin"/></svg> 3.2 km</span>
+      </div>
+      <div class="o-body">
+        <div class="o-title">Warehouse Support</div>
+        <div class="o-host">Freshmart Logistics <span class="star">★ 4.6</span> · <svg class="ic s14" style="color:var(--success)"><use href="#i-shield"/></svg> WhiteWing</div>
+        <div class="o-meta">
+          <span class="m"><svg class="ic s14"><use href="#i-cal"/></svg> Today, 9:00 AM</span>
+          <span class="m"><svg class="ic s14"><use href="#i-clock"/></svg> 1 day</span>
+        </div>
+        <div class="o-pay">
+          <span class="money md">₹650<span class="unit">/day</span></span>
+          <span class="pill today">6 seats · 3 open</span>
+        </div>
+        <div class="o-tags"><span>Loading</span><span>Packing</span><span>Flexible hours</span></div>
+        <span class="o-cta">View opportunity <svg class="ic s16"><use href="#i-arrow"/></svg></span>
+      </div>
+    </article>
+
+    <div class="section-head">
+      <span class="sh-title">Nearby opportunities</span>
+      <button class="sh-link" data-go="w-feed">See all</button>
+    </div>
+    <div class="h-rail">
+      <article class="opp" data-go="w-detail">
+        <div class="o-media">
+          <img src="https://live.staticflickr.com/5126/5213835620_38e40773bb_b.jpg" alt="Construction workers on site" loading="lazy" onerror="this.style.display='none'">
+          <div class="o-badges"><span class="pill urgent">⚡ URGENT</span><button class="o-fav" aria-label="Save"><svg class="ic s18"><use href="#i-heart"/></svg></button></div>
+          <span class="o-dist pill dark"><svg class="ic s14"><use href="#i-pin"/></svg> 2.1 km</span>
+        </div>
+        <div class="o-body">
+          <div class="o-title">Construction Support</div>
+          <div class="o-host">ABC Infra <span class="star">★ 4.8</span></div>
+          <div class="o-meta"><span class="m"><svg class="ic s14"><use href="#i-cal"/></svg> Today, 9:00 AM</span></div>
+          <div class="o-pay"><span class="money md">₹750<span class="unit">/day</span></span></div>
+          <div class="o-tags"><span>Physical Work</span><span>Lunch incl.</span></div>
+        </div>
+      </article>
+      <article class="opp" data-go="w-detail">
+        <div class="o-media">
+          <img src="https://live.staticflickr.com/7180/6934353174_3201dbebec_b.jpg" alt="Event crew on stage setup" loading="lazy" onerror="this.style.display='none'">
+          <div class="o-badges"><span class="pill match">✓ <span data-countup="88">88</span>%</span><button class="o-fav" aria-label="Save"><svg class="ic s18"><use href="#i-heart"/></svg></button></div>
+          <span class="o-dist pill dark"><svg class="ic s14"><use href="#i-pin"/></svg> 5.4 km</span>
+        </div>
+        <div class="o-body">
+          <div class="o-title">Event Crew Support</div>
+          <div class="o-host">Kovai Events <span class="star">★ 4.5</span></div>
+          <div class="o-meta"><span class="m"><svg class="ic s14"><use href="#i-cal"/></svg> 30 Sep, 2:00 PM</span></div>
+          <div class="o-pay"><span class="money md">₹680<span class="unit">/day</span></span></div>
+          <div class="o-tags"><span>Evening shift</span><span>Standing work</span></div>
+        </div>
+      </article>
+      <article class="opp" data-go="w-detail">
+        <div class="o-media">
+          <img src="https://live.staticflickr.com/65535/54720558887_3a8f6a38d4_b.jpg" alt="Delivery rider on scooter" loading="lazy" onerror="this.style.display='none'">
+          <div class="o-badges"><span class="pill match">✓ <span data-countup="91">91</span>%</span><button class="o-fav" aria-label="Save"><svg class="ic s18"><use href="#i-heart"/></svg></button></div>
+          <span class="o-dist pill dark"><svg class="ic s14"><use href="#i-pin"/></svg> 1.8 km</span>
+        </div>
+        <div class="o-body">
+          <div class="o-title">Delivery Rider</div>
+          <div class="o-host">SwiftDrop <span class="star">★ 4.4</span></div>
+          <div class="o-meta"><span class="m"><svg class="ic s14"><use href="#i-cal"/></svg> Today, 11:00 AM</span></div>
+          <div class="o-pay"><span class="money md">₹720<span class="unit">/day</span></span></div>
+          <div class="o-tags"><span>Own scooter</span><span>Fuel covered</span></div>
+        </div>
+      </article>
+    </div>
+
+    <div class="section-head"><span class="sh-title">This week</span><button class="sh-link" data-go="w-earnings">Earnings</button></div>
+    <div class="card" style="display:flex;gap:16px;align-items:center;margin-top:0">
+      <div style="flex:1">
+        <span class="money hero" style="color:var(--green)">₹2,450</span>
+        <span class="delta" style="margin-left:8px">+12%</span>
+        <div class="cap muted" style="font-weight:700;margin-top:4px">3 days worked · 1 payment pending</div>
+      </div>
+      <div class="chart" style="width:120px;height:64px;gap:5px">
+        <div class="col"><div class="bar" style="height:30%"></div><span class="cl">M</span></div>
+        <div class="col"><div class="bar" style="height:55%"></div><span class="cl">T</span></div>
+        <div class="col"><div class="bar" style="height:0"></div><span class="cl">W</span></div>
+        <div class="col"><div class="bar" style="height:70%"></div><span class="cl">T</span></div>
+        <div class="col peak"><div class="bar" style="height:95%"></div><span class="cl">F</span></div>
+        <div class="col"><div class="bar" style="height:45%"></div><span class="cl">S</span></div>
+        <div class="col"><div class="bar" style="height:0"></div><span class="cl">S</span></div>
+      </div>
+    </div>
+
+    <button class="list-row" data-go="w-activity">
+      <span class="lr-ic"><svg class="ic s18"><use href="#i-send"/></svg></span>
+      <span class="lr-t">My Flight Requests<small>2 sent · 1 response today</small></span>
+      <span class="lr-arrow"><svg class="ic s18"><use href="#i-right"/></svg></span>
+    </button>
+    <button class="list-row" data-go="w-work">
+      <span class="lr-ic" style="background:#DCFCE7;color:var(--success)"><svg class="ic s18"><use href="#i-clock"/></svg></span>
+      <span class="lr-t">Today's work — check in<small>Construction Support · 9:00 AM</small></span>
+      <span class="lr-arrow"><svg class="ic s18"><use href="#i-right"/></svg></span>
+    </button>
+  </div>
+  <nav class="tabbar" data-tabs="worker"></nav>
+</section>
+
+
+<!-- ================= EXPLORE / FEED ================= -->
+<section class="screen" id="w-feed">
+  <div class="topbar">
+    <div class="row-between">
+      <div><div class="title">Explore opportunities</div><div class="sub">42 open roles around Coimbatore</div></div>
+      <button class="btn sm on-dark" data-sheet="filters" style="width:auto"><svg class="ic s16"><use href="#i-filter"/></svg> Filters</button>
+    </div>
+  </div>
+  <div class="screen-body">
+    <label class="searchbar" style="margin:14px 0 12px">
+      <span class="s-ic"><svg class="ic s18"><use href="#i-search"/></svg></span>
+      <input type="search" placeholder="Search work, skills or location" aria-label="Search opportunities">
+    </label>
+    <div class="chip-row">
+      <button class="chip on">Near me</button>
+      <button class="chip">Today</button>
+      <button class="chip">High pay</button>
+      <button class="chip">Warehouse</button>
+      <button class="chip">Construction</button>
+      <button class="chip">Events</button>
+      <button class="chip">Delivery</button>
+    </div>
+
+    <article class="opp urgent" data-go="w-detail">
+      <div class="o-media">
+        <img src="https://live.staticflickr.com/5126/5213835620_38e40773bb_b.jpg" alt="Construction workers on site" loading="lazy" onerror="this.style.display='none'">
+        <div class="o-badges"><span class="pill urgent">⚡ URGENT · TODAY</span><button class="o-fav on" aria-label="Saved"><svg class="ic s18 fill"><use href="#i-heart"/></svg></button></div>
+        <span class="o-dist pill dark"><svg class="ic s14"><use href="#i-pin"/></svg> 2.1 km</span>
+      </div>
+      <div class="o-body">
+        <div class="o-title">Construction Support</div>
+        <div class="o-host">ABC Infra <span class="star">★ 4.8</span> · <svg class="ic s14" style="color:var(--success)"><use href="#i-shield"/></svg> WhiteWing</div>
+        <div class="o-meta">
+          <span class="m"><svg class="ic s14"><use href="#i-cal"/></svg> Today, 9:00 AM – 6:00 PM</span>
+          <span class="m"><svg class="ic s14"><use href="#i-users"/></svg> 6 seats · 3 open</span>
+        </div>
+        <div class="o-pay">
+          <span class="money md">₹750<span class="unit">/day</span></span>
+          <span class="pill match">✓ <span data-countup="94">94</span>% MATCH</span>
+        </div>
+        <div class="o-tags"><span>Physical Work</span><span>Team Work</span><span>Lunch + water</span></div>
+        <span class="o-cta">View opportunity <svg class="ic s16"><use href="#i-arrow"/></svg></span>
+      </div>
+    </article>
+
+    <article class="opp" data-go="w-detail">
+      <div class="o-media">
+        <img src="https://live.staticflickr.com/6071/6058871675_b09506262f_b.jpg" alt="Warehouse workers packing boxes" loading="lazy" onerror="this.style.display='none'">
+        <div class="o-badges"><span class="pill match">✓ <span data-countup="94">94</span>% MATCH</span><button class="o-fav" aria-label="Save"><svg class="ic s18"><use href="#i-heart"/></svg></button></div>
+        <span class="o-dist pill dark"><svg class="ic s14"><use href="#i-pin"/></svg> 3.2 km</span>
+      </div>
+      <div class="o-body">
+        <div class="o-title">Warehouse Support</div>
+        <div class="o-host">Freshmart Logistics <span class="star">★ 4.6</span></div>
+        <div class="o-meta">
+          <span class="m"><svg class="ic s14"><use href="#i-cal"/></svg> Today, 9:00 AM</span>
+          <span class="m"><svg class="ic s14"><use href="#i-clock"/></svg> 1 day</span>
+        </div>
+        <div class="o-pay">
+          <span class="money md">₹650<span class="unit">/day</span></span>
+          <span class="pill today">6 seats · 3 open</span>
+        </div>
+        <div class="o-tags"><span>Loading</span><span>Packing</span><span>Flexible hours</span></div>
+        <span class="o-cta">View opportunity <svg class="ic s16"><use href="#i-arrow"/></svg></span>
+      </div>
+    </article>
+
+    <article class="opp compact" data-go="w-detail">
+      <div class="o-media">
+        <img src="https://live.staticflickr.com/1513/24978817211_7e95c1cdaa_b.jpg" alt="Cleaner mopping a hall floor" loading="lazy" onerror="this.style.display='none'">
+        <div class="o-badges"><span class="pill match">✓ 86%</span><button class="o-fav" aria-label="Save"><svg class="ic s18"><use href="#i-heart"/></svg></button></div>
+        <span class="o-dist pill dark"><svg class="ic s14"><use href="#i-pin"/></svg> 4.0 km</span>
+      </div>
+      <div class="o-body">
+        <div class="o-title">Housekeeping Crew</div>
+        <div class="o-host">Sree Annapoorna <span class="star">★ 4.3</span></div>
+        <div class="o-meta"><span class="m"><svg class="ic s14"><use href="#i-cal"/></svg> 30 Sep, 7:00 AM</span></div>
+        <div class="o-pay"><span class="money md">₹600<span class="unit">/day</span></span></div>
+      </div>
+    </article>
+
+    <article class="opp compact" data-go="w-detail">
+      <div class="o-media">
+        <img src="https://live.staticflickr.com/3058/2692476103_0a0eb0d3ee_b.jpg" alt="Cooks working in a restaurant kitchen" loading="lazy" onerror="this.style.display='none'">
+        <div class="o-badges"><span class="pill match">✓ 82%</span><button class="o-fav" aria-label="Save"><svg class="ic s18"><use href="#i-heart"/></svg></button></div>
+        <span class="o-dist pill dark"><svg class="ic s14"><use href="#i-pin"/></svg> 6.2 km</span>
+      </div>
+      <div class="o-body">
+        <div class="o-title">Kitchen Helper — Evening</div>
+        <div class="o-host">Hotel Ashoka <span class="star">★ 4.7</span></div>
+        <div class="o-meta"><span class="m"><svg class="ic s14"><use href="#i-cal"/></svg> Today, 6:00 PM</span></div>
+        <div class="o-pay"><span class="money md">₹700<span class="unit">/day</span></span></div>
+      </div>
+    </article>
+  </div>
+  <nav class="tabbar" data-tabs="worker"></nav>
+</section>
+
+<!-- ================= OPPORTUNITY DETAILS ================= -->
+<section class="screen" id="w-detail">
+  <div class="screen-body" style="padding-top:0">
+    <div class="detail-hero">
+      <button class="detail-back" data-go="w-feed" aria-label="Back">‹</button>
+      <div class="dh-badges">
+        <span class="pill match" style="padding:7px 12px">✓ <span data-countup="94">94</span>% MATCH</span>
+        <button class="o-fav" aria-label="Save" style="position:static"><svg class="ic s18"><use href="#i-heart"/></svg></button>
+      </div>
+      <img src="https://live.staticflickr.com/5126/5213835620_38e40773bb_b.jpg" alt="Construction site with workers" onerror="this.style.display='none'">
+    </div>
+
+    <div style="margin-top:14px">
+      <div class="row-between">
+        <span class="pill urgent">⚡ URGENT</span>
+        <span class="pill today">6 seats · 3 open</span>
+      </div>
+      <div style="font-family:var(--display);font-size:26px;font-weight:800;line-height:1.1;margin-top:10px">Construction Support</div>
+      <div class="row-between" style="margin-top:8px">
+        <span class="money hero" style="color:var(--green)">₹750<span class="unit">/day</span></span>
+        <span class="pill" style="background:var(--canvas);border:1px solid var(--border);color:var(--text)">★ 4.8 Host</span>
+      </div>
+      <div class="o-meta" style="margin-top:8px">
+        <span class="m"><svg class="ic s14"><use href="#i-pin"/></svg> 2.1 km · Peelamedu</span>
+        <span class="m"><svg class="ic s14"><use href="#i-users"/></svg> 6 workers</span>
+      </div>
+    </div>
+
+    <div class="block-title"><span class="bt-ic"><svg class="ic s14"><use href="#i-cal"/></svg></span> WHEN</div>
+    <div class="when-grid">
+      <div class="wg"><div class="wg-l">DATES</div><div class="wg-v">30 Sep – 2 Oct</div></div>
+      <div class="wg"><div class="wg-l">HOURS</div><div class="wg-v">09:00 AM – 06:00 PM</div></div>
+    </div>
+
+    <div class="block-title"><span class="bt-ic"><svg class="ic s14"><use href="#i-case"/></svg></span> WHAT YOU'LL DO</div>
+    <div class="card flat" style="margin-bottom:0;font-size:14.5px;line-height:1.6;font-weight:600;color:var(--muted)">
+      Move material, assist masonry crews, keep the work zone tidy. Safety gear provided on site. Work in teams of 3 with a named supervisor.
+    </div>
+
+    <div class="block-title"><span class="bt-ic"><svg class="ic s14"><use href="#i-check"/></svg></span> REQUIREMENTS</div>
+    <div class="o-tags" style="display:flex;gap:6px;flex-wrap:wrap">
+      <span style="font-size:12.5px;font-weight:700;background:var(--canvas);border:1px solid var(--border);border-radius:99px;padding:6px 11px">18+ years</span>
+      <span style="font-size:12.5px;font-weight:700;background:var(--canvas);border:1px solid var(--border);border-radius:99px;padding:6px 11px">Aadhaar for KYC</span>
+      <span style="font-size:12.5px;font-weight:700;background:var(--canvas);border:1px solid var(--border);border-radius:99px;padding:6px 11px">Physical work OK</span>
+      <span style="font-size:12.5px;font-weight:700;background:var(--canvas);border:1px solid var(--border);border-radius:99px;padding:6px 11px">Punctual</span>
+    </div>
+
+    <div class="block-title"><span class="bt-ic"><svg class="ic s14"><use href="#i-gift"/></svg></span> WHAT YOU GET</div>
+    <ul class="get-list">
+      <li><span class="g-ic">₹750</span> / day</li>
+      <li><span class="g-ic">+₹100</span> transport</li>
+      <li><span class="g-ic">✓</span> Lunch</li>
+      <li><span class="g-ic">✓</span> Water &amp; shade</li>
+    </ul>
+
+    <div class="block-title"><span class="bt-ic"><svg class="ic s14"><use href="#i-shield"/></svg></span> HOST</div>
+    <div class="host-strip">
+      <span class="avatar">AB</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:800;display:flex;align-items:center;gap:7px;flex-wrap:wrap">ABC Infra <span class="pill wing"><svg class="ic s14"><use href="#i-wing"/></svg> WhiteWing Verified</span></div>
+        <div class="cap muted" style="font-weight:700;margin-top:3px">TrustScore 4.8 · 37 workers hired · 23 opportunities completed</div>
+      </div>
+    </div>
+
+    <div class="block-title"><span class="bt-ic"><svg class="ic s14"><use href="#i-trend"/></svg></span> YOUR MATCH</div>
+    <div class="card" style="display:flex;gap:16px;align-items:center">
+      <div class="match-ring lg" style="--pct:94"><span class="mr-n" data-countup="94">94%</span><span class="mr-l">MATCH</span></div>
+      <ul class="match-list">
+        <li><span class="ok">✓</span> Skill match — Loading, Physical Work</li>
+        <li><span class="ok">✓</span> Location match — 2.1 km away</li>
+        <li><span class="ok">✓</span> Availability match — Today free</li>
+        <li><span class="ok">✓</span> Experience match — 23 jobs done</li>
+      </ul>
+    </div>
+
+    <div class="sticky-cta">
+      <button class="btn primary" data-sheet="flight" style="letter-spacing:.06em">SEND FLIGHT REQUEST <svg class="ic s18"><use href="#i-send"/></svg></button>
+      <div class="cap muted" style="text-align:center;margin-top:8px;font-weight:700">Host usually responds within 2 hours · Address shared after you're hired</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ================= FLASHMATCH ================= -->
+<section class="screen flash-screen" id="w-offer">
+  <div class="screen-body">
+    <div class="row-between">
+      <span class="flash-kicker"><svg class="ic s24"><use href="#i-bolt"/></svg> FLASHMATCH</span>
+      <button class="btn sm on-dark" data-go="w-home" style="width:auto" aria-label="Close"><svg class="ic s16"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="flash-sub">3 urgent opportunities<br><em>near you right now</em></div>
+    <div class="cap" style="color:rgba(255,255,255,.7);font-weight:700;text-align:center;margin-top:6px">Held for you — expires in</div>
+    <div class="count-ring"><span class="cr-t" id="flashClock">02:15</span></div>
+
+    <div id="flashOffers">
+      <div class="flash-card">
+        <div class="fc-top">
+          <img src="https://live.staticflickr.com/5126/5213835620_38e40773bb_b.jpg" alt="Construction site" onerror="this.style.display='none'">
+          <div style="flex:1;min-width:0">
+            <div class="fc-title">Construction Support</div>
+            <div class="fc-meta"><svg class="ic s14" style="display:inline;vertical-align:-2px"><use href="#i-pin"/></svg> 1.8 km · Peelamedu &nbsp;·&nbsp; Starts 4:00 PM</div>
+            <div class="fc-meta" style="display:flex;align-items:center;gap:6px;margin-top:6px">
+              <span class="avatars-mini"><span class="avatar-mini">MK</span><span class="avatar-mini">RS</span><span class="avatar-mini">+4</span></span>
+              <span>nearby flock interested</span>
+            </div>
+          </div>
+        </div>
+        <div class="fc-pay">
+          <span class="money">₹800<span class="unit" style="color:rgba(255,255,255,.7)">/day</span></span>
+          <span class="pill urgent">6 seats · 4 open</span>
+        </div>
+        <div class="btn-row" style="margin-top:13px">
+          <button class="btn warm" id="flashAccept">I'M INTERESTED</button>
+          <button class="btn on-dark" data-go="w-detail" style="flex:0 0 96px">VIEW</button>
+        </div>
+      </div>
+      <div class="flash-card" style="animation-delay:.12s">
+        <div class="fc-top">
+          <img src="https://live.staticflickr.com/65535/54720558887_3a8f6a38d4_b.jpg" alt="Delivery rider" onerror="this.style.display='none'">
+          <div style="flex:1;min-width:0">
+            <div class="fc-title">Delivery Rider — Evening</div>
+            <div class="fc-meta"><svg class="ic s14" style="display:inline;vertical-align:-2px"><use href="#i-pin"/></svg> 2.6 km · Gandhipuram &nbsp;·&nbsp; Starts 5:00 PM</div>
+          </div>
+        </div>
+        <div class="fc-pay">
+          <span class="money">₹760<span class="unit" style="color:rgba(255,255,255,.7)">/day</span></span>
+          <span class="pill urgent">2 seats left</span>
+        </div>
+        <div class="btn-row" style="margin-top:13px">
+          <button class="btn warm" id="flashAccept2">I'M INTERESTED</button>
+          <button class="btn on-dark" data-go="w-detail" style="flex:0 0 96px">VIEW</button>
+        </div>
+      </div>
+      <div class="cap" style="text-align:center;color:rgba(255,255,255,.55);font-weight:700;margin-top:10px">
+        Declined? <button class="btn ghost" id="flashDecline" style="color:rgba(255,255,255,.8);min-height:auto;padding:4px 8px;display:inline;font-size:12.5px">skip these</button>
+      </div>
+    </div>
+
+    <div id="flashEmpty" style="display:none">
+      <div class="state-box" style="color:#fff">
+        <div class="st-art" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.4);color:var(--yellow)"><svg class="ic s40"><use href="#i-bolt"/></svg></div>
+        <div class="st-t" style="color:#fff">No flash matches right now</div>
+        <div class="st-d" style="color:rgba(255,255,255,.75)">You've seen every urgent opportunity nearby. We'll buzz you the moment one appears.</div>
+        <button class="btn on-dark" id="flashRestore">Back to home</button>
+      </div>
+    </div>
+
+    <div class="cap" style="text-align:center;color:rgba(255,255,255,.5);font-weight:700;margin-top:14px">FlashMatch is contextual — it appears on Home when work is urgent near you.</div>
+  </div>
+</section>
+
+<!-- ================= MY WORK / WORK MODE ================= -->
+<section class="screen work-screen" id="w-work">
+  <div class="screen-body">
+    <div class="row-between">
+      <span class="live-tag" id="workStateTag"><span class="live-dot" style="background:var(--amber)"></span> SCHEDULED</span>
+      <button class="btn sm on-dark" data-go="w-home" style="width:auto">Home</button>
+    </div>
+
+    <!-- idle: pre-check-in -->
+    <div id="workIdle">
+      <div class="cap" style="color:rgba(255,255,255,.7);font-weight:800;letter-spacing:.12em;margin-top:18px">TODAY'S WORK</div>
+      <div style="font-family:var(--display);font-size:30px;font-weight:800;margin-top:6px">Construction Support</div>
+      <div class="cap" style="color:rgba(255,255,255,.75);font-weight:700;margin-top:4px">ABC Infra · Formation of 6</div>
+      <div class="work-info" style="margin-top:16px">
+        <div class="wi-row"><span><svg class="ic s16" style="display:inline;vertical-align:-3px"><use href="#i-clock"/></svg> Shift</span><b>09:00 AM – 06:00 PM</b></div>
+        <div class="wi-row"><span><svg class="ic s16" style="display:inline;vertical-align:-3px"><use href="#i-pin"/></svg> Site</span><b>Peelamedu · 2.1 km</b></div>
+        <div class="wi-row"><span><svg class="ic s16" style="display:inline;vertical-align:-3px"><use href="#i-pin"/></svg> Exact address</span><b style="color:var(--yellow)">After check-in</b></div>
+        <div class="wi-row"><span><svg class="ic s16" style="display:inline;vertical-align:-3px"><use href="#i-cash"/></svg> Today's pay</span><b style="color:#86EFAC">₹750 + ₹100 transport</b></div>
+      </div>
+      <div class="alert-box" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.25);color:rgba(255,255,255,.85);margin-top:14px">
+        <svg class="ic s18" style="color:var(--yellow)"><use href="#i-alert"/></svg>
+        <span>Check in from the site — location is verified at check-in.</span>
+      </div>
+      <button class="btn money" id="checkInBtn" style="margin-top:16px">CHECK IN <svg class="ic s18"><use href="#i-check"/></svg></button>
+    </div>
+
+    <!-- live: working -->
+    <div id="workLive" style="display:none">
+      <div class="work-ring" id="workRing" style="--shift:52">
+        <div class="wr-inner">
+          <div class="wr-t" id="workTimer">04:28:16</div>
+          <div class="wr-l">ELAPSED</div>
+        </div>
+      </div>
+      <div class="cap" style="text-align:center;color:rgba(255,255,255,.6);font-weight:700">SHIFT PROGRESS · 9:00 AM – 6:00 PM</div>
+      <div class="work-info" style="margin-top:16px">
+        <div class="wi-row"><span>Job</span><b>Construction Support</b></div>
+        <div class="wi-row"><span>Host</span><b>ABC Infra</b></div>
+        <div class="wi-row"><span>Site</span><b>Peelamedu, Coimbatore</b></div>
+        <div class="wi-row"><span>Checked in</span><b id="sinceLabel">09:02 AM</b></div>
+      </div>
+      <button class="btn warm" id="checkOutBtn" style="margin-top:16px">CHECK OUT <svg class="ic s18"><use href="#i-arrow"/></svg></button>
+      <div class="cap" style="text-align:center;color:rgba(255,255,255,.55);font-weight:700;margin-top:10px">Host approves the day → payment moves to "Ready to approve".</div>
+    </div>
+
+    <!-- done: shift complete -->
+    <div id="workDone" style="display:none">
+      <div class="state-box" style="color:#fff">
+        <div class="st-art" style="background:rgba(134,239,172,.15);border-color:#86EFAC;color:#86EFAC;animation:popIn .5s var(--ease) both"><svg class="ic s40"><use href="#i-check"/></svg></div>
+        <div class="st-t" style="color:#fff">Shift complete 🎉</div>
+        <div class="st-d" style="color:rgba(255,255,255,.75)">Your attendance for today is submitted. Expected: <b style="color:#86EFAC">₹850</b> (₹750 + ₹100 transport).</div>
+        <button class="btn money" data-go="w-earnings">VIEW EARNINGS</button>
+        <button class="btn ghost" data-go="w-formation" style="color:rgba(255,255,255,.8);margin-top:6px">See your formation</button>
+      </div>
+    </div>
+  </div>
+  <nav class="tabbar" data-tabs="worker"></nav>
+</section>
+
+
+<!-- ================= HIRED MOMENT ================= -->
+<section class="screen" id="s-hired">
+  <div class="screen-body">
+    <div class="hired-hero">
+      <span class="confetti" style="left:18%;top:16%;background:var(--yellow)"></span>
+      <span class="confetti" style="left:74%;top:10%;background:#fff;animation-delay:.5s"></span>
+      <span class="confetti" style="left:56%;top:24%;background:var(--orange);animation-delay:1s"></span>
+      <span class="confetti" style="left:34%;top:8%;background:var(--primary-light);animation-delay:1.4s"></span>
+      <div class="hh-badge"><svg class="ic s40" style="color:#fff"><use href="#i-gift"/></svg></div>
+      <h2>You're Hired! 🎉</h2>
+      <p>Your flight request was accepted.</p>
+    </div>
+
+    <article class="opp" data-go="w-detail" style="animation-delay:.1s">
+      <div class="o-media" style="height:120px">
+        <img src="https://live.staticflickr.com/5126/5213835620_38e40773bb_b.jpg" alt="Construction site" onerror="this.style.display='none'">
+        <span class="o-dist pill dark" style="bottom:10px"><svg class="ic s14"><use href="#i-clock"/></svg> Tomorrow · 9:00 AM</span>
+      </div>
+      <div class="o-body">
+        <div class="o-title">Construction Support</div>
+        <div class="o-host">ABC Infra · <svg class="ic s14" style="color:var(--success)"><use href="#i-shield"/></svg> WhiteWing Verified</div>
+        <div class="o-pay"><span class="money md" style="color:var(--green)">₹750<span class="unit">/day</span></span><span class="pill match">✓ 94% MATCH</span></div>
+      </div>
+    </article>
+
+    <div class="card feature" style="text-align:center">
+      <div class="block-title" style="justify-content:center;margin-top:0"><span class="bt-ic"><svg class="ic s14"><use href="#i-users"/></svg></span> YOU'RE NOW PART OF THE FORMATION</div>
+      <div class="avatars-mini" style="justify-content:center;margin:8px 0 4px">
+        <span class="avatar-mini" style="background:var(--yellow);border-color:#fff">MK</span>
+        <span class="avatar-mini" style="border-color:#fff">RP</span>
+        <span class="avatar-mini" style="border-color:#fff">SR</span>
+        <span class="avatar-mini" style="border-color:#fff">AK</span>
+        <span class="avatar-mini" style="border-color:#fff">+1</span>
+      </div>
+      <div class="cap muted" style="font-weight:700">6 workers · 5 confirmed · 1 pending</div>
+    </div>
+
+    <div class="timeline" style="margin:4px 2px 16px">
+      <li class="done"><span class="tl-dot"></span><div class="tl-t">Bond created by ABC Infra</div><div class="tl-s">Today, 11:04 AM</div></li>
+      <li><span class="tl-dot"></span><div class="tl-t">Reach site by 8:45 AM — address unlocked after check-in opens</div><div class="tl-s">Tomorrow</div></li>
+      <li><span class="tl-dot"></span><div class="tl-t">Work → attendance approval → payment</div><div class="tl-s">30 Sep – 2 Oct</div></li>
+    </div>
+
+    <button class="btn primary" data-go="w-formation">VIEW FORMATION <svg class="ic s18"><use href="#i-arrow"/></svg></button>
+    <button class="btn secondary" style="margin-top:9px" data-toast="Added to your calendar|Reminder set for 8:15 AM"><svg class="ic s18"><use href="#i-cal"/></svg> Add to calendar</button>
+  </div>
+</section>
+
+<!-- ================= FORMATION ================= -->
+<section class="screen" id="w-formation">
+  <div class="topbar">
+    <div class="row-between">
+      <button class="btn sm on-dark" data-go="s-hired" style="width:auto"><svg class="ic s16"><use href="#i-left"/></svg> Hired</button>
+      <div style="text-align:right"><div class="title" style="font-size:18px">Your Formation</div><div class="sub">Construction Support · ABC Infra</div></div>
+    </div>
+  </div>
+  <div class="screen-body">
+    <div class="formation-stage" style="margin-top:4px">
+      <div class="fs-inner">
+        <div class="cap" style="font-weight:800;letter-spacing:.12em;color:rgba(255,255,255,.75)">THE FLOCK IS ASSEMBLED</div>
+        <div class="f-cluster">
+          <div class="f-node you" style="animation-delay:.05s"><div class="avatar-lg">MK<span class="fn-status"></span></div><div class="fn-name">You</div></div>
+          <div class="f-node" style="animation-delay:.1s"><div class="avatar-lg">RP<span class="fn-status"></span></div><div class="fn-name">Rani</div></div>
+          <div class="f-node" style="animation-delay:.15s"><div class="avatar-lg">SR<span class="fn-status"></span></div><div class="fn-name">Selvam</div></div>
+          <div class="f-node" style="animation-delay:.2s"><div class="avatar-lg">AK<span class="fn-status"></span></div><div class="fn-name">Anitha</div></div>
+          <div class="f-node pending" style="animation-delay:.25s"><div class="avatar-lg">VP<span class="fn-status"></span></div><div class="fn-name">Vetri</div></div>
+          <div class="f-node" style="animation-delay:.3s"><div class="avatar-lg">KS<span class="fn-status"></span></div><div class="fn-name">Kavya</div></div>
+        </div>
+        <div class="formation-legend">
+          <span class="lg"><span class="sw" style="background:#22C55E"></span> 5 confirmed</span>
+          <span class="lg"><span class="sw" style="background:var(--amber)"></span> 1 pending</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="block-title"><span class="bt-ic"><svg class="ic s14"><use href="#i-users"/></svg></span> MEMBERS</div>
+    <button class="list-row" data-toast="Murugan K|You · 23 completed · 98% attendance"><span class="avatar" style="width:38px;height:38px;font-size:13px">MK</span><span class="lr-t">Murugan K <span class="pill wing" style="margin-left:4px"><svg class="ic s14"><use href="#i-wing"/></svg> WhiteWing</span><small>You · TrustScore 4.7 · 98% attendance</small></span><span class="status st-filled">CONFIRMED</span></button>
+    <button class="list-row" data-toast="Rani P|Warehouse · 14 completed"><span class="avatar" style="width:38px;height:38px;font-size:13px">RP</span><span class="lr-t">Rani P<small>Warehouse · 14 completed</small></span><span class="status st-filled">CONFIRMED</span></button>
+    <button class="list-row" data-toast="Selvam R|Loading · 9 completed"><span class="avatar" style="width:38px;height:38px;font-size:13px">SR</span><span class="lr-t">Selvam R<small>Loading · 9 completed</small></span><span class="status st-filled">CONFIRMED</span></button>
+    <button class="list-row" data-toast="Anitha K|Housekeeping · 21 completed"><span class="avatar" style="width:38px;height:38px;font-size:13px">AK</span><span class="lr-t">Anitha K<small>Housekeeping · 21 completed</small></span><span class="status st-filled">CONFIRMED</span></button>
+    <button class="list-row" data-toast="Vetri P|Confirmation pending"><span class="avatar" style="width:38px;height:38px;font-size:13px">VP</span><span class="lr-t">Vetri P<small>Confirmation pending</small></span><span class="status st-hiring">PENDING</span></button>
+    <button class="list-row" data-toast="Kavya S|Events · 6 completed"><span class="avatar" style="width:38px;height:38px;font-size:13px">KS</span><span class="lr-t">Kavya S<small>Events · 6 completed</small></span><span class="status st-filled">CONFIRMED</span></button>
+
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn secondary" data-toast="Formation chat opened|Messages are visible to the whole crew"><svg class="ic s18"><use href="#i-chat"/></svg> Chat</button>
+      <button class="btn secondary" data-go="w-work"><svg class="ic s18"><use href="#i-clock"/></svg> Today's work</button>
+    </div>
+    <div class="card aside-note" style="margin-top:14px;font-size:13.5px;font-weight:600;line-height:1.6">The exact site address unlocks for everyone at check-in. Roster changes (WingSwap) are proposed by the Host and must be agreed by the worker.</div>
+  </div>
+</section>
+
+<!-- ================= EARNINGS ================= -->
+<section class="screen" id="w-earnings">
+  <div class="topbar">
+    <div class="row-between">
+      <div><div class="title">Earnings</div><div class="sub">Paid + pending across all opportunities</div></div>
+      <button class="btn sm tiny-btn" data-sheet="earnings-info" style="width:auto">How it works</button>
+    </div>
+  </div>
+  <div class="screen-body">
+    <div class="card" style="margin-top:14px;background:var(--g-money);border:0;color:#fff;box-shadow:var(--shadow-lift)">
+      <div class="row-between">
+        <span class="cap" style="font-weight:800;letter-spacing:.1em;color:rgba(255,255,255,.8)">THIS MONTH</span>
+        <span class="delta" style="background:rgba(255,255,255,.2);color:#fff">+10%</span>
+      </div>
+      <div class="money mega" style="margin-top:4px">₹8,450</div>
+      <div class="cap" style="font-weight:700;color:rgba(255,255,255,.85);margin-top:2px">₹1,500 pending · ₹6,950 received</div>
+      <div class="chart" style="height:92px;margin-top:14px">
+        <div class="col"><div class="bar" style="height:34%;background:rgba(255,255,255,.85)"></div><span class="cl" style="color:rgba(255,255,255,.8)">Mon</span></div>
+        <div class="col"><div class="bar" style="height:60%;background:rgba(255,255,255,.95)"></div><span class="cl" style="color:rgba(255,255,255,.8)">Tue</span></div>
+        <div class="col"><div class="bar" style="height:0"></div><span class="cl" style="color:rgba(255,255,255,.8)">Wed</span></div>
+        <div class="col"><div class="bar" style="height:78%;background:rgba(255,255,255,1)"></div><span class="cl" style="color:rgba(255,255,255,.8)">Thu</span></div>
+        <div class="col peak"><div class="bar" style="height:96%;background:var(--yellow)"></div><span class="cl" style="color:#fff">Fri</span></div>
+        <div class="col"><div class="bar" style="height:52%;background:rgba(255,255,255,.9)"></div><span class="cl" style="color:rgba(255,255,255,.8)">Sat</span></div>
+        <div class="col"><div class="bar" style="height:0"></div><span class="cl" style="color:rgba(255,255,255,.8)">Sun</span></div>
+      </div>
+    </div>
+
+    <div class="section-head"><span class="sh-title">Payment history</span></div>
+
+    <div class="card">
+      <div class="row-between">
+        <span class="money md">₹750</span>
+        <span class="status st-hiring">PAYMENT PENDING</span>
+      </div>
+      <div class="sm" style="font-weight:800;margin-top:4px">Construction Support · ABC Infra</div>
+      <div class="cap muted" style="font-weight:700">29 Sep · Peelamedu</div>
+      <div class="hairline"></div>
+      <div class="timeline" style="margin:0">
+        <li class="done"><span class="tl-dot"></span><div class="tl-t">Work complete</div><div class="tl-s">29 Sep, 6:04 PM</div></li>
+        <li class="done"><span class="tl-dot"></span><div class="tl-t">Host approved the day</div><div class="tl-s">29 Sep, 6:31 PM</div></li>
+        <li class="wait"><span class="tl-dot"></span><div class="tl-t">Payment pending — host records within 24h</div><div class="tl-s">Reminder sent</div></li>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row-between">
+        <span class="money md">₹1,300</span>
+        <span class="status st-open"><svg class="ic s14"><use href="#i-check"/></svg> PAID</span>
+      </div>
+      <div class="sm" style="font-weight:800;margin-top:4px">Warehouse Support · Freshmart Logistics</div>
+      <div class="cap muted" style="font-weight:700">27 Sep · UPI · recorded by host</div>
+    </div>
+    <div class="card">
+      <div class="row-between">
+        <span class="money md">₹680</span>
+        <span class="status st-open"><svg class="ic s14"><use href="#i-check"/></svg> PAID</span>
+      </div>
+      <div class="sm" style="font-weight:800;margin-top:4px">Event Crew Support · Kovai Events</div>
+      <div class="cap muted" style="font-weight:700">24 Sep · Cash · recorded by host</div>
+    </div>
+  </div>
+  <nav class="tabbar" data-tabs="worker"></nav>
+</section>
+
+
+<!-- ================= ACTIVITY / FLIGHT REQUESTS ================= -->
+<section class="screen" id="w-activity">
+  <div class="topbar">
+    <div class="row-between">
+      <div><div class="title" style="font-size:19px">Flight requests</div><div class="sub">Everything you've sent — and what happened next</div></div>
+      <button class="btn sm tiny-btn" data-go="w-feed" style="width:auto"><svg class="ic s16"><use href="#i-plus"/></svg> New</button>
+    </div>
+  </div>
+  <div class="screen-body">
+    <div class="chip-row" style="margin-top:14px">
+      <button class="chip on">All</button>
+      <button class="chip">Sent</button>
+      <button class="chip">Responses</button>
+      <button class="chip">Hired</button>
+    </div>
+
+    <div class="card feature" style="border-color:#86EFAC">
+      <div class="row-between">
+        <span class="pill match">✓ HIRED</span>
+        <span class="cap muted" style="font-weight:700">Today, 11:04 AM</span>
+      </div>
+      <div class="sm" style="font-weight:800;margin-top:8px;font-size:16px">Construction Support · ABC Infra</div>
+      <div class="cap muted" style="font-weight:700">Sent 29 Sep, 9:42 AM → accepted in 1h 22m</div>
+      <button class="btn primary sm" style="width:100%;margin-top:11px" data-go="s-hired">Open your hired moment <svg class="ic s16"><use href="#i-arrow"/></svg></button>
+    </div>
+
+    <div class="card">
+      <div class="row-between">
+        <span class="status st-hiring">WAITING RESPONSE</span>
+        <span class="cap muted" style="font-weight:700">Sent 28 Sep</span>
+      </div>
+      <div class="sm" style="font-weight:800;margin-top:8px;font-size:16px">Warehouse Support · Freshmart Logistics</div>
+      <div class="cap muted" style="font-weight:700">Host usually responds within 2 hours · address hidden until hired</div>
+      <div class="btn-row" style="margin-top:11px">
+        <button class="btn secondary sm" style="flex:1" data-toast="Request withdrawn|You can re-apply any time">Withdraw</button>
+        <button class="btn ghost sm" data-go="w-detail">View</button>
+      </div>
+    </div>
+
+    <div class="section-head" style="margin-top:18px"><span class="sh-title">Notifications</span></div>
+    <button class="list-row" data-go="w-offer"><span class="lr-ic" style="background:#FFF7ED;color:var(--orange)"><svg class="ic s18"><use href="#i-bolt"/></svg></span><span class="lr-t">⚡ FlashMatch near you<small>3 urgent opportunities · expires in 02:15</small></span><span class="lr-arrow"><svg class="ic s18"><use href="#i-right"/></svg></span></button>
+    <button class="list-row" data-go="w-earnings"><span class="lr-ic" style="background:#F0FDF4;color:var(--success)"><svg class="ic s18"><use href="#i-cash"/></svg></span><span class="lr-t">Payment recorded<small>₹1,300 · Warehouse Support</small></span><span class="lr-arrow"><svg class="ic s18"><use href="#i-right"/></svg></span></button>
+    <button class="list-row" data-go="w-work"><span class="lr-ic" style="background:#EFFCF9;color:var(--primary)"><svg class="ic s18"><use href="#i-clock"/></svg></span><span class="lr-t">Tomorrow's shift<small>Construction Support · check-in opens 8:45 AM</small></span><span class="lr-arrow"><svg class="ic s18"><use href="#i-right"/></svg></span></button>
+    <button class="list-row" data-go="w-me"><span class="lr-ic" style="background:#EDE9FE;color:var(--lav)"><svg class="ic s18"><use href="#i-star"/></svg></span><span class="lr-t">Host left you 5★<small>"Worked like a rock — welcome back."</small></span><span class="lr-arrow"><svg class="ic s18"><use href="#i-right"/></svg></span></button>
+  </div>
+  <nav class="tabbar" data-tabs="worker"></nav>
+</section>
+
+<!-- ================= PROFILE + TRUSTSCORE ================= -->
+<section class="screen" id="w-me">
+  <div class="topbar">
+    <div class="row-between">
+      <div class="title">Me</div>
+      <button class="btn sm tiny-btn" data-sheet="settings" style="width:auto"><svg class="ic s16"><use href="#i-edit"/></svg> Edit</button>
+    </div>
+  </div>
+  <div class="screen-body">
+    <div class="mini-profile" style="margin-top:14px">
+      <span class="avatar">MK</span>
+      <div style="flex:1;min-width:0">
+        <div class="mp-name">Murugan K <span class="pill wing"><svg class="ic s14"><use href="#i-wing"/></svg> WhiteWing</span></div>
+        <div class="mp-sub">Loader · Coimbatore · <span class="kyc"><svg class="ic s14"><use href="#i-check"/></svg> KYC verified</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="trust-hero">
+        <div class="trust-ring" style="--trust:94"><div class="tr-inner"><div class="tr-n" data-countup="4.7" data-decimal="1">4.7</div><div class="tr-l">★ TRUSTSCORE</div></div></div>
+        <div style="flex:1;min-width:0">
+          <div class="trust-stats">
+            <div class="ts"><b>23</b><span>COMPLETED</span></div>
+            <div class="ts"><b>98%</b><span>ATTENDANCE</span></div>
+            <div class="ts"><b>11</b><span>REVIEWS</span></div>
+          </div>
+          <div class="cap muted" style="font-weight:700;margin-top:8px">Top 8% of the Flock this month</div>
+        </div>
+      </div>
+      <div class="bars">
+        <div class="bar-row"><span class="bl">Reliability</span><span class="bar-track"><span class="bar-fill" style="width:96%"></span></span> 96</div>
+        <div class="bar-row"><span class="bl">Attendance</span><span class="bar-track"><span class="bar-fill" style="width:98%"></span></span> 98</div>
+        <div class="bar-row"><span class="bl">Work quality</span><span class="bar-track"><span class="bar-fill" style="width:88%"></span></span> 88</div>
+        <div class="bar-row"><span class="bl">Communication</span><span class="bar-track"><span class="bar-fill" style="width:91%"></span></span> 91</div>
+      </div>
+    </div>
+
+    <div class="block-title"><span class="bt-ic"><svg class="ic s14"><use href="#i-hat"/></svg></span> SKILLS &amp; AVAILABILITY</div>
+    <div class="o-tags" style="display:flex;gap:6px;flex-wrap:wrap">
+      <span style="font-size:12.5px;font-weight:700;background:var(--tint);border:1px solid #99F6E4;color:var(--primary-dark);border-radius:99px;padding:6px 11px">Loading</span>
+      <span style="font-size:12.5px;font-weight:700;background:var(--tint);border:1px solid #99F6E4;color:var(--primary-dark);border-radius:99px;padding:6px 11px">Warehouse</span>
+      <span style="font-size:12.5px;font-weight:700;background:var(--tint);border:1px solid #99F6E4;color:var(--primary-dark);border-radius:99px;padding:6px 11px">Construction</span>
+      <button class="chip sm" data-sheet="availability" style="padding:6px 11px;font-size:12.5px">+ Availability</button>
+    </div>
+
+    <div class="block-title"><span class="bt-ic"><svg class="ic s14"><use href="#i-list"/></svg></span> ACCOUNT</div>
+    <button class="list-row" data-sheet="settings"><span class="lr-ic"><svg class="ic s18"><use href="#i-person"/></svg></span><span class="lr-t">Profile &amp; photos<small>Completeness 85%</small></span><span class="lr-arrow"><svg class="ic s18"><use href="#i-right"/></svg></span></button>
+    <button class="list-row" data-go="s-role"><span class="lr-ic" style="background:#FFF7ED;color:var(--orange)"><svg class="ic s18"><use href="#i-refresh"/></svg></span><span class="lr-t">Switch role<small>Currently: Worker</small></span><span class="lr-arrow"><svg class="ic s18"><use href="#i-right"/></svg></span></button>
+    <button class="list-row" data-toast="Documents|Aadhaar verified · PAN pending"><span class="lr-ic" style="background:#EFFCF9;color:var(--success)"><svg class="ic s18"><use href="#i-shield"/></svg></span><span class="lr-t">KYC &amp; documents<small>WhiteWing verified</small></span><span class="lr-arrow"><svg class="ic s18"><use href="#i-right"/></svg></span></button>
+    <button class="list-row" data-toast="Notifications|FlashMatch, responses and payments are ON"><span class="lr-ic" style="background:#DBEAFE;color:var(--info)"><svg class="ic s18"><use href="#i-bell"/></svg></span><span class="lr-t">Notifications</span><span class="lr-arrow"><svg class="ic s18"><use href="#i-right"/></svg></span></button>
+    <button class="btn secondary" style="margin-top:8px" data-go="s-login">Log out</button>
+  </div>
+  <nav class="tabbar" data-tabs="worker"></nav>
+</section>
+
+
+<!-- ================= HOST DASHBOARD ================= -->
+<section class="screen" id="e-dash">
+  <div class="screen-body" style="padding-top:0">
+    <div class="wf-hero">
+      <div class="row-between" style="position:relative">
+        <span class="wf-k">WORKFORCE TODAY</span>
+        <span class="pill" style="background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.45);color:#fff">Wed, 29 Sep</span>
+      </div>
+      <div class="wf-n">4 <small>/ 6 filled</small></div>
+      <div class="wf-remain">2 positions remaining · Construction Support starts 9:00 AM</div>
+      <div class="wf-seats" aria-label="4 of 6 seats filled"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
+      <button class="btn warm" data-go="e-queue"><svg class="ic s18"><use href="#i-search"/></svg> FIND WORKERS</button>
+    </div>
+
+    <div class="section-head" style="margin-top:6px"><span class="sh-title">Attention</span></div>
+    <button class="banner info" data-go="e-queue">
+      <span class="bn-ic"><svg class="ic s18"><use href="#i-users"/></svg></span>
+      <span class="bn-txt">3 applications waiting<small>Construction Support · oldest 2h ago</small></span>
+      <span class="bn-arrow"><svg class="ic s18"><use href="#i-right"/></svg></span>
+    </button>
+    <button class="banner money" data-go="e-pay">
+      <span class="bn-ic"><svg class="ic s18"><use href="#i-cash"/></svg></span>
+      <span class="bn-txt">₹5,600 ready to approve<small>4 earnings from last shift</small></span>
+      <span class="bn-arrow"><svg class="ic s18"><use href="#i-right"/></svg></span>
+    </button>
+    <button class="banner warn" data-go="e-attendance">
+      <span class="bn-ic"><svg class="ic s18"><use href="#i-qr"/></svg></span>
+      <span class="bn-txt">1 attendance review<small>Selvam hasn't checked in</small></span>
+      <span class="bn-arrow"><svg class="ic s18"><use href="#i-right"/></svg></span>
+    </button>
+
+    <div class="section-head" style="margin-top:14px"><span class="sh-title">Live opportunities</span><button class="sh-link" data-go="e-jobs">See all</button></div>
+
+    <article class="opp" data-go="e-jobs">
+      <div class="o-media" style="height:120px">
+        <img src="https://live.staticflickr.com/5126/5213835620_38e40773bb_b.jpg" alt="Construction site" loading="lazy" onerror="this.style.display='none'">
+        <div class="o-badges"><span class="status st-open" style="background:rgba(220,252,231,.95)">● OPEN</span><span class="pill dark"><svg class="ic s14"><use href="#i-users"/></svg> 9 applications</span></div>
+        <span class="o-dist pill dark"><svg class="ic s14"><use href="#i-cal"/></svg> Today, 9:00 AM</span>
+      </div>
+      <div class="o-body">
+        <div class="o-title">Construction Support</div>
+        <div class="row-between" style="margin-top:9px">
+          <span class="seats"><span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span><span class="count">4 of 6 filled</span></span>
+          <span class="money">₹750<span class="unit">/day</span></span>
+        </div>
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn secondary sm" style="flex:1" data-go="e-attendance"><svg class="ic s16"><use href="#i-qr"/></svg> Attendance</button>
+          <button class="btn primary sm" style="flex:1" data-go="e-queue">Manage <svg class="ic s16"><use href="#i-arrow"/></svg></button>
+        </div>
+      </div>
+    </article>
+
+    <div class="section-head"><span class="sh-title">Today's formation</span><button class="sh-link" data-go="e-attendance">Roster</button></div>
+    <div class="card" style="display:flex;gap:12px;align-items:center">
+      <span class="avatars-mini" style="flex:0 0 auto">
+        <span class="avatar-mini" style="width:36px;height:36px;font-size:12px;background:var(--primary-light)">MK</span>
+        <span class="avatar-mini" style="width:36px;height:36px;font-size:12px;background:var(--primary-light)">RP</span>
+        <span class="avatar-mini" style="width:36px;height:36px;font-size:12px;background:#FDE68A">SR</span>
+        <span class="avatar-mini" style="width:36px;height:36px;font-size:12px;background:var(--primary-light)">+2</span>
+      </span>
+      <div style="flex:1;min-width:0">
+        <div class="sm" style="font-weight:800">5 of 6 checked in</div>
+        <div class="cap muted" style="font-weight:700">Selvam not checked in yet</div>
+      </div>
+      <button class="btn secondary sm" data-go="e-attendance">Open</button>
+    </div>
+  </div>
+  <nav class="tabbar" data-tabs="host"></nav>
+</section>
+
+<!-- ================= MY OPPORTUNITIES ================= -->
+<section class="screen" id="e-jobs">
+  <div class="topbar">
+    <div class="row-between">
+      <div><div class="title">My Opportunities</div><div class="sub">3 published · 1 draft</div></div>
+      <button class="btn sm warm" data-sheet="create" style="width:auto"><svg class="ic s16"><use href="#i-plus"/></svg> New</button>
+    </div>
+  </div>
+  <div class="screen-body">
+    <div class="chip-row" style="margin-top:14px">
+      <button class="chip on">Active</button>
+      <button class="chip">Drafts</button>
+      <button class="chip">Completed</button>
+      <button class="chip">Cancelled</button>
+    </div>
+
+    <article class="opp" data-go="e-queue">
+      <div class="o-media" style="height:120px">
+        <img src="https://live.staticflickr.com/5126/5213835620_38e40773bb_b.jpg" alt="Construction site" loading="lazy" onerror="this.style.display='none'">
+        <div class="o-badges"><span class="status st-open" style="background:rgba(220,252,231,.95)">● OPEN</span><span class="pill dark">9 applications</span></div>
+        <span class="o-dist pill dark"><svg class="ic s14"><use href="#i-cal"/></svg> 30 Sep – 2 Oct</span>
+      </div>
+      <div class="o-body">
+        <div class="o-title">Construction Support</div>
+        <div class="row-between" style="margin-top:9px">
+          <span class="seats"><span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span><span class="count">4 of 6 filled</span></span>
+          <span class="money">₹750<span class="unit">/day</span></span>
+        </div>
+        <span class="o-cta" style="border-color:var(--primary);background:var(--primary);color:#fff">Manage applications <svg class="ic s16"><use href="#i-arrow"/></svg></span>
+      </div>
+    </article>
+
+    <article class="opp" data-go="e-queue">
+      <div class="o-media" style="height:120px">
+        <img src="https://live.staticflickr.com/1513/24978817211_7e95c1cdaa_b.jpg" alt="Cleaner at work" loading="lazy" onerror="this.style.display='none'">
+        <div class="o-badges"><span class="status st-hiring" style="background:rgba(254,243,199,.96)">● HIRING</span><span class="pill dark">2 applications</span></div>
+        <span class="o-dist pill dark"><svg class="ic s14"><use href="#i-cal"/></svg> 30 Sep, 7:00 AM</span>
+      </div>
+      <div class="o-body">
+        <div class="o-title">Housekeeping Crew</div>
+        <div class="row-between" style="margin-top:9px">
+          <span class="seats"><span class="dots"><i></i><i></i><i></i><i></i></span><span class="count">0 of 4 filled</span></span>
+          <span class="money">₹600<span class="unit">/day</span></span>
+        </div>
+        <span class="o-cta">Manage applications <svg class="ic s16"><use href="#i-arrow"/></svg></span>
+      </div>
+    </article>
+
+    <article class="opp compact" style="cursor:default">
+      <div class="o-body" style="padding-top:14px">
+        <div class="row-between">
+          <span class="status st-draft">● DRAFT</span>
+          <span class="cap muted" style="font-weight:700">Edited 2h ago</span>
+        </div>
+        <div class="o-title" style="margin-top:8px">Warehouse Support — Evening</div>
+        <div class="o-host">Freshmart Logistics · not visible to workers yet</div>
+        <div class="o-pay"><span class="money">₹650<span class="unit">/day</span></span></div>
+        <div class="btn-row" style="margin-top:11px">
+          <button class="btn secondary sm" style="flex:1" data-toast="Draft editor|Add shift times and skills to publish"><svg class="ic s16"><use href="#i-edit"/></svg> Edit draft</button>
+          <button class="btn primary sm" style="flex:1" data-toast="Published|Workers near you can now apply">Publish</button>
+        </div>
+      </div>
+    </article>
+  </div>
+  <nav class="tabbar" data-tabs="host"></nav>
+</section>
+
+
+<!-- ================= APPLICATION QUEUE / WORKER DISCOVERY ================= -->
+<section class="screen" id="e-queue">
+  <div class="topbar">
+    <div class="row-between">
+      <button class="btn sm on-dark" data-go="e-jobs" style="width:auto"><svg class="ic s16"><use href="#i-left"/></svg> Jobs</button>
+      <div style="text-align:right"><div class="title" style="font-size:18px">Workers</div><div class="sub">Construction Support · 4 of 6 filled</div></div>
+    </div>
+  </div>
+  <div class="screen-body">
+    <label class="searchbar" style="margin:14px 0 12px">
+      <span class="s-ic"><svg class="ic s18"><use href="#i-search"/></svg></span>
+      <input type="search" placeholder="Search name, skill or distance" aria-label="Search workers">
+    </label>
+    <div class="chip-row">
+      <button class="chip on">New (3)</button>
+      <button class="chip">Shortlisted</button>
+      <button class="chip">High match</button>
+      <button class="chip">Conflicts</button>
+    </div>
+
+    <div class="w-card" id="qc-murugan">
+      <div class="wc-top">
+        <span class="match-ring" style="--pct:94;width:52px;height:52px"><span class="mr-n" style="font-size:13px" data-countup="94">94</span><span class="mr-l" style="font-size:7px">MATCH</span></span>
+        <div style="flex:1;min-width:0">
+          <div class="wc-name">Murugan K <span class="pill wing"><svg class="ic s14"><use href="#i-wing"/></svg> WhiteWing</span></div>
+          <div class="wc-sub">Loader · <span class="kyc"><svg class="ic s14"><use href="#i-check"/></svg> KYC</span> · ★ 4.7</div>
+        </div>
+        <span class="avatar">MK</span>
+      </div>
+      <div class="wc-grid">
+        <span class="wc-stat"><b>23</b> opportunities</span>
+        <span class="wc-stat"><b>98%</b> attendance</span>
+        <span class="wc-stat"><b>3.2 km</b> away</span>
+        <span class="wc-stat">Available <b>Today</b></span>
+      </div>
+      <div class="wc-skills"><span>Loading</span><span>Warehouse</span><span>Construction</span></div>
+      <div class="wc-actions">
+        <button class="btn secondary sm" style="flex:1" data-toast="Murugan K|TrustScore 4.7 · 23 completed · 11 reviews">View profile</button>
+        <button class="btn primary sm" style="flex:1.3" data-sheet="bond">BOND <svg class="ic s16"><use href="#i-check"/></svg></button>
+      </div>
+    </div>
+
+    <div class="w-card" id="qc-rani" style="animation-delay:.08s">
+      <div class="wc-top">
+        <span class="match-ring" style="--pct:91;width:52px;height:52px"><span class="mr-n" style="font-size:13px" data-countup="91">91</span><span class="mr-l" style="font-size:7px">MATCH</span></span>
+        <div style="flex:1;min-width:0">
+          <div class="wc-name">Rani P <span class="pill wing"><svg class="ic s14"><use href="#i-wing"/></svg> WhiteWing</span></div>
+          <div class="wc-sub">Packer · <span class="kyc"><svg class="ic s14"><use href="#i-check"/></svg> KYC</span> · ★ 4.6</div>
+        </div>
+        <span class="avatar" style="background:linear-gradient(135deg,#7C3AED,#4F46E5)">RP</span>
+      </div>
+      <div class="wc-grid">
+        <span class="wc-stat"><b>14</b> opportunities</span>
+        <span class="wc-stat"><b>96%</b> attendance</span>
+        <span class="wc-stat"><b>1.4 km</b> away</span>
+        <span class="wc-stat">Available <b>Today</b></span>
+      </div>
+      <div class="wc-skills"><span>Packing</span><span>Loading</span></div>
+      <div class="wc-actions">
+        <button class="btn secondary sm" style="flex:1" data-toast="Rani P|TrustScore 4.6 · 14 completed">View profile</button>
+        <button class="btn primary sm" style="flex:1.3" data-sheet="bond">BOND <svg class="ic s16"><use href="#i-check"/></svg></button>
+      </div>
+    </div>
+
+    <div class="w-card" id="qc-conflict" style="animation-delay:.16s">
+      <div class="wc-top">
+        <span class="match-ring" style="--pct:86;width:52px;height:52px"><span class="mr-n" style="font-size:13px" data-countup="86">86</span><span class="mr-l" style="font-size:7px">MATCH</span></span>
+        <div style="flex:1;min-width:0">
+          <div class="wc-name">Selvam R</div>
+          <div class="wc-sub">Loader · ★ 4.2</div>
+        </div>
+        <span class="avatar" style="background:linear-gradient(135deg,#F59E0B,#D97706)">SR</span>
+      </div>
+      <div class="wc-grid">
+        <span class="wc-stat"><b>9</b> opportunities</span>
+        <span class="wc-stat"><b>92%</b> attendance</span>
+        <span class="wc-stat"><b>4.6 km</b> away</span>
+      </div>
+      <div class="conflict"><svg class="ic s16"><use href="#i-alert"/></svg> Already bonded to Warehouse Support today, 9 AM – 6 PM</div>
+      <div class="wc-actions">
+        <button class="btn secondary sm" style="flex:1" data-toast="Selvam R|View full history">View profile</button>
+        <button class="btn secondary sm" style="flex:1.3;border-color:#FCA5A5;color:var(--danger)" data-conflict="1">BOND</button>
+      </div>
+    </div>
+
+    <div class="card aside-note" style="font-size:13.5px;font-weight:600;line-height:1.6">Match scores weigh skills, distance, availability and past performance. Conflicting bonds can't overlap — the queue tells you before you tap.</div>
+  </div>
+  <nav class="tabbar" data-tabs="host"></nav>
+</section>
+
+<!-- ================= ATTENDANCE ================= -->
+<section class="screen" id="e-attendance">
+  <div class="topbar">
+    <div class="row-between">
+      <div><div class="title">Attendance</div><div class="sub">Construction Support · Peelamedu</div></div>
+      <span class="status st-live" style="background:rgba(220,252,231,.95)">● LIVE</span>
+    </div>
+  </div>
+  <div class="screen-body">
+    <div class="card feature" style="margin-top:14px">
+      <div class="row-between">
+        <div>
+          <div class="cap muted" style="font-weight:800;letter-spacing:.1em">TODAY</div>
+          <div class="money mega" id="attCount" style="color:var(--primary-dark);font-size:34px">5 <span class="unit" style="font-size:17px">/ 6 present</span></div>
+        </div>
+        <div style="text-align:center">
+          <div class="st-art" style="width:64px;height:64px;border-radius:20px;margin:0"><svg class="ic s30"><use href="#i-qr"/></svg></div>
+          <div class="cap muted" style="font-weight:800;margin-top:6px">Refreshes in <span id="qrClock" style="color:var(--primary-dark)">00:42</span></div>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:13px">
+        <button class="btn primary sm" style="flex:1" data-sheet="qr"><svg class="ic s16"><use href="#i-qr"/></svg> SHOW QR</button>
+        <button class="btn secondary sm" style="flex:1" data-toast="Roster refreshed|Statuses synced just now"><svg class="ic s16"><use href="#i-refresh"/></svg> Refresh</button>
+      </div>
+    </div>
+
+    <div class="section-head"><span class="sh-title">Formation roster</span></div>
+    <div id="rosterList">
+      <button class="list-row" data-toast="Murugan K|Checked in at 09:02 AM"><span class="avatar" style="width:38px;height:38px;font-size:13px">MK</span><span class="lr-t">Murugan K<small>Checked in · 09:02 AM</small></span><span class="status st-open"><svg class="ic s14"><use href="#i-check"/></svg> PRESENT</span></button>
+      <button class="list-row" data-toast="Rani P|Checked in at 08:58 AM"><span class="avatar" style="width:38px;height:38px;font-size:13px;background:linear-gradient(135deg,#7C3AED,#4F46E5)">RP</span><span class="lr-t">Rani P<small>Checked in · 08:58 AM</small></span><span class="status st-open"><svg class="ic s14"><use href="#i-check"/></svg> PRESENT</span></button>
+      <div class="list-row" id="rosterSelvam" data-sheet="manual" style="border-color:#FCD34D;background:#FFFBEB;cursor:pointer">
+        <span class="avatar" style="width:38px;height:38px;font-size:13px;background:linear-gradient(135deg,#F59E0B,#D97706)">SR</span>
+        <span class="lr-t">Selvam R<small id="selvamSub">Not checked in · QR + location sent</small></span>
+        <span class="status st-hiring" id="selvamStatus">⚠ ABSENT?</span>
+      </div>
+      <button class="list-row" data-toast="Anitha K|Checked in at 09:00 AM"><span class="avatar" style="width:38px;height:38px;font-size:13px;background:linear-gradient(135deg,#0EA5E9,#2563EB)">AK</span><span class="lr-t">Anitha K<small>Checked in · 09:00 AM</small></span><span class="status st-open"><svg class="ic s14"><use href="#i-check"/></svg> PRESENT</span></button>
+      <button class="list-row" data-toast="Vetri P|Checked in at 09:05 AM"><span class="avatar" style="width:38px;height:38px;font-size:13px;background:linear-gradient(135deg,#EC4899,#DB2777)">VP</span><span class="lr-t">Vetri P<small>Checked in · 09:05 AM</small></span><span class="status st-open"><svg class="ic s14"><use href="#i-check"/></svg> PRESENT</span></button>
+      <button class="list-row" data-toast="Kavya S|Checked in at 08:55 AM"><span class="avatar" style="width:38px;height:38px;font-size:13px;background:linear-gradient(135deg,#14B8A6,#0D9488)">KS</span><span class="lr-t">Kavya S<small>Checked in · 08:55 AM</small></span><span class="status st-open"><svg class="ic s14"><use href="#i-check"/></svg> PRESENT</span></button>
+    </div>
+
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn secondary sm" style="flex:1" data-sheet="manual">Mark manually</button>
+      <button class="btn primary sm" style="flex:1.4" data-toast="Day approved|6 workers' attendance locked for 29 Sep">APPROVE DAY <svg class="ic s16"><use href="#i-check"/></svg></button>
+    </div>
+    <div class="cap muted" style="font-weight:700;text-align:center;margin-top:10px">QR + location verify presence; manual marks leave an audit trail.</div>
+  </div>
+  <nav class="tabbar" data-tabs="host"></nav>
+</section>
+
+
+<!-- ================= PAYMENTS ================= -->
+<section class="screen" id="e-pay">
+  <div class="topbar">
+    <div class="row-between">
+      <div><div class="title">Payments</div><div class="sub">Approved earnings are recorded here</div></div>
+      <button class="btn sm tiny-btn" data-sheet="earnings-info" style="width:auto">How it works</button>
+    </div>
+  </div>
+  <div class="screen-body">
+    <!-- state A: ready to approve -->
+    <div id="payApprove" style="margin-top:14px">
+      <div class="card feature" style="background:linear-gradient(135deg,#F0FDF4,#DCFCE7);border-color:#86EFAC">
+        <div class="cap muted" style="font-weight:800;letter-spacing:.1em">READY TO APPROVE</div>
+        <div class="row-between" style="margin-top:4px">
+          <span class="money mega" style="color:var(--success)">₹5,600</span>
+          <span class="pill" style="background:#DCFCE7;color:var(--success);border:1px solid #86EFAC">4 earnings</span>
+        </div>
+        <div class="cap muted" style="font-weight:700;margin-top:4px">Yesterday's shift · Construction Support</div>
+      </div>
+
+      <div class="list-row" style="cursor:default"><span class="avatar" style="width:40px;height:40px;font-size:14px">MK</span><span class="lr-t">Murugan K<small>1 day · 8.5 hrs</small></span><span class="money">₹1,500</span></div>
+      <div class="list-row" style="cursor:default"><span class="avatar" style="width:40px;height:40px;font-size:14px;background:linear-gradient(135deg,#7C3AED,#4F46E5)">RP</span><span class="lr-t">Rani P<small>1 day · 8 hrs</small></span><span class="money">₹1,400</span></div>
+      <div class="list-row" style="cursor:default"><span class="avatar" style="width:40px;height:40px;font-size:14px;background:linear-gradient(135deg,#F59E0B,#D97706)">SR</span><span class="lr-t">Selvam R<small>1 day · 8 hrs</small></span><span class="money">₹1,400</span></div>
+      <div class="list-row" style="cursor:default"><span class="avatar" style="width:40px;height:40px;font-size:14px;background:linear-gradient(135deg,#14B8A6,#0D9488)">KS</span><span class="lr-t">Kavya S<small>1 day · 7.5 hrs</small></span><span class="money">₹1,300</span></div>
+
+      <div class="card aside-note" style="font-size:13.5px;font-weight:600;line-height:1.6;margin-top:12px">Approving confirms hours worked. SWON doesn't move money — you pay workers your usual way, then record it.</div>
+      <button class="btn primary" id="approveAllBtn">APPROVE ₹5,600 <svg class="ic s18"><use href="#i-check"/></svg></button>
+    </div>
+
+    <!-- state B: payment to record -->
+    <div id="payRecord" style="display:none;margin-top:14px">
+      <div class="card" style="background:var(--g-deep);border:0;color:#fff">
+        <div class="cap" style="font-weight:800;letter-spacing:.1em;color:rgba(255,255,255,.7)">PAYMENT TO RECORD</div>
+        <div class="row-between" style="margin-top:4px">
+          <span class="money mega" style="color:var(--yellow)">₹1,500</span>
+          <span class="pill urgent">Murugan K</span>
+        </div>
+        <div class="cap" style="font-weight:700;color:rgba(255,255,255,.75);margin-top:4px">Approved · awaiting your record (paid outside SWON)</div>
+      </div>
+
+      <div class="field-label">HOW DID YOU PAY?</div>
+      <div class="chip-row" id="payMethods">
+        <button class="chip on">UPI</button>
+        <button class="chip">Bank</button>
+        <button class="chip">Cash</button>
+      </div>
+      <div class="field-label">REFERENCE (OPTIONAL)</div>
+      <label class="field"><input id="payRef" placeholder="UPI ref / cheque no. / note" aria-label="Payment reference"></label>
+      <div class="field-label">PAID ON</div>
+      <label class="field"><span class="pfx"><svg class="ic s16" style="color:var(--muted)"><use href="#i-cal"/></svg></span><input value="29 Sep 2026" aria-label="Paid on"></label>
+      <button class="btn money" id="recordPayBtn" style="margin-top:18px">RECORD PAYMENT <svg class="ic s18"><use href="#i-cash"/></svg></button>
+      <div class="cap muted" style="text-align:center;font-weight:700;margin-top:10px">Recording updates TrustScore &amp; earnings history for the worker.</div>
+    </div>
+
+    <!-- state C: all settled -->
+    <div id="payDone" style="display:none">
+      <div class="state-box">
+        <div class="st-art" style="background:#F0FDF4;border-color:#86EFAC;color:var(--success);animation:popIn .5s var(--ease) both"><svg class="ic s40"><use href="#i-check"/></svg></div>
+        <div class="st-t">All settled ✓</div>
+        <div class="st-d">4 approved · 1 recorded · nothing waiting. Workers see "Paid" the moment you record.</div>
+        <button class="btn secondary" id="payResetBtn">Back to summary</button>
+      </div>
+    </div>
+
+    <div class="section-head" style="margin-top:18px"><span class="sh-title">Recent</span></div>
+    <div class="list-row" style="cursor:default"><span class="lr-ic" style="background:#F0FDF4;color:var(--success)"><svg class="ic s18"><use href="#i-check"/></svg></span><span class="lr-t">₹1,300 · Rani P<small>27 Sep · UPI · recorded</small></span><span class="status st-open">PAID</span></div>
+    <div class="list-row" style="cursor:default"><span class="lr-ic" style="background:#F0FDF4;color:var(--success)"><svg class="ic s18"><use href="#i-check"/></svg></span><span class="lr-t">₹2,600 · 2 workers<small>24 Sep · Cash · recorded</small></span><span class="status st-open">PAID</span></div>
+  </div>
+  <nav class="tabbar" data-tabs="host"></nav>
+</section>
+
+<!-- ================= HOST PROFILE ================= -->
+<section class="screen" id="e-me">
+  <div class="topbar deep">
+    <div class="row-between">
+      <div class="title">Me</div>
+      <button class="btn sm tiny-btn" data-sheet="settings" style="width:auto"><svg class="ic s16"><use href="#i-edit"/></svg> Edit</button>
+    </div>
+  </div>
+  <div class="screen-body">
+    <div class="mini-profile" style="margin-top:14px">
+      <span class="avatar" style="background:var(--g-warm)">AB</span>
+      <div style="flex:1;min-width:0">
+        <div class="mp-name">ABC Infra <span class="pill wing"><svg class="ic s14"><use href="#i-wing"/></svg> WhiteWing</span></div>
+        <div class="mp-sub">Construction host · Coimbatore · <span class="kyc"><svg class="ic s14"><use href="#i-check"/></svg> Org KYC verified</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="trust-hero">
+        <div class="trust-ring" style="--trust:96"><div class="tr-inner"><div class="tr-n" data-countup="4.8" data-decimal="1">4.8</div><div class="tr-l">★ TRUSTSCORE</div></div></div>
+        <div style="flex:1">
+          <div class="trust-stats">
+            <div class="ts"><b>37</b><span>HIRED</span></div>
+            <div class="ts"><b>23</b><span>COMPLETED</span></div>
+            <div class="ts"><b>98%</b><span>PAY ON TIME</span></div>
+          </div>
+          <div class="cap muted" style="font-weight:700;margin-top:8px">Workers accept your bonds fast — avg 34 min.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="block-title"><span class="bt-ic"><svg class="ic s14"><use href="#i-list"/></svg></span> ACCOUNT</div>
+    <button class="list-row" data-sheet="settings"><span class="lr-ic"><svg class="ic s18"><use href="#i-case"/></svg></span><span class="lr-t">Company profile<small>Photos, trade, service areas</small></span><span class="lr-arrow"><svg class="ic s18"><use href="#i-right"/></svg></span></button>
+    <button class="list-row" data-go="s-role"><span class="lr-ic" style="background:#FFF7ED;color:var(--orange)"><svg class="ic s18"><use href="#i-refresh"/></svg></span><span class="lr-t">Switch role<small>Currently: Host</small></span><span class="lr-arrow"><svg class="ic s18"><use href="#i-right"/></svg></span></button>
+    <button class="list-row" data-go="e-pay"><span class="lr-ic" style="background:#F0FDF4;color:var(--success)"><svg class="ic s18"><use href="#i-cash"/></svg></span><span class="lr-t">Payment records<small>₹41,200 recorded this month</small></span><span class="lr-arrow"><svg class="ic s18"><use href="#i-right"/></svg></span></button>
+    <button class="list-row" data-toast="Notifications|New applications and check-ins are ON"><span class="lr-ic" style="background:#DBEAFE;color:var(--info)"><svg class="ic s18"><use href="#i-bell"/></svg></span><span class="lr-t">Notifications</span><span class="lr-arrow"><svg class="ic s18"><use href="#i-right"/></svg></span></button>
+    <button class="btn secondary" style="margin-top:8px" data-go="s-login">Log out</button>
+  </div>
+  <nav class="tabbar" data-tabs="host"></nav>
+</section>
+
+
+<!-- ================= OVERLAY / SHEETS / TOAST ================= -->
+<div class="overlay" id="overlay"></div>
+
+<div class="sheet" id="sheet-filters">
+  <div class="handle"></div>
+  <div class="sheet-title">Filters</div>
+  <div class="sheet-sub">Find the work that fits your day.</div>
+  <div class="field-label">PAY PER DAY</div>
+  <div class="chip-row" data-single><button class="chip on">Any</button><button class="chip">₹600+</button><button class="chip">₹700+</button><button class="chip">₹800+</button></div>
+  <div class="field-label">DISTANCE</div>
+  <div class="chip-row" data-single><button class="chip">1 km</button><button class="chip on">3 km</button><button class="chip">5 km</button><button class="chip">10 km</button></div>
+  <div class="field-label">SHIFT</div>
+  <div class="chip-row"><button class="chip on">Today</button><button class="chip">Tomorrow</button><button class="chip">Evening</button></div>
+  <button class="btn primary" data-close data-toast="Filters applied|Showing 42 opportunities within 3 km">SHOW RESULTS</button>
+  <button class="btn ghost" data-close>Reset</button>
+</div>
+
+<div class="sheet" id="sheet-flight">
+  <div class="handle"></div>
+  <div class="sheet-title">Send flight request?</div>
+  <div class="sheet-sub">ABC Infra will see your profile, TrustScore and availability — not your phone number.</div>
+  <div class="card flat" style="background:var(--canvas);margin-bottom:12px">
+    <div class="row-between"><span class="sm" style="font-weight:800">Construction Support</span><span class="money" style="color:var(--green)">₹750/day</span></div>
+    <div class="cap muted" style="font-weight:700;margin-top:4px">30 Sep – 2 Oct · 9:00 AM – 6:00 PM · 2.1 km</div>
+    <div class="cap muted" style="font-weight:700;margin-top:2px">Your match: <b style="color:var(--success)">94%</b> · Usually answered in ~2 hours</div>
+  </div>
+  <button class="btn primary" id="confirmFlight">SEND FLIGHT REQUEST <svg class="ic s18"><use href="#i-send"/></svg></button>
+  <button class="btn ghost" data-close>Cancel</button>
+</div>
+
+<div class="sheet" id="sheet-bond">
+  <div class="handle"></div>
+  <div class="sheet-title">Bond this worker?</div>
+  <div class="sheet-sub">Bonding commits you to hire them for these shifts. They get a "You're Hired" moment.</div>
+  <div class="card flat" style="background:var(--canvas);margin-bottom:12px">
+    <div class="row-between">
+      <span style="display:flex;gap:10px;align-items:center"><span class="avatar" style="width:40px;height:40px;font-size:14px">MK</span><span><b style="display:block">Murugan K</b><span class="cap muted" style="font-weight:700">★ 4.7 · 98% attendance · 3.2 km</span></span></span>
+      <span class="pill match">94% MATCH</span>
+    </div>
+    <div class="hairline"></div>
+    <div class="row-between"><span class="cap muted" style="font-weight:800">BONDED PAY</span><span class="money" style="color:var(--green)">₹750/day</span></div>
+  </div>
+  <button class="btn primary" id="confirmBond">CONFIRM BOND <svg class="ic s18"><use href="#i-check"/></svg></button>
+  <button class="btn ghost" data-close>Cancel</button>
+</div>
+
+<div class="sheet" id="sheet-conflict">
+  <div class="handle"></div>
+  <div class="sheet-title">Can't bond yet — shift conflict</div>
+  <div class="sheet-sub">Selvam R is already bonded to Warehouse Support today, 9:00 AM – 6:00 PM. SWON never allows overlapping bonds.</div>
+  <div class="alert-box"><svg class="ic s18"><use href="#i-alert"/></svg><span>Choose a different worker, propose a WingSwap with the other host, or pick another shift.</span></div>
+  <button class="btn primary" style="margin-top:14px" data-close>Got it</button>
+  <button class="btn ghost" data-close data-toast="Selvam's schedule|Warehouse Support · today 9 AM – 6 PM">See his schedule</button>
+</div>
+
+<div class="sheet" id="sheet-manual">
+  <div class="handle"></div>
+  <div class="sheet-title">Mark manually</div>
+  <div class="sheet-sub">Selvam R · Construction Support · 29 Sep</div>
+  <div class="chip-row" data-single id="manualState"><button class="chip on">Present</button><button class="chip">Absent</button><button class="chip">Left early</button></div>
+  <div class="field-label">REASON (RECORDED IN AUDIT)</div>
+  <label class="field"><input id="manualReason" placeholder="e.g. phone battery dead, scanned with supervisor" aria-label="Reason"></label>
+  <button class="btn primary" id="confirmManual" style="margin-top:16px">SAVE MARK</button>
+  <button class="btn ghost" data-close>Cancel</button>
+</div>
+
+<div class="sheet" id="sheet-qr">
+  <div class="handle"></div>
+  <div class="sheet-title">Scan to check in</div>
+  <div class="sheet-sub">Workers point their camera at this QR — presence is verified with location. Refreshes in <b id="qrClock2" style="color:var(--primary-dark)">00:42</b>.</div>
+  <div class="st-art" style="width:170px;height:170px;border-radius:26px;margin:8px auto 14px;background:var(--canvas);border:2px solid var(--primary);color:var(--primary)"><svg class="ic" style="width:110px;height:110px;stroke-width:1.4"><use href="#i-qr"/></svg></div>
+  <div class="card flat" style="background:var(--canvas);text-align:center;margin-bottom:12px"><span class="cap muted" style="font-weight:800">SESSION CODE</span><div style="font-family:var(--display);font-size:24px;font-weight:800;letter-spacing:.14em">SWON-4821</div></div>
+  <button class="btn primary" data-close>Done</button>
+</div>
+
+<div class="sheet" id="sheet-create">
+  <div class="handle"></div>
+  <div class="sheet-title">New opportunity</div>
+  <div class="sheet-sub">Draft now, publish when you're ready.</div>
+  <div class="field-label">TITLE</div>
+  <label class="field"><input id="createTitle" placeholder="e.g. Loading Help — Morning" aria-label="Title"></label>
+  <div class="field-label">PAY PER DAY (₹)</div>
+  <label class="field"><span class="pfx">₹</span><input id="createPay" type="number" placeholder="700" aria-label="Pay per day"></label>
+  <div class="field-label">SEATS</div>
+  <div class="chip-row" data-single><button class="chip">2</button><button class="chip on">4</button><button class="chip">6</button><button class="chip">8</button></div>
+  <div class="field-label">WHEN</div>
+  <div class="chip-row" data-single><button class="chip on">Today</button><button class="chip">Tomorrow</button><button class="chip">Custom</button></div>
+  <button class="btn primary" id="confirmCreate" style="margin-top:8px">CREATE DRAFT <svg class="ic s18"><use href="#i-plus"/></svg></button>
+  <button class="btn ghost" data-close>Cancel</button>
+</div>
+
+<div class="sheet" id="sheet-settings">
+  <div class="handle"></div>
+  <div class="sheet-title">Edit profile</div>
+  <div class="sheet-sub">A complete profile gets 3× more offers.</div>
+  <div class="field-label">NAME</div>
+  <label class="field"><input id="setName" value="Murugan K" aria-label="Name"></label>
+  <div class="field-label">ABOUT YOU</div>
+  <label class="field"><input value="5 years loading & warehouse work. On time, every time." aria-label="About"></label>
+  <div class="field-label">MISSING FOR 100%</div>
+  <div class="chip-row"><button class="chip">Add photo</button><button class="chip">Add experience</button></div>
+  <button class="btn primary" id="confirmSave">SAVE CHANGES</button>
+  <button class="btn ghost" data-close>Cancel</button>
+</div>
+
+<div class="sheet" id="sheet-availability">
+  <div class="handle"></div>
+  <div class="sheet-title">Availability</div>
+  <div class="sheet-sub">Only free days are shown to hosts.</div>
+  <div class="chip-row"><button class="chip on">Mon</button><button class="chip on">Tue</button><button class="chip on">Wed</button><button class="chip on">Thu</button><button class="chip on">Fri</button><button class="chip">Sat</button><button class="chip">Sun</button></div>
+  <div class="field-label">PREFERRED SHIFTS</div>
+  <div class="chip-row"><button class="chip on">Morning</button><button class="chip on">Full day</button><button class="chip">Evening</button></div>
+  <button class="btn primary" id="confirmAvail">SAVE AVAILABILITY</button>
+  <button class="btn ghost" data-close>Cancel</button>
+</div>
+
+<div class="sheet" id="sheet-earnings-info">
+  <div class="handle"></div>
+  <div class="sheet-title">How earnings work</div>
+  <div class="sheet-sub">SWON tracks the record — money moves your usual way (no gateway in V1).</div>
+  <div class="timeline" style="margin:4px 0 14px">
+    <li class="done"><span class="tl-dot"></span><div class="tl-t">Work complete</div><div class="tl-s">Worker checks out with hours</div></li>
+    <li class="done"><span class="tl-dot"></span><div class="tl-t">Host approves the day</div><div class="tl-s">Amount locks in</div></li>
+    <li class="wait"><span class="tl-dot"></span><div class="tl-t">Payment pending</div><div class="tl-s">Host pays outside SWON</div></li>
+    <li><span class="tl-dot"></span><div class="tl-t">Recorded → Paid ✓</div><div class="tl-s">Reference stored, TrustScore updated</div></li>
+  </div>
+  <button class="btn primary" data-close>Got it</button>
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg">Done</span><span class="t-sub" id="toastSub"></span></div>
+
+    </div><!-- /viewport -->
+  </div><!-- /phone -->
+</main>
+
+
+<script>
+/* ================= SWON V3 prototype runtime ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const RM = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const viewport = $(".viewport");
+
+const WORKER_TABS = [
+  { id: "w-home", l: "Home", i: "i-home" },
+  { id: "w-feed", l: "Explore", i: "i-compass" },
+  { id: "w-work", l: "My Work", i: "i-clock" },
+  { id: "w-earnings", l: "Earnings", i: "i-wallet" },
+  { id: "w-me", l: "Profile", i: "i-person" },
+];
+const HOST_TABS = [
+  { id: "e-dash", l: "Home", i: "i-home" },
+  { id: "e-jobs", l: "Opportunities", i: "i-case" },
+  { id: "e-queue", l: "Workers", i: "i-users" },
+  { id: "e-pay", l: "Payments", i: "i-cash" },
+  { id: "e-me", l: "Profile", i: "i-person" },
+];
+
+function buildTabbars() {
+  $$(".tabbar[data-tabs]").forEach((tb) => {
+    const tabs = tb.dataset.tabs === "worker" ? WORKER_TABS : HOST_TABS;
+    tb.innerHTML = tabs.map((t) =>
+      `<button data-go="${t.id}"><span class="glyph"><svg class="ic s24"><use href="#${t.i}"/></svg></span>${t.l}</button>`
+    ).join("");
+  });
+}
+
+/* ---------- toast ---------- */
+let toastTimer;
+function toast(msg, sub) {
+  $("#toastMsg").textContent = msg;
+  $("#toastSub").textContent = sub || "";
+  const t = $("#toast");
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+/* ---------- sheets ---------- */
+function openSheet(name) {
+  $("#overlay").classList.add("open");
+  const s = $("#sheet-" + name);
+  if (s) s.classList.add("open");
+}
+function closeSheet() {
+  $("#overlay").classList.remove("open");
+  $$(".sheet.open").forEach((s) => s.classList.remove("open"));
+}
+
+/* ---------- match / metric count-up ---------- */
+function countUp(el) {
+  const target = parseFloat(el.dataset.countup);
+  const dec = parseInt(el.dataset.decimal || "0", 10);
+  const suffix = el.textContent.includes("%") ? "%" : "";
+  if (RM) { el.textContent = target.toFixed(dec) + suffix; return; }
+  const dur = 750, t0 = performance.now();
+  function step(t) {
+    const p = Math.min(1, (t - t0) / dur);
+    const eased = 1 - Math.pow(1 - p, 3);
+    el.textContent = (target * eased).toFixed(dec) + suffix;
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+function runCounts(screen) {
+  $$("[data-countup]", screen).forEach((el) => {
+    if (el.dataset.done === "1") return;
+    countUp(el);
+    el.dataset.done = "1";
+  });
+}
+
+/* ---------- navigation ---------- */
+function go(id) {
+  const target = document.getElementById(id);
+  if (!target) return;
+  closeSheet();
+  $("#toast").classList.remove("show");
+  $$(".screen").forEach((s) => s.classList.remove("active"));
+  target.classList.add("active");
+  target.scrollTop = 0;
+  $$(".rail .screen-btn").forEach((b) => b.classList.toggle("active", b.dataset.go === id));
+  $$(".tabbar").forEach((tb) => {
+    $$("button", tb).forEach((b) => b.classList.toggle("active", b.dataset.go === id));
+  });
+  runCounts(target);
+  if (typeof onEnter === "function") onEnter(id);
+}
+
+/* ---------- global delegated interactions ---------- */
+viewport.addEventListener("click", (e) => {
+  const overlay = e.target.closest("#overlay");
+  if (overlay) { closeSheet(); return; }
+
+  const fav = e.target.closest(".o-fav");
+  if (fav) {
+    e.stopPropagation();
+    fav.classList.toggle("on");
+    fav.querySelector("svg").classList.toggle("fill", fav.classList.contains("on"));
+    toast(fav.classList.contains("on") ? "Saved to your list" : "Removed from saved");
+    return;
+  }
+
+  const closer = e.target.closest("[data-close]");
+  const tEl = e.target.closest("[data-toast]");
+  if (closer) {
+    const [m, s] = (tEl ? tEl.dataset.toast : "").split("|");
+    closeSheet();
+    if (m) toast(m, s);
+    return;
+  }
+
+  const sheetBtn = e.target.closest("[data-sheet]");
+  if (sheetBtn) {
+    if (sheetBtn.dataset.toast) { const [m, s] = sheetBtn.dataset.toast.split("|"); toast(m, s); }
+    openSheet(sheetBtn.dataset.sheet);
+    return;
+  }
+
+  const conflict = e.target.closest("[data-conflict]");
+  if (conflict) { openSheet("conflict"); return; }
+
+  const tBtn = e.target.closest("[data-toast]");
+  if (tBtn && !tBtn.hasAttribute("data-close")) {
+    const [m, s] = tBtn.dataset.toast.split("|");
+    toast(m, s);
+    return;
+  }
+
+  const chip = e.target.closest(".chip");
+  if (chip) {
+    const row = chip.closest(".chip-row");
+    if (row && (row.hasAttribute("data-single") || row.id === "payMethods")) {
+      $$(".chip", row).forEach((c) => c.classList.remove("on"));
+      chip.classList.add("on");
+    } else if (row) {
+      chip.classList.toggle("on");
+    }
+    return;
+  }
+
+  const cat = e.target.closest(".cat");
+  if (cat) {
+    $$(".cat", cat.closest(".cats")).forEach((c) => c.classList.remove("on"));
+    cat.classList.add("on");
+    toast(cat.querySelector(".c-lb").textContent + " selected", "Filtering the feed for you");
+    return;
+  }
+
+  const nav = e.target.closest("[data-go]");
+  if (nav) { go(nav.dataset.go); return; }
+});
+
+/* Enter inside search bars jumps to Explore */
+$$(".searchbar input").forEach((inp) => {
+  inp.addEventListener("keydown", (e) => { if (e.key === "Enter") go("w-feed"); });
+});
+
+
+/* ================= FLOWS ================= */
+
+/* --- auth: phone --- */
+const phone = $("#phone"), sendBtn = $("#sendOtpBtn"), phoneErr = $("#phoneErr"), phoneField = $("#phoneField");
+phone.addEventListener("input", () => {
+  phone.value = phone.value.replace(/\D/g, "").slice(0, 10);
+  sendBtn.disabled = phone.value.length !== 10;
+  if (phone.value.length === 10) { phoneErr.classList.remove("show"); phoneField.classList.remove("err"); }
+});
+phone.addEventListener("blur", () => {
+  const bad = phone.value.length > 0 && phone.value.length !== 10;
+  phoneErr.classList.toggle("show", bad);
+  phoneField.classList.toggle("err", bad);
+});
+sendBtn.addEventListener("click", () => { go("s-otp"); toast("Code sent", "6-digit code to +91 " + phone.value); });
+
+/* --- auth: otp --- */
+const OTP_REAL = "284817";
+const boxes = $$("#otpBoxes .ob"), otpErr = $("#otpErr"), otpBoxesWrap = $("#otpBoxes"), verifyBtn = $("#verifyBtn");
+function otpValue() { return boxes.map((b) => b.value).join(""); }
+function otpSync() {
+  boxes.forEach((b) => b.classList.toggle("filled", !!b.value));
+  verifyBtn.disabled = otpValue().length !== 6;
+  if (otpValue().length) { otpErr.classList.remove("show"); otpBoxesWrap.classList.remove("err"); }
+}
+boxes.forEach((b, i) => {
+  b.addEventListener("input", () => {
+    b.value = b.value.replace(/\D/g, "").slice(0, 1);
+    if (b.value && i < boxes.length - 1) boxes[i + 1].focus();
+    otpSync();
+  });
+  b.addEventListener("keydown", (e) => {
+    if (e.key === "Backspace" && !b.value && i > 0) { boxes[i - 1].focus(); otpSync(); }
+  });
+  b.addEventListener("paste", (e) => {
+    const d = (e.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, 6);
+    if (d.length) { e.preventDefault(); d.split("").forEach((c, k) => { if (boxes[k]) boxes[k].value = c; }); otpSync(); }
+  });
+});
+verifyBtn.addEventListener("click", () => {
+  if (otpValue() === OTP_REAL) { toast("Verified ✓", "Welcome to SWON"); go("s-role"); }
+  else {
+    otpErr.classList.add("show");
+    otpBoxesWrap.classList.add("err");
+    boxes.forEach((b) => (b.value = ""));
+    otpSync();
+    boxes[0].focus();
+  }
+});
+let resendSec = 28, resendTimer;
+const resendEl = $("#otpResend");
+function resendTick() {
+  if (resendSec > 0) {
+    resendSec--;
+    resendEl.textContent = "00:" + String(resendSec).padStart(2, "0");
+  } else {
+    resendEl.textContent = "Resend now";
+    clearInterval(resendTimer);
+  }
+}
+function resendStart() { clearInterval(resendTimer); resendSec = 28; resendEl.textContent = "00:28"; resendTimer = setInterval(resendTick, 1000); }
+resendEl.addEventListener("click", () => { resendStart(); toast("New code sent", "Demo code stays " + OTP_REAL); });
+
+/* --- auth: role --- */
+let chosenRole = null;
+$$(".role-card").forEach((c) => c.addEventListener("click", () => {
+  $$(".role-card").forEach((x) => x.classList.remove("on"));
+  c.classList.add("on");
+  chosenRole = c.dataset.role;
+  $("#roleContinue").disabled = false;
+}));
+$("#roleContinue").addEventListener("click", () => {
+  if (chosenRole === "WORKER") { toast("Worker mode", "You're in the Flock — find your next opportunity"); go("w-home"); }
+  else { toast("Host mode", "Post opportunities and build formations"); go("e-dash"); }
+});
+
+/* --- flight request --- */
+$("#confirmFlight").addEventListener("click", () => {
+  closeSheet();
+  toast("Flight request sent ✈", "ABC Infra usually answers within 2 hours");
+  setTimeout(() => go("w-activity"), 700);
+});
+
+/* --- host: bond --- */
+$("#confirmBond").addEventListener("click", () => {
+  closeSheet();
+  const card = $("#qc-murugan");
+  const acts = $(".wc-actions", card);
+  acts.innerHTML = '<span class="status st-open" style="margin:4px auto"><svg class="ic s14"><use href="#i-check"/></svg> BONDED — HIRED SENT</span>';
+  toast("Murugan bonded ✓", "He got a “You're Hired!” moment");
+});
+
+/* --- host: manual attendance --- */
+$("#confirmManual").addEventListener("click", () => {
+  closeSheet();
+  $("#selvamStatus").className = "status st-open";
+  $("#selvamStatus").innerHTML = '<svg class="ic s14"><use href="#i-check"/></svg> PRESENT';
+  $("#selvamSub").textContent = "Marked manually · just now";
+  $("#rosterSelvam").style.borderColor = "#86EFAC";
+  $("#rosterSelvam").style.background = "#F0FDF4";
+  const mk = $("#rosterSelvam .btn"); if (mk) mk.style.display = "none";
+  $("#attCount").innerHTML = '6 <span class="unit" style="font-size:17px">/ 6 present</span>';
+  toast("Selvam marked present", "Reason stored in the audit log");
+});
+
+/* --- host: payments --- */
+$("#approveAllBtn").addEventListener("click", () => {
+  $("#payApprove").style.display = "none";
+  $("#payRecord").style.display = "block";
+  toast("4 earnings approved ✓", "Workers notified — record when you pay them");
+});
+$("#recordPayBtn").addEventListener("click", () => {
+  const method = $("#payMethods .chip.on");
+  $("#payRecord").style.display = "none";
+  $("#payDone").style.display = "block";
+  toast("Payment recorded ✓", (method ? method.textContent : "UPI") + " · Murugan sees PAID now");
+});
+$("#payResetBtn").addEventListener("click", () => {
+  $("#payDone").style.display = "none";
+  $("#payApprove").style.display = "block";
+});
+
+/* --- host: create / settings / availability --- */
+$("#confirmCreate").addEventListener("click", () => {
+  const t = $("#createTitle").value.trim() || "Loading Help — Morning";
+  closeSheet();
+  toast("Draft created", "“" + t + "” — publish when ready");
+});
+$("#confirmSave").addEventListener("click", () => { closeSheet(); toast("Profile updated", "Completeness now 85%"); });
+$("#confirmAvail").addEventListener("click", () => { closeSheet(); toast("Availability saved", "Hosts only see your free days"); });
+
+/* --- worker: work mode --- */
+let workTimerInt = null, elapsed = 4 * 3600 + 28 * 60 + 16;
+const baseElapsed = elapsed;
+function fmtHMS(s) {
+  const h = String(Math.floor(s / 3600)).padStart(2, "0");
+  const m = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
+  const x = String(s % 60).padStart(2, "0");
+  return h + ":" + m + ":" + x;
+}
+$("#checkInBtn").addEventListener("click", () => {
+  $("#workIdle").style.display = "none";
+  $("#workLive").style.display = "block";
+  $("#workStateTag").innerHTML = '<span class="live-dot"></span> WORKING';
+  $("#workTimer").textContent = fmtHMS(elapsed);
+  clearInterval(workTimerInt);
+  workTimerInt = setInterval(() => {
+    elapsed++;
+    $("#workTimer").textContent = fmtHMS(elapsed);
+    const pct = Math.min(95, 52 + Math.floor((elapsed - baseElapsed) / 120));
+    $("#workRing").style.setProperty("--shift", pct);
+  }, 1000);
+  toast("Checked in ✓", "Location verified at Peelamedu · 09:02 AM");
+});
+$("#checkOutBtn").addEventListener("click", () => {
+  clearInterval(workTimerInt);
+  $("#workLive").style.display = "none";
+  $("#workDone").style.display = "block";
+  $("#workStateTag").innerHTML = '<span class="live-dot"></span> SHIFT COMPLETE';
+  toast("Checked out", "Attendance submitted — host approves next");
+});
+
+/* --- worker: flashmatch --- */
+function flashAccept(btn) {
+  const card = btn.closest(".flash-card");
+  toast("Interest sent ⚡", "The host sees you're available right now");
+  card.style.transition = "opacity .3s, transform .3s";
+  card.style.opacity = "0";
+  card.style.transform = "translateY(-8px)";
+  setTimeout(() => {
+    card.remove();
+    if (!$$("#flashOffers .flash-card").length) {
+      $("#flashOffers").style.display = "none";
+      $("#flashEmpty").style.display = "block";
+    }
+  }, 320);
+}
+$("#flashAccept").addEventListener("click", (e) => flashAccept(e.target.closest("button")));
+$("#flashAccept2").addEventListener("click", (e) => flashAccept(e.target.closest("button")));
+$("#flashDecline").addEventListener("click", () => {
+  $("#flashOffers").style.display = "none";
+  $("#flashEmpty").style.display = "block";
+});
+$("#flashRestore").addEventListener("click", () => {
+  $("#flashEmpty").style.display = "none";
+  $("#flashOffers").style.display = "block";
+  go("w-home");
+});
+
+/* --- ambient clocks: flash countdown + QR refresh --- */
+let flashSec = 135, qrSec = 42;
+setInterval(() => {
+  flashSec = flashSec > 0 ? flashSec - 1 : 135;
+  $("#flashClock").textContent = String(Math.floor(flashSec / 60)).padStart(2, "0") + ":" + String(flashSec % 60).padStart(2, "0");
+  qrSec = qrSec > 0 ? qrSec - 1 : 42;
+  const qr = "00:" + String(qrSec).padStart(2, "0");
+  $("#qrClock").textContent = qr;
+  $("#qrClock2").textContent = qr;
+}, 1000);
+
+/* --- per-screen enter hooks --- */
+function onEnter(id) {
+  if (id === "s-otp") {
+    boxes.forEach((b) => (b.value = ""));
+    otpSync();
+    otpErr.classList.remove("show");
+    otpBoxesWrap.classList.remove("err");
+    resendStart();
+    setTimeout(() => boxes[0].focus(), 150);
+  }
+}
+
+/* --- boot --- */
+buildTabbars();
+go("s-login");
+</script>
+</body>
+</html>

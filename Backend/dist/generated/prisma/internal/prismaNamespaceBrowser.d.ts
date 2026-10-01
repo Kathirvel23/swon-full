@@ -1,0 +1,863 @@
+import * as runtime from "@prisma/client/runtime/index-browser";
+export type * from '../models.js';
+export type * from './prismaNamespace.js';
+export declare const Decimal: typeof runtime.Decimal;
+export declare const NullTypes: {
+    DbNull: (new (secret: never) => typeof runtime.DbNull);
+    JsonNull: (new (secret: never) => typeof runtime.JsonNull);
+    AnyNull: (new (secret: never) => typeof runtime.AnyNull);
+};
+export declare const DbNull: import("@prisma/client-runtime-utils").DbNullClass;
+export declare const JsonNull: import("@prisma/client-runtime-utils").JsonNullClass;
+export declare const AnyNull: import("@prisma/client-runtime-utils").AnyNullClass;
+export declare const ModelName: {
+    readonly Account: "Account";
+    readonly WorkerProfile: "WorkerProfile";
+    readonly EmployerProfile: "EmployerProfile";
+    readonly KycSubmission: "KycSubmission";
+    readonly KycDocument: "KycDocument";
+    readonly KycConsent: "KycConsent";
+    readonly DocumentAccessLog: "DocumentAccessLog";
+    readonly Session: "Session";
+    readonly OtpChallenge: "OtpChallenge";
+    readonly PushToken: "PushToken";
+    readonly Area: "Area";
+    readonly JobCategory: "JobCategory";
+    readonly Skill: "Skill";
+    readonly WelfareItem: "WelfareItem";
+    readonly WorkerSkill: "WorkerSkill";
+    readonly Job: "Job";
+    readonly JobWorkDay: "JobWorkDay";
+    readonly JobSkill: "JobSkill";
+    readonly JobWelfare: "JobWelfare";
+    readonly Application: "Application";
+    readonly QuickMatchOffer: "QuickMatchOffer";
+    readonly CrewMember: "CrewMember";
+    readonly AttendanceRecord: "AttendanceRecord";
+    readonly Earning: "Earning";
+    readonly PaymentTransaction: "PaymentTransaction";
+    readonly PaymentEarning: "PaymentEarning";
+    readonly Rating: "Rating";
+    readonly Notification: "Notification";
+    readonly Complaint: "Complaint";
+    readonly ComplaintEvent: "ComplaintEvent";
+    readonly AvailabilitySlot: "AvailabilitySlot";
+    readonly NotificationOutbox: "NotificationOutbox";
+    readonly NotificationDelivery: "NotificationDelivery";
+    readonly NotificationPref: "NotificationPref";
+    readonly SmsLog: "SmsLog";
+    readonly AuditLog: "AuditLog";
+    readonly Sanction: "Sanction";
+    readonly PlatformConfig: "PlatformConfig";
+    readonly IdempotencyKey: "IdempotencyKey";
+    readonly MatchLog: "MatchLog";
+};
+export type ModelName = (typeof ModelName)[keyof typeof ModelName];
+export declare const TransactionIsolationLevel: {
+    readonly ReadUncommitted: "ReadUncommitted";
+    readonly ReadCommitted: "ReadCommitted";
+    readonly RepeatableRead: "RepeatableRead";
+    readonly Serializable: "Serializable";
+};
+export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel];
+export declare const AccountScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly phone: "phone";
+    readonly role: "role";
+    readonly status: "status";
+    readonly phoneVerifiedAt: "phoneVerifiedAt";
+    readonly lastLoginAt: "lastLoginAt";
+    readonly closedAt: "closedAt";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum];
+export declare const WorkerProfileScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly accountId: "accountId";
+    readonly fullName: "fullName";
+    readonly photoStorageKey: "photoStorageKey";
+    readonly city: "city";
+    readonly areaId: "areaId";
+    readonly bio: "bio";
+    readonly experienceYears: "experienceYears";
+    readonly openToWork: "openToWork";
+    readonly avgRatingMilli: "avgRatingMilli";
+    readonly ratingsCount: "ratingsCount";
+    readonly jobsDoneCount: "jobsDoneCount";
+    readonly attendanceRateMilli: "attendanceRateMilli";
+    readonly profileCompletePct: "profileCompletePct";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type WorkerProfileScalarFieldEnum = (typeof WorkerProfileScalarFieldEnum)[keyof typeof WorkerProfileScalarFieldEnum];
+export declare const EmployerProfileScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly accountId: "accountId";
+    readonly orgName: "orgName";
+    readonly orgType: "orgType";
+    readonly contactName: "contactName";
+    readonly city: "city";
+    readonly areaId: "areaId";
+    readonly addressLine: "addressLine";
+    readonly panRef: "panRef";
+    readonly gstin: "gstin";
+    readonly verificationStatus: "verificationStatus";
+    readonly welfareDefaults: "welfareDefaults";
+    readonly avgRatingMilli: "avgRatingMilli";
+    readonly ratingsCount: "ratingsCount";
+    readonly jobsPostedCount: "jobsPostedCount";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type EmployerProfileScalarFieldEnum = (typeof EmployerProfileScalarFieldEnum)[keyof typeof EmployerProfileScalarFieldEnum];
+export declare const KycSubmissionScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly accountId: "accountId";
+    readonly status: "status";
+    readonly idType: "idType";
+    readonly idNumberEnc: "idNumberEnc";
+    readonly idNumberHash: "idNumberHash";
+    readonly attempts: "attempts";
+    readonly rejectionReason: "rejectionReason";
+    readonly submittedAt: "submittedAt";
+    readonly decidedAt: "decidedAt";
+    readonly decidedByAccountId: "decidedByAccountId";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type KycSubmissionScalarFieldEnum = (typeof KycSubmissionScalarFieldEnum)[keyof typeof KycSubmissionScalarFieldEnum];
+export declare const KycDocumentScalarFieldEnum: {
+    readonly id: "id";
+    readonly submissionId: "submissionId";
+    readonly docType: "docType";
+    readonly storageKey: "storageKey";
+    readonly contentSha: "contentSha";
+    readonly mime: "mime";
+    readonly sizeBytes: "sizeBytes";
+    readonly createdAt: "createdAt";
+};
+export type KycDocumentScalarFieldEnum = (typeof KycDocumentScalarFieldEnum)[keyof typeof KycDocumentScalarFieldEnum];
+export declare const KycConsentScalarFieldEnum: {
+    readonly id: "id";
+    readonly submissionId: "submissionId";
+    readonly consentVer: "consentVer";
+    readonly grantedAt: "grantedAt";
+    readonly ipHash: "ipHash";
+    readonly textSnapshot: "textSnapshot";
+};
+export type KycConsentScalarFieldEnum = (typeof KycConsentScalarFieldEnum)[keyof typeof KycConsentScalarFieldEnum];
+export declare const DocumentAccessLogScalarFieldEnum: {
+    readonly id: "id";
+    readonly documentId: "documentId";
+    readonly actorId: "actorId";
+    readonly action: "action";
+    readonly at: "at";
+    readonly ipHash: "ipHash";
+};
+export type DocumentAccessLogScalarFieldEnum = (typeof DocumentAccessLogScalarFieldEnum)[keyof typeof DocumentAccessLogScalarFieldEnum];
+export declare const SessionScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly accountId: "accountId";
+    readonly refreshTokenHash: "refreshTokenHash";
+    readonly familyId: "familyId";
+    readonly userAgent: "userAgent";
+    readonly ipHash: "ipHash";
+    readonly issuedAt: "issuedAt";
+    readonly expiresAt: "expiresAt";
+    readonly revokedAt: "revokedAt";
+    readonly lastUsedAt: "lastUsedAt";
+};
+export type SessionScalarFieldEnum = (typeof SessionScalarFieldEnum)[keyof typeof SessionScalarFieldEnum];
+export declare const OtpChallengeScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly phone: "phone";
+    readonly purpose: "purpose";
+    readonly codeHash: "codeHash";
+    readonly attempts: "attempts";
+    readonly maxAttempts: "maxAttempts";
+    readonly expiresAt: "expiresAt";
+    readonly cooldownUntil: "cooldownUntil";
+    readonly consumedAt: "consumedAt";
+    readonly createdAt: "createdAt";
+};
+export type OtpChallengeScalarFieldEnum = (typeof OtpChallengeScalarFieldEnum)[keyof typeof OtpChallengeScalarFieldEnum];
+export declare const PushTokenScalarFieldEnum: {
+    readonly id: "id";
+    readonly accountId: "accountId";
+    readonly platform: "platform";
+    readonly token: "token";
+    readonly active: "active";
+    readonly lastSeenAt: "lastSeenAt";
+    readonly createdAt: "createdAt";
+};
+export type PushTokenScalarFieldEnum = (typeof PushTokenScalarFieldEnum)[keyof typeof PushTokenScalarFieldEnum];
+export declare const AreaScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly city: "city";
+    readonly name: "name";
+    readonly nameTa: "nameTa";
+    readonly lat: "lat";
+    readonly lng: "lng";
+    readonly active: "active";
+    readonly sortOrder: "sortOrder";
+};
+export type AreaScalarFieldEnum = (typeof AreaScalarFieldEnum)[keyof typeof AreaScalarFieldEnum];
+export declare const JobCategoryScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly code: "code";
+    readonly name: "name";
+    readonly nameTa: "nameTa";
+    readonly parentId: "parentId";
+    readonly sortOrder: "sortOrder";
+    readonly active: "active";
+    readonly suggestedPayMinPaise: "suggestedPayMinPaise";
+};
+export type JobCategoryScalarFieldEnum = (typeof JobCategoryScalarFieldEnum)[keyof typeof JobCategoryScalarFieldEnum];
+export declare const SkillScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly code: "code";
+    readonly name: "name";
+    readonly nameTa: "nameTa";
+    readonly categoryId: "categoryId";
+    readonly active: "active";
+    readonly sortOrder: "sortOrder";
+};
+export type SkillScalarFieldEnum = (typeof SkillScalarFieldEnum)[keyof typeof SkillScalarFieldEnum];
+export declare const WelfareItemScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly code: "code";
+    readonly label: "label";
+    readonly labelTa: "labelTa";
+    readonly sortOrder: "sortOrder";
+    readonly active: "active";
+};
+export type WelfareItemScalarFieldEnum = (typeof WelfareItemScalarFieldEnum)[keyof typeof WelfareItemScalarFieldEnum];
+export declare const WorkerSkillScalarFieldEnum: {
+    readonly id: "id";
+    readonly workerProfileId: "workerProfileId";
+    readonly skillId: "skillId";
+    readonly yearsHint: "yearsHint";
+};
+export type WorkerSkillScalarFieldEnum = (typeof WorkerSkillScalarFieldEnum)[keyof typeof WorkerSkillScalarFieldEnum];
+export declare const JobScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly employerProfileId: "employerProfileId";
+    readonly title: "title";
+    readonly description: "description";
+    readonly categoryId: "categoryId";
+    readonly city: "city";
+    readonly areaId: "areaId";
+    readonly addressLine: "addressLine";
+    readonly lat: "lat";
+    readonly lng: "lng";
+    readonly timezone: "timezone";
+    readonly startsOn: "startsOn";
+    readonly endsOn: "endsOn";
+    readonly dayStartTime: "dayStartTime";
+    readonly dayEndTime: "dayEndTime";
+    readonly payType: "payType";
+    readonly payAmountPaise: "payAmountPaise";
+    readonly currency: "currency";
+    readonly headcountRequired: "headcountRequired";
+    readonly hiredCount: "hiredCount";
+    readonly applicationCount: "applicationCount";
+    readonly status: "status";
+    readonly minExperienceYears: "minExperienceYears";
+    readonly requirementsNote: "requirementsNote";
+    readonly publishedAt: "publishedAt";
+    readonly hiddenAt: "hiddenAt";
+    readonly hiddenReason: "hiddenReason";
+    readonly cancelledAt: "cancelledAt";
+    readonly cancelReason: "cancelReason";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type JobScalarFieldEnum = (typeof JobScalarFieldEnum)[keyof typeof JobScalarFieldEnum];
+export declare const JobWorkDayScalarFieldEnum: {
+    readonly id: "id";
+    readonly jobId: "jobId";
+    readonly workDate: "workDate";
+    readonly startTime: "startTime";
+    readonly endTime: "endTime";
+    readonly headcount: "headcount";
+};
+export type JobWorkDayScalarFieldEnum = (typeof JobWorkDayScalarFieldEnum)[keyof typeof JobWorkDayScalarFieldEnum];
+export declare const JobSkillScalarFieldEnum: {
+    readonly id: "id";
+    readonly jobId: "jobId";
+    readonly skillId: "skillId";
+};
+export type JobSkillScalarFieldEnum = (typeof JobSkillScalarFieldEnum)[keyof typeof JobSkillScalarFieldEnum];
+export declare const JobWelfareScalarFieldEnum: {
+    readonly id: "id";
+    readonly jobId: "jobId";
+    readonly welfareItemId: "welfareItemId";
+    readonly note: "note";
+};
+export type JobWelfareScalarFieldEnum = (typeof JobWelfareScalarFieldEnum)[keyof typeof JobWelfareScalarFieldEnum];
+export declare const ApplicationScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly jobId: "jobId";
+    readonly workerProfileId: "workerProfileId";
+    readonly status: "status";
+    readonly source: "source";
+    readonly quickMatchOfferId: "quickMatchOfferId";
+    readonly coverNote: "coverNote";
+    readonly decisionNote: "decisionNote";
+    readonly decidedAt: "decidedAt";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type ApplicationScalarFieldEnum = (typeof ApplicationScalarFieldEnum)[keyof typeof ApplicationScalarFieldEnum];
+export declare const QuickMatchOfferScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly jobId: "jobId";
+    readonly workerProfileId: "workerProfileId";
+    readonly status: "status";
+    readonly waveNo: "waveNo";
+    readonly requiredHeadcount: "requiredHeadcount";
+    readonly respondBy: "respondBy";
+    readonly respondedAt: "respondedAt";
+    readonly requirementSnapshot: "requirementSnapshot";
+    readonly windowStart: "windowStart";
+    readonly windowEnd: "windowEnd";
+    readonly distanceBand: "distanceBand";
+    readonly createdAt: "createdAt";
+};
+export type QuickMatchOfferScalarFieldEnum = (typeof QuickMatchOfferScalarFieldEnum)[keyof typeof QuickMatchOfferScalarFieldEnum];
+export declare const CrewMemberScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly jobId: "jobId";
+    readonly applicationId: "applicationId";
+    readonly workerProfileId: "workerProfileId";
+    readonly status: "status";
+    readonly releasedReason: "releasedReason";
+    readonly hiredAt: "hiredAt";
+    readonly releasedAt: "releasedAt";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type CrewMemberScalarFieldEnum = (typeof CrewMemberScalarFieldEnum)[keyof typeof CrewMemberScalarFieldEnum];
+export declare const AttendanceRecordScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly jobId: "jobId";
+    readonly workDayId: "workDayId";
+    readonly workerProfileId: "workerProfileId";
+    readonly crewMemberId: "crewMemberId";
+    readonly status: "status";
+    readonly checkInAt: "checkInAt";
+    readonly checkOutAt: "checkOutAt";
+    readonly checkSource: "checkSource";
+    readonly checkTokenId: "checkTokenId";
+    readonly sourceLat: "sourceLat";
+    readonly sourceLng: "sourceLng";
+    readonly durationMinutes: "durationMinutes";
+    readonly correctionReason: "correctionReason";
+    readonly correctedByAccountId: "correctedByAccountId";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type AttendanceRecordScalarFieldEnum = (typeof AttendanceRecordScalarFieldEnum)[keyof typeof AttendanceRecordScalarFieldEnum];
+export declare const EarningScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly jobId: "jobId";
+    readonly workerProfileId: "workerProfileId";
+    readonly status: "status";
+    readonly amountPaise: "amountPaise";
+    readonly currency: "currency";
+    readonly adjustmentPaise: "adjustmentPaise";
+    readonly adjustmentReason: "adjustmentReason";
+    readonly holdComplaintId: "holdComplaintId";
+    readonly approvedAt: "approvedAt";
+    readonly paidAt: "paidAt";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type EarningScalarFieldEnum = (typeof EarningScalarFieldEnum)[keyof typeof EarningScalarFieldEnum];
+export declare const PaymentTransactionScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly status: "status";
+    readonly amountPaise: "amountPaise";
+    readonly currency: "currency";
+    readonly reference: "reference";
+    readonly evidenceStorageKey: "evidenceStorageKey";
+    readonly recordedByAccountId: "recordedByAccountId";
+    readonly paidAt: "paidAt";
+    readonly createdAt: "createdAt";
+};
+export type PaymentTransactionScalarFieldEnum = (typeof PaymentTransactionScalarFieldEnum)[keyof typeof PaymentTransactionScalarFieldEnum];
+export declare const PaymentEarningScalarFieldEnum: {
+    readonly earningId: "earningId";
+    readonly paymentTransactionId: "paymentTransactionId";
+    readonly amountPaise: "amountPaise";
+};
+export type PaymentEarningScalarFieldEnum = (typeof PaymentEarningScalarFieldEnum)[keyof typeof PaymentEarningScalarFieldEnum];
+export declare const RatingScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly jobId: "jobId";
+    readonly raterAccountId: "raterAccountId";
+    readonly rateeAccountId: "rateeAccountId";
+    readonly raterRole: "raterRole";
+    readonly score: "score";
+    readonly tags: "tags";
+    readonly comment: "comment";
+    readonly createdAt: "createdAt";
+};
+export type RatingScalarFieldEnum = (typeof RatingScalarFieldEnum)[keyof typeof RatingScalarFieldEnum];
+export declare const NotificationScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly recipientAccountId: "recipientAccountId";
+    readonly eventKey: "eventKey";
+    readonly titleKey: "titleKey";
+    readonly bodyParams: "bodyParams";
+    readonly contextType: "contextType";
+    readonly contextPublicId: "contextPublicId";
+    readonly readAt: "readAt";
+    readonly createdAt: "createdAt";
+};
+export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum];
+export declare const ComplaintScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly submitterAccountId: "submitterAccountId";
+    readonly type: "type";
+    readonly severity: "severity";
+    readonly status: "status";
+    readonly linkType: "linkType";
+    readonly linkPublicId: "linkPublicId";
+    readonly narrative: "narrative";
+    readonly resolutionNote: "resolutionNote";
+    readonly resolvedByAccountId: "resolvedByAccountId";
+    readonly resolvedAt: "resolvedAt";
+    readonly reopenedAt: "reopenedAt";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type ComplaintScalarFieldEnum = (typeof ComplaintScalarFieldEnum)[keyof typeof ComplaintScalarFieldEnum];
+export declare const ComplaintEventScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly complaintId: "complaintId";
+    readonly actorId: "actorId";
+    readonly kind: "kind";
+    readonly body: "body";
+    readonly evidenceStorageKey: "evidenceStorageKey";
+    readonly createdAt: "createdAt";
+};
+export type ComplaintEventScalarFieldEnum = (typeof ComplaintEventScalarFieldEnum)[keyof typeof ComplaintEventScalarFieldEnum];
+export declare const AvailabilitySlotScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly workerProfileId: "workerProfileId";
+    readonly workDate: "workDate";
+    readonly fromTime: "fromTime";
+    readonly toTime: "toTime";
+    readonly areaId: "areaId";
+    readonly status: "status";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type AvailabilitySlotScalarFieldEnum = (typeof AvailabilitySlotScalarFieldEnum)[keyof typeof AvailabilitySlotScalarFieldEnum];
+export declare const NotificationOutboxScalarFieldEnum: {
+    readonly id: "id";
+    readonly eventKey: "eventKey";
+    readonly dedupeKey: "dedupeKey";
+    readonly payload: "payload";
+    readonly status: "status";
+    readonly attempts: "attempts";
+    readonly nextAttemptAt: "nextAttemptAt";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type NotificationOutboxScalarFieldEnum = (typeof NotificationOutboxScalarFieldEnum)[keyof typeof NotificationOutboxScalarFieldEnum];
+export declare const NotificationDeliveryScalarFieldEnum: {
+    readonly id: "id";
+    readonly outboxId: "outboxId";
+    readonly recipientAccountId: "recipientAccountId";
+    readonly channel: "channel";
+    readonly status: "status";
+    readonly providerRef: "providerRef";
+    readonly errorCode: "errorCode";
+    readonly attemptedAt: "attemptedAt";
+    readonly createdAt: "createdAt";
+};
+export type NotificationDeliveryScalarFieldEnum = (typeof NotificationDeliveryScalarFieldEnum)[keyof typeof NotificationDeliveryScalarFieldEnum];
+export declare const NotificationPrefScalarFieldEnum: {
+    readonly accountId: "accountId";
+    readonly pushEnabled: "pushEnabled";
+    readonly smsEnabled: "smsEnabled";
+    readonly quietHours: "quietHours";
+    readonly updatedAt: "updatedAt";
+};
+export type NotificationPrefScalarFieldEnum = (typeof NotificationPrefScalarFieldEnum)[keyof typeof NotificationPrefScalarFieldEnum];
+export declare const SmsLogScalarFieldEnum: {
+    readonly id: "id";
+    readonly phoneHash: "phoneHash";
+    readonly templateId: "templateId";
+    readonly purpose: "purpose";
+    readonly providerRef: "providerRef";
+    readonly status: "status";
+    readonly costPaise: "costPaise";
+    readonly createdAt: "createdAt";
+};
+export type SmsLogScalarFieldEnum = (typeof SmsLogScalarFieldEnum)[keyof typeof SmsLogScalarFieldEnum];
+export declare const AuditLogScalarFieldEnum: {
+    readonly id: "id";
+    readonly at: "at";
+    readonly actorAccountId: "actorAccountId";
+    readonly actorRole: "actorRole";
+    readonly action: "action";
+    readonly entityType: "entityType";
+    readonly entityPublicId: "entityPublicId";
+    readonly beforeJson: "beforeJson";
+    readonly afterJson: "afterJson";
+    readonly requestId: "requestId";
+    readonly ipHash: "ipHash";
+};
+export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum];
+export declare const SanctionScalarFieldEnum: {
+    readonly id: "id";
+    readonly accountId: "accountId";
+    readonly type: "type";
+    readonly reason: "reason";
+    readonly linkedComplaintId: "linkedComplaintId";
+    readonly issuedByAccountId: "issuedByAccountId";
+    readonly startsAt: "startsAt";
+    readonly endsAt: "endsAt";
+    readonly liftedAt: "liftedAt";
+    readonly createdAt: "createdAt";
+};
+export type SanctionScalarFieldEnum = (typeof SanctionScalarFieldEnum)[keyof typeof SanctionScalarFieldEnum];
+export declare const PlatformConfigScalarFieldEnum: {
+    readonly key: "key";
+    readonly valueJson: "valueJson";
+    readonly scope: "scope";
+    readonly version: "version";
+    readonly updatedByAccountId: "updatedByAccountId";
+    readonly updatedAt: "updatedAt";
+};
+export type PlatformConfigScalarFieldEnum = (typeof PlatformConfigScalarFieldEnum)[keyof typeof PlatformConfigScalarFieldEnum];
+export declare const IdempotencyKeyScalarFieldEnum: {
+    readonly key: "key";
+    readonly accountId: "accountId";
+    readonly requestHash: "requestHash";
+    readonly responseJson: "responseJson";
+    readonly status: "status";
+    readonly createdAt: "createdAt";
+    readonly expiresAt: "expiresAt";
+};
+export type IdempotencyKeyScalarFieldEnum = (typeof IdempotencyKeyScalarFieldEnum)[keyof typeof IdempotencyKeyScalarFieldEnum];
+export declare const MatchLogScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly jobId: "jobId";
+    readonly requestedByAccountId: "requestedByAccountId";
+    readonly candidatesJson: "candidatesJson";
+    readonly weightsVersion: "weightsVersion";
+    readonly createdAt: "createdAt";
+};
+export type MatchLogScalarFieldEnum = (typeof MatchLogScalarFieldEnum)[keyof typeof MatchLogScalarFieldEnum];
+export declare const SortOrder: {
+    readonly asc: "asc";
+    readonly desc: "desc";
+};
+export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder];
+export declare const NullableJsonNullValueInput: {
+    readonly DbNull: import("@prisma/client-runtime-utils").DbNullClass;
+    readonly JsonNull: import("@prisma/client-runtime-utils").JsonNullClass;
+};
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput];
+export declare const JsonNullValueInput: {
+    readonly JsonNull: import("@prisma/client-runtime-utils").JsonNullClass;
+};
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput];
+export declare const NullsOrder: {
+    readonly first: "first";
+    readonly last: "last";
+};
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder];
+export declare const AccountOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly phone: "phone";
+    readonly role: "role";
+    readonly status: "status";
+};
+export type AccountOrderByRelevanceFieldEnum = (typeof AccountOrderByRelevanceFieldEnum)[keyof typeof AccountOrderByRelevanceFieldEnum];
+export declare const WorkerProfileOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly fullName: "fullName";
+    readonly photoStorageKey: "photoStorageKey";
+    readonly city: "city";
+    readonly bio: "bio";
+};
+export type WorkerProfileOrderByRelevanceFieldEnum = (typeof WorkerProfileOrderByRelevanceFieldEnum)[keyof typeof WorkerProfileOrderByRelevanceFieldEnum];
+export declare const JsonNullValueFilter: {
+    readonly DbNull: import("@prisma/client-runtime-utils").DbNullClass;
+    readonly JsonNull: import("@prisma/client-runtime-utils").JsonNullClass;
+    readonly AnyNull: import("@prisma/client-runtime-utils").AnyNullClass;
+};
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter];
+export declare const QueryMode: {
+    readonly default: "default";
+    readonly insensitive: "insensitive";
+};
+export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode];
+export declare const EmployerProfileOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly orgName: "orgName";
+    readonly orgType: "orgType";
+    readonly contactName: "contactName";
+    readonly city: "city";
+    readonly addressLine: "addressLine";
+    readonly panRef: "panRef";
+    readonly gstin: "gstin";
+    readonly verificationStatus: "verificationStatus";
+};
+export type EmployerProfileOrderByRelevanceFieldEnum = (typeof EmployerProfileOrderByRelevanceFieldEnum)[keyof typeof EmployerProfileOrderByRelevanceFieldEnum];
+export declare const KycSubmissionOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly status: "status";
+    readonly idType: "idType";
+    readonly idNumberHash: "idNumberHash";
+    readonly rejectionReason: "rejectionReason";
+};
+export type KycSubmissionOrderByRelevanceFieldEnum = (typeof KycSubmissionOrderByRelevanceFieldEnum)[keyof typeof KycSubmissionOrderByRelevanceFieldEnum];
+export declare const KycDocumentOrderByRelevanceFieldEnum: {
+    readonly docType: "docType";
+    readonly storageKey: "storageKey";
+    readonly contentSha: "contentSha";
+    readonly mime: "mime";
+};
+export type KycDocumentOrderByRelevanceFieldEnum = (typeof KycDocumentOrderByRelevanceFieldEnum)[keyof typeof KycDocumentOrderByRelevanceFieldEnum];
+export declare const KycConsentOrderByRelevanceFieldEnum: {
+    readonly consentVer: "consentVer";
+    readonly ipHash: "ipHash";
+};
+export type KycConsentOrderByRelevanceFieldEnum = (typeof KycConsentOrderByRelevanceFieldEnum)[keyof typeof KycConsentOrderByRelevanceFieldEnum];
+export declare const DocumentAccessLogOrderByRelevanceFieldEnum: {
+    readonly action: "action";
+    readonly ipHash: "ipHash";
+};
+export type DocumentAccessLogOrderByRelevanceFieldEnum = (typeof DocumentAccessLogOrderByRelevanceFieldEnum)[keyof typeof DocumentAccessLogOrderByRelevanceFieldEnum];
+export declare const SessionOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly refreshTokenHash: "refreshTokenHash";
+    readonly familyId: "familyId";
+    readonly userAgent: "userAgent";
+    readonly ipHash: "ipHash";
+};
+export type SessionOrderByRelevanceFieldEnum = (typeof SessionOrderByRelevanceFieldEnum)[keyof typeof SessionOrderByRelevanceFieldEnum];
+export declare const OtpChallengeOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly phone: "phone";
+    readonly purpose: "purpose";
+    readonly codeHash: "codeHash";
+};
+export type OtpChallengeOrderByRelevanceFieldEnum = (typeof OtpChallengeOrderByRelevanceFieldEnum)[keyof typeof OtpChallengeOrderByRelevanceFieldEnum];
+export declare const PushTokenOrderByRelevanceFieldEnum: {
+    readonly platform: "platform";
+    readonly token: "token";
+};
+export type PushTokenOrderByRelevanceFieldEnum = (typeof PushTokenOrderByRelevanceFieldEnum)[keyof typeof PushTokenOrderByRelevanceFieldEnum];
+export declare const AreaOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly city: "city";
+    readonly name: "name";
+    readonly nameTa: "nameTa";
+};
+export type AreaOrderByRelevanceFieldEnum = (typeof AreaOrderByRelevanceFieldEnum)[keyof typeof AreaOrderByRelevanceFieldEnum];
+export declare const JobCategoryOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly code: "code";
+    readonly name: "name";
+    readonly nameTa: "nameTa";
+};
+export type JobCategoryOrderByRelevanceFieldEnum = (typeof JobCategoryOrderByRelevanceFieldEnum)[keyof typeof JobCategoryOrderByRelevanceFieldEnum];
+export declare const SkillOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly code: "code";
+    readonly name: "name";
+    readonly nameTa: "nameTa";
+};
+export type SkillOrderByRelevanceFieldEnum = (typeof SkillOrderByRelevanceFieldEnum)[keyof typeof SkillOrderByRelevanceFieldEnum];
+export declare const WelfareItemOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly code: "code";
+    readonly label: "label";
+    readonly labelTa: "labelTa";
+};
+export type WelfareItemOrderByRelevanceFieldEnum = (typeof WelfareItemOrderByRelevanceFieldEnum)[keyof typeof WelfareItemOrderByRelevanceFieldEnum];
+export declare const JobOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly title: "title";
+    readonly description: "description";
+    readonly city: "city";
+    readonly addressLine: "addressLine";
+    readonly timezone: "timezone";
+    readonly payType: "payType";
+    readonly currency: "currency";
+    readonly status: "status";
+    readonly requirementsNote: "requirementsNote";
+    readonly hiddenReason: "hiddenReason";
+    readonly cancelReason: "cancelReason";
+};
+export type JobOrderByRelevanceFieldEnum = (typeof JobOrderByRelevanceFieldEnum)[keyof typeof JobOrderByRelevanceFieldEnum];
+export declare const JobWelfareOrderByRelevanceFieldEnum: {
+    readonly note: "note";
+};
+export type JobWelfareOrderByRelevanceFieldEnum = (typeof JobWelfareOrderByRelevanceFieldEnum)[keyof typeof JobWelfareOrderByRelevanceFieldEnum];
+export declare const ApplicationOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly status: "status";
+    readonly source: "source";
+    readonly coverNote: "coverNote";
+    readonly decisionNote: "decisionNote";
+};
+export type ApplicationOrderByRelevanceFieldEnum = (typeof ApplicationOrderByRelevanceFieldEnum)[keyof typeof ApplicationOrderByRelevanceFieldEnum];
+export declare const QuickMatchOfferOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly status: "status";
+    readonly requirementSnapshot: "requirementSnapshot";
+    readonly distanceBand: "distanceBand";
+};
+export type QuickMatchOfferOrderByRelevanceFieldEnum = (typeof QuickMatchOfferOrderByRelevanceFieldEnum)[keyof typeof QuickMatchOfferOrderByRelevanceFieldEnum];
+export declare const CrewMemberOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly status: "status";
+    readonly releasedReason: "releasedReason";
+};
+export type CrewMemberOrderByRelevanceFieldEnum = (typeof CrewMemberOrderByRelevanceFieldEnum)[keyof typeof CrewMemberOrderByRelevanceFieldEnum];
+export declare const AttendanceRecordOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly status: "status";
+    readonly checkSource: "checkSource";
+    readonly checkTokenId: "checkTokenId";
+    readonly correctionReason: "correctionReason";
+};
+export type AttendanceRecordOrderByRelevanceFieldEnum = (typeof AttendanceRecordOrderByRelevanceFieldEnum)[keyof typeof AttendanceRecordOrderByRelevanceFieldEnum];
+export declare const EarningOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly status: "status";
+    readonly currency: "currency";
+    readonly adjustmentReason: "adjustmentReason";
+};
+export type EarningOrderByRelevanceFieldEnum = (typeof EarningOrderByRelevanceFieldEnum)[keyof typeof EarningOrderByRelevanceFieldEnum];
+export declare const PaymentTransactionOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly status: "status";
+    readonly currency: "currency";
+    readonly reference: "reference";
+    readonly evidenceStorageKey: "evidenceStorageKey";
+};
+export type PaymentTransactionOrderByRelevanceFieldEnum = (typeof PaymentTransactionOrderByRelevanceFieldEnum)[keyof typeof PaymentTransactionOrderByRelevanceFieldEnum];
+export declare const RatingOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly raterRole: "raterRole";
+    readonly comment: "comment";
+};
+export type RatingOrderByRelevanceFieldEnum = (typeof RatingOrderByRelevanceFieldEnum)[keyof typeof RatingOrderByRelevanceFieldEnum];
+export declare const NotificationOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly eventKey: "eventKey";
+    readonly titleKey: "titleKey";
+    readonly contextType: "contextType";
+    readonly contextPublicId: "contextPublicId";
+};
+export type NotificationOrderByRelevanceFieldEnum = (typeof NotificationOrderByRelevanceFieldEnum)[keyof typeof NotificationOrderByRelevanceFieldEnum];
+export declare const ComplaintOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly type: "type";
+    readonly severity: "severity";
+    readonly status: "status";
+    readonly linkType: "linkType";
+    readonly linkPublicId: "linkPublicId";
+    readonly narrative: "narrative";
+    readonly resolutionNote: "resolutionNote";
+};
+export type ComplaintOrderByRelevanceFieldEnum = (typeof ComplaintOrderByRelevanceFieldEnum)[keyof typeof ComplaintOrderByRelevanceFieldEnum];
+export declare const ComplaintEventOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly kind: "kind";
+    readonly body: "body";
+    readonly evidenceStorageKey: "evidenceStorageKey";
+};
+export type ComplaintEventOrderByRelevanceFieldEnum = (typeof ComplaintEventOrderByRelevanceFieldEnum)[keyof typeof ComplaintEventOrderByRelevanceFieldEnum];
+export declare const AvailabilitySlotOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly status: "status";
+};
+export type AvailabilitySlotOrderByRelevanceFieldEnum = (typeof AvailabilitySlotOrderByRelevanceFieldEnum)[keyof typeof AvailabilitySlotOrderByRelevanceFieldEnum];
+export declare const NotificationOutboxOrderByRelevanceFieldEnum: {
+    readonly eventKey: "eventKey";
+    readonly dedupeKey: "dedupeKey";
+    readonly status: "status";
+};
+export type NotificationOutboxOrderByRelevanceFieldEnum = (typeof NotificationOutboxOrderByRelevanceFieldEnum)[keyof typeof NotificationOutboxOrderByRelevanceFieldEnum];
+export declare const NotificationDeliveryOrderByRelevanceFieldEnum: {
+    readonly channel: "channel";
+    readonly status: "status";
+    readonly providerRef: "providerRef";
+    readonly errorCode: "errorCode";
+};
+export type NotificationDeliveryOrderByRelevanceFieldEnum = (typeof NotificationDeliveryOrderByRelevanceFieldEnum)[keyof typeof NotificationDeliveryOrderByRelevanceFieldEnum];
+export declare const NotificationPrefOrderByRelevanceFieldEnum: {
+    readonly quietHours: "quietHours";
+};
+export type NotificationPrefOrderByRelevanceFieldEnum = (typeof NotificationPrefOrderByRelevanceFieldEnum)[keyof typeof NotificationPrefOrderByRelevanceFieldEnum];
+export declare const SmsLogOrderByRelevanceFieldEnum: {
+    readonly phoneHash: "phoneHash";
+    readonly templateId: "templateId";
+    readonly purpose: "purpose";
+    readonly providerRef: "providerRef";
+    readonly status: "status";
+};
+export type SmsLogOrderByRelevanceFieldEnum = (typeof SmsLogOrderByRelevanceFieldEnum)[keyof typeof SmsLogOrderByRelevanceFieldEnum];
+export declare const AuditLogOrderByRelevanceFieldEnum: {
+    readonly actorRole: "actorRole";
+    readonly action: "action";
+    readonly entityType: "entityType";
+    readonly entityPublicId: "entityPublicId";
+    readonly requestId: "requestId";
+    readonly ipHash: "ipHash";
+};
+export type AuditLogOrderByRelevanceFieldEnum = (typeof AuditLogOrderByRelevanceFieldEnum)[keyof typeof AuditLogOrderByRelevanceFieldEnum];
+export declare const SanctionOrderByRelevanceFieldEnum: {
+    readonly type: "type";
+    readonly reason: "reason";
+};
+export type SanctionOrderByRelevanceFieldEnum = (typeof SanctionOrderByRelevanceFieldEnum)[keyof typeof SanctionOrderByRelevanceFieldEnum];
+export declare const PlatformConfigOrderByRelevanceFieldEnum: {
+    readonly key: "key";
+    readonly scope: "scope";
+};
+export type PlatformConfigOrderByRelevanceFieldEnum = (typeof PlatformConfigOrderByRelevanceFieldEnum)[keyof typeof PlatformConfigOrderByRelevanceFieldEnum];
+export declare const IdempotencyKeyOrderByRelevanceFieldEnum: {
+    readonly key: "key";
+    readonly requestHash: "requestHash";
+    readonly status: "status";
+};
+export type IdempotencyKeyOrderByRelevanceFieldEnum = (typeof IdempotencyKeyOrderByRelevanceFieldEnum)[keyof typeof IdempotencyKeyOrderByRelevanceFieldEnum];
+export declare const MatchLogOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+};
+export type MatchLogOrderByRelevanceFieldEnum = (typeof MatchLogOrderByRelevanceFieldEnum)[keyof typeof MatchLogOrderByRelevanceFieldEnum];

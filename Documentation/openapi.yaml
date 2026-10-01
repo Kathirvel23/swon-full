@@ -1,0 +1,1029 @@
+# SWON API — OpenAPI 3.1 DRAFT
+# Generated-by-hand for the Phase 1 gate; AUTHORITATIVE schema source is
+# packages/contracts (Zod). Per architecture §14, at implementation time the
+# spec is generated from that code and this file is replaced by the generated
+# output (drift check: CI job 'contract-diff').
+# Errors: single envelope (§24) — { error: { code, message, details?, requestId } }
+
+openapi: 3.1.0
+info:
+  title: SWON API
+  version: 0.1.0-draft
+  description: Temporary-workforce marketplace (Coimbatore + Tiruppur). REST + JSON, prefix /api/v1.
+servers:
+  - url: http://localhost:3000/api/v1
+    description: local
+tags:
+  - { name: auth, description: OTP sessions & tokens }
+  - { name: me, description: own profile / availability / prefs }
+  - { name: jobs, description: employer lifecycle + worker discovery }
+  - { name: applications, description: apply, withdraw, employer queue decisions }
+  - { name: attendance, description: QR tokens, check in/out, approvals }
+  - { name: payments, description: record-only earnings ledger (V1) }
+  - { name: matching, description: candidates & quick match }
+  - { name: misc, description: ratings, notifications, welfare, config }
+  - { name: complaints, description: party cases + admin queue (M7) }
+  - { name: admin, description: oversight console — stats, audit, users, moderation, payments, config }
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/otp/request:
+    post:
+      tags: [auth]
+      security: []
+      summary: Request OTP (cooldown-gated)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OtpRequest' }
+      responses:
+        '201': { description: challenge issued, content: { application/json: { schema: { $ref: '#/components/schemas/OtpRequestResult' } } } }
+        '429': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }   # SMS outage
+  /auth/otp/verify:
+    post:
+      tags: [auth]
+      security: []
+      summary: Verify OTP → token pair (rotating refresh)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OtpVerify' }
+      responses:
+        '201': { description: session, content: { application/json: { schema: { $ref: '#/components/schemas/TokenPair' } } } }
+        '401': { $ref: '#/components/responses/Error' }   # OTP_INVALID / OTP_EXPIRED
+        '403': { $ref: '#/components/responses/Error' }   # ACCOUNT_SUSPENDED / CLOSED
+  /auth/refresh:
+    post:
+      tags: [auth]
+      security: []
+      summary: Rotate refresh token (reuse ⇒ family revoked)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [refreshToken], properties: { refreshToken: { type: string } } }
+      responses:
+        '201': { description: rotated pair, content: { application/json: { schema: { $ref: '#/components/schemas/TokenPair' } } } }
+        '401': { $ref: '#/components/responses/Error' }
+  /me:
+    get:
+      tags: [me]
+      summary: Account + profiles + prefs
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/Me' } } } }
+        '401': { $ref: '#/components/responses/Error' }
+    patch:
+      tags: [me]
+      summary: Patch own profile (self-scoped)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '200': { description: updated }
+        '422': { $ref: '#/components/responses/Error' }
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Revoke current session (refreshToken) or all sessions (allDevices)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, properties: { refreshToken: { type: string }, allDevices: { type: boolean } } }
+      responses:
+        '201': { description: ok }
+        '401': { $ref: '#/components/responses/Error' }
+  /auth/sessions:
+    get:
+      tags: [auth]
+      summary: List active sessions (current one flagged)
+      responses:
+        '200': { description: ok }
+        '401': { $ref: '#/components/responses/Error' }
+  /auth/sessions/{publicId}:
+    delete:
+      tags: [auth]
+      summary: Revoke one session (device sign-out)
+      parameters:
+        - { name: publicId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: ok }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+  /me/onboarding:
+    post:
+      tags: [me]
+      summary: Role selection + minimal profile (one role per account, §11.1)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [role], properties: { role: { type: string, enum: [worker, employer] } }, additionalProperties: true }
+      responses:
+        '201': { description: onboarding complete → account ACTIVE }
+        '409': { $ref: '#/components/responses/Error' }   # STATE_INVALID (already onboarded)
+        '422': { $ref: '#/components/responses/Error' }
+  /me/org:
+    patch:
+      tags: [me]
+      summary: Patch own employer org (self-scoped)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '200': { description: updated }
+        '422': { $ref: '#/components/responses/Error' }
+  /me/skills:
+    put:
+      tags: [me]
+      summary: Replace own skill set (validated against the seeded catalog)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [skills], properties: { skills: { type: array, items: { type: object, required: [skillId], properties: { skillId: { type: string }, yearsHint: { type: integer, nullable: true } } } } } }
+      responses:
+        '200': { description: updated WorkerProfile }
+        '404': { $ref: '#/components/responses/Error' }   # unknown skill id
+  /me/availability:
+    put:
+      tags: [me]
+      summary: Replace own availability slots (max 20, replace-all semantics)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [slots], properties: { slots: { type: array, maxItems: 20, items: { type: object, required: [date, fromTime, toTime], properties: { date: { type: string, format: date }, fromTime: { type: string, format: time }, toTime: { type: string, format: time }, areaId: { type: string } } } } } }
+      responses:
+        '200': { description: updated }
+  /me/photo:
+    post:
+      tags: [me]
+      summary: Upload profile photo (multipart field 'file', image/*, ≤5 MB)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { type: object, required: [file], properties: { file: { type: string, format: binary } } }
+      responses:
+        '201': { description: stored → photoUrl }
+        '400': { $ref: '#/components/responses/Error' }   # not an image / too large
+  /catalog:
+    get:
+      tags: [me]
+      summary: Seed reference data (areas, skills, categories) for onboarding + discovery
+      security: []
+      responses:
+        '200': { description: ok }
+  /jobs:
+    get:
+      tags: [jobs]
+      summary: Discovery feed (signed-in viewer) — cursor paginated, deterministic order (§16); items carry distanceKm + viewerBadges
+      parameters:
+        - { in: query, name: cursor, schema: { type: string } }
+        - { in: query, name: limit, schema: { type: integer, default: 20, maximum: 50 } }
+        - { in: query, name: categoryId, schema: { type: string } }
+        - { in: query, name: city, schema: { type: string } }
+        - { in: query, name: areaId, schema: { type: string } }
+        - { in: query, name: from, schema: { type: string, format: date } }
+        - { in: query, name: to, schema: { type: string, format: date } }
+        - { in: query, name: payMinPaise, schema: { type: integer } }
+        - { in: query, name: skillIds, schema: { type: string }, description: comma-separated publicIds }
+        - { in: query, name: welfareCodes, schema: { type: string }, description: comma-separated welfare codes }
+        - { in: query, name: q, schema: { type: string } }
+        - { in: query, name: sort, schema: { type: string, enum: [DATE_ASC, DATE_DESC, PAY_DESC, RELEVANCE] } }
+      responses:
+        '200': { description: page, content: { application/json: { schema: { $ref: '#/components/schemas/JobPage' } } } }
+    post:
+      tags: [jobs]
+      summary: Create job (employer, DRAFT)
+      description: 'Requires: employer role. Errors: KYC_REQUIRED (if publish-gate), VALIDATION_FAILED.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/JobCreate' }
+      responses:
+        '201': { description: created, content: { application/json: { schema: { $ref: '#/components/schemas/Job' } } } }
+        '403': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+  /jobs/mine:
+    get:
+      tags: [jobs]
+      summary: Employer's own jobs (drafts included), newest first
+      parameters:
+        - { in: query, name: cursor, schema: { type: string } }
+        - { in: query, name: limit, schema: { type: integer, default: 20, maximum: 50 } }
+        - { in: query, name: status, schema: { type: string } }
+      responses:
+        '200': { description: page }
+        '403': { $ref: '#/components/responses/Error' }
+  /jobs/{id}:
+    parameters: [{ in: path, name: id, required: true, schema: { type: string }, description: public_id }]
+    get:
+      tags: [jobs]
+      summary: Job detail (address shared post-hire for workers — §18; drafts visible to owner only)
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/Job' } } } }
+        '404': { $ref: '#/components/responses/Error' }
+    patch:
+      tags: [jobs]
+      summary: Edit own job (DRAFT only — published jobs must be cancelled, M1)
+      responses:
+        '200': { description: updated }
+        '409': { $ref: '#/components/responses/Error' }   # STATE_INVALID
+  /jobs/{id}/publish:
+    post:
+      tags: [jobs]
+      summary: DRAFT → OPEN (or with-fill once complete)
+      responses:
+        '200': { description: published }
+        '403': { $ref: '#/components/responses/Error' }   # KYC_REQUIRED
+        '409': { $ref: '#/components/responses/Error' }
+  /jobs/{id}/cancel:
+    post:
+      tags: [jobs]
+      summary: Cancel (reason + crewHandlingConfirmed required — M1-J9)
+      responses:
+        '200': { description: cancelled; hired crew notified (§22) }
+        '409': { $ref: '#/components/responses/Error' }
+  /applications:
+    get:
+      tags: [applications]
+      summary: My applications (worker)
+      parameters:
+        - { in: query, name: status, schema: { type: string }, description: comma-separated applicationStatus filter }
+        - { in: query, name: active, schema: { type: boolean }, description: 'current jobs only (live seats + non-terminal applications)' }
+      responses:
+        '200': { description: page }
+    post:
+      tags: [applications]
+      summary: Apply (Idempotency-Key header REQUIRED)
+      parameters:
+        - { in: header, name: Idempotency-Key, required: true, schema: { type: string, minLength: 8, maxLength: 80 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [jobId], properties: { jobId: { type: string }, coverNote: { type: string, maxLength: 300 }, offerId: { type: string } } }
+      responses:
+        '201': { description: application created }
+        '409': { $ref: '#/components/responses/Error' }   # DUPLICATE_APPLICATION / JOB_ALREADY_FILLED
+        '422': { $ref: '#/components/responses/Error' }
+  /applications/{id}/decision:
+    parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+    post:
+      tags: [applications]
+      summary: 'Employer single decision: shortlist | waitlist | reject | hire | release'
+      parameters:
+        - { in: header, name: Idempotency-Key, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Decision' }
+      responses:
+        '200': { description: decided (hire ⇒ crew seat created atomically) }
+        '409': { $ref: '#/components/responses/Error' }   # JOB_ALREADY_FILLED / HIRE_RACE_LOST / CREW_DOUBLE_JOB
+  /applications/{id}/withdraw:
+    parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+    post:
+      tags: [applications]
+      summary: 'Worker withdraws (A6 pre-hire / A7 hired before IN_PROGRESS — frees the seat, J4/J5 re-derived)'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { type: object, properties: { reason: { type: string, maxLength: 255 } } }
+      responses:
+        '200': { description: application WITHDRAWN }
+        '409': { $ref: '#/components/responses/Error' }   # STATE_INVALID once work started
+        '404': { $ref: '#/components/responses/Error' }
+  /applications/bulk-decision:
+    post:
+      tags: [applications]
+      summary: 'Employer bulk decisions (§14): per-row results; a failing row returns 422 with results (rows before it are already committed and reported)'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  minItems: 1
+                  maxItems: 100
+                  items:
+                    type: object
+                    required: [applicationId, action]
+                    properties:
+                      applicationId: { type: string }
+                      action: { type: string, enum: [shortlist, waitlist, reject, hire, release] }
+                      note: { type: string, maxLength: 255 }
+                      reason: { type: string, maxLength: 255 }
+      responses:
+        '200': { description: all rows applied (results + succeeded/failed) }
+        '422': { description: rejected — error.details.results carries per-row outcome }
+  /jobs/{id}/queue:
+    parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+    get:
+      tags: [applications]
+      summary: Application Queue (answers "who to hire" — §10)
+      parameters:
+        - { in: query, name: status, schema: { type: string }, description: 'chips: APPLIED,SHORTLISTED,WAITLISTED,HIRED' }
+        - { in: query, name: sort, schema: { type: string, enum: [APPLIED_AT, RATING, DISTANCE], default: APPLIED_AT } }
+      responses:
+        '200': { description: page of queue items with worker cards + conflict warnings }
+        '403': { $ref: '#/components/responses/Error' }
+  /jobs/{id}/crew:
+    parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+    get:
+      tags: [applications]
+      summary: 'Crew roster (H7): seated workers + seat summary (filled / released / required)'
+      parameters:
+        - { in: query, name: status, schema: { type: string, enum: [ACTIVE, RELEASED, NO_SHOW, COMPLETED] } }
+      responses:
+        '200': { description: '{ data: { items, summary }, meta }' }
+        '404': { $ref: '#/components/responses/Error' }   # not the owner
+  /jobs/{id}/attendance/token:
+    parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+    post:
+      tags: [attendance]
+      summary: 'Rotating signed QR payload for display (employer, ≤60 s — §19)'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { type: object, properties: { date: { type: string, format: date } } }
+      responses:
+        '201': { description: token, content: { application/json: { schema: { $ref: '#/components/schemas/AttendanceToken' } } } }
+        '403': { $ref: '#/components/responses/Error' }
+  /attendance/check:
+    post:
+      tags: [attendance]
+      summary: 'Worker QR check-in/out (or employer manual marker; replay = ATTENDANCE_DUPLICATE)'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AttendanceCheck' }
+      responses:
+        '200': { description: record updated }
+        '401': { $ref: '#/components/responses/Error' }   # ATTENDANCE_TOKEN_INVALID / _EXPIRED
+        '409': { $ref: '#/components/responses/Error' }   # ATTENDANCE_DUPLICATE / WINDOW_CLOSED
+  /attendance/today:
+    get:
+      tags: [attendance]
+      summary: 'Worker: today''s shift — signed token + current record for one-tap check in/out'
+      responses:
+        '200': { description: '{ data: { token, record, job, workDate } } }' }
+  /jobs/{id}/roster:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string } }
+      - { in: query, name: date, schema: { type: string, format: date } }
+    get:
+      tags: [attendance]
+      summary: 'Employer: crew roster for a work day (attendance + earning status per worker)'
+      responses:
+        '200': { description: '{ data: { date, rows } } }' }
+        '404': { $ref: '#/components/responses/Error' }
+  /attendance/approve:
+    post:
+      tags: [attendance]
+      summary: 'T3 — bulk approve CHECKED_OUT records (≥5-char reason not needed; state machine enforces)'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [recordIds]
+              properties:
+                recordIds: { type: array, items: { type: string }, minItems: 1, maxItems: 200 }
+      responses:
+        '201': { description: '{ data: { approved } }' }
+        '409': { $ref: '#/components/responses/Error' }
+  /attendance/{recordId}/correct:
+    parameters: [{ in: path, name: recordId, required: true, schema: { type: string } }]
+    post:
+      tags: [attendance]
+      summary: 'T5/T6 — audited corrections + reversal + employer NO_SHOW (reason ≥5 chars mandatory)'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AttendanceCorrect' }
+      responses:
+        '201': { description: record corrected }
+        '422': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /jobs/{id}/complete:
+    parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+    post:
+      tags: [jobs]
+      summary: 'J7 + P1 — employer completes an IN_PROGRESS job; earnings turn ELIGIBLE (or CANCELLED if nothing approved)'
+      responses:
+        '201': { description: '{ data: { status, earnings: { eligible, cancelled } } }' }
+        '409': { $ref: '#/components/responses/Error' }
+  /earnings:
+    get:
+      tags: [payments]
+      summary: 'Worker: my earnings (status = comma-separated filter)'
+      parameters:
+        - { in: query, name: status, schema: { type: string } }
+        - { in: query, name: cursor, schema: { type: string } }
+        - { in: query, name: limit, schema: { type: integer } }
+      responses:
+        '200': { description: '{ data: Earning[], meta }' }
+  /jobs/{id}/earnings:
+    parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+    get:
+      tags: [payments]
+      summary: 'Employer: per-job earning ledger (worker + status + minutes)'
+      responses:
+        '200': { description: '{ data: Earning[], meta }' }
+        '404': { $ref: '#/components/responses/Error' }
+  /earnings/approve:
+    post:
+      tags: [payments]
+      summary: 'P2 — ELIGIBLE → APPROVED (amount locked, PAYMENT_RECORDED events)'
+      parameters:
+        - { in: header, name: Idempotency-Key, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [earningIds]
+              properties:
+                earningIds: { type: array, items: { type: string }, minItems: 1, maxItems: 200 }
+      responses:
+        '201': { description: '{ data: { approved } }' }
+        '409': { $ref: '#/components/responses/Error' }
+  /earnings/mark-paid:
+    post:
+      tags: [payments]
+      summary: Employer records manual payout batch (total must reconcile — AMOUNT_MISMATCH)
+      parameters:
+        - { in: header, name: Idempotency-Key, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MarkPaid' }
+      responses:
+        '201': { description: transaction recorded, earnings → PAID }
+        '409': { $ref: '#/components/responses/Error' }
+  /matching/jobs/{id}/candidates:
+    parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+    get:
+      tags: [matching]
+      summary: Scored candidates (proximity, skill, reliability, rating, recency, availability, overlap)
+      responses:
+        '200': { description: ranked list + reason codes + match_log id }
+  /quick-match:
+    post:
+      tags: [matching]
+      summary: Launch adjacent-worker offer wave (headcount, window, requirement snapshot)
+      parameters:
+        - { in: header, name: Idempotency-Key, required: true, schema: { type: string } }
+      responses:
+        '201': { description: wave created }
+        '409': { $ref: '#/components/responses/Error' }
+    get:
+      tags: [matching]
+      summary: 'Worker: my offers — ?status=PENDING|ACCEPTED|DECLINED|EXPIRED (pending first, expiringSoon + respondBy)'
+      parameters: [{ in: query, name: status, schema: { type: string } }]
+      responses:
+        '200': { description: '{ data: [ offer ] }' }
+  /ratings:
+    post:
+      tags: [misc]
+      summary: Rate counterpart (completed job only; double-blind 48 h — §22.8)
+      responses:
+        '201': { description: recorded }
+        '409': { $ref: '#/components/responses/Error' }   # ALREADY_RATED / NOT_JOB_PARTY
+    get:
+      tags: [misc]
+      summary: 'My ratings — ?scope=received (default) or given (commentVisible rules apply)'
+      parameters: [{ in: query, name: scope, schema: { type: string, enum: [received, given] } }]
+      responses:
+        '200': { description: '{ data: [ ratingDto ] }' }
+  /notifications:
+    get:
+      tags: [misc]
+      summary: In-app inbox (system of record — §22)
+      responses:
+        '200': { description: page, unread-first }
+
+  /notifications/unread-count:
+    get:
+      tags: [misc]
+      summary: Unread badge count
+      responses:
+        '200': { description: '{ unread }' }
+  /notifications/read:
+    post:
+      tags: [misc]
+      summary: 'Mark notifications read (ids[] or all: true)'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, properties: { ids: { type: array, items: { type: string } }, all: { type: boolean } } }
+      responses:
+        '201': { description: refreshed unread count }
+  /devices/push-token:
+    post:
+      tags: [misc]
+      summary: Register device push token (upsert per account+token)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [token, platform], properties: { token: { type: string }, platform: { type: string, enum: [IOS, ANDROID, WEB] }, deviceName: { type: string } } }
+      responses:
+        '201': { description: stored }
+  /kyc:
+    get:
+      tags: [kyc]
+      summary: Active submission (M5) or null
+      responses:
+        '200': { description: '{ submission | null }' }
+    post:
+      tags: [kyc]
+      summary: Start/resubmit verification (K0/K5) - consent snapshot stored, id encrypted at rest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [idType, idNumber, consentAccepted, consentVersion], properties: { idType: { type: string, enum: [PAN, VOTER, DRIVING, PASSPORT] }, idNumber: { type: string, minLength: 4, maxLength: 20 }, consentAccepted: { type: boolean }, consentVersion: { type: string } } }
+      responses:
+        '201': { description: DRAFT (REJECTED resubmit bumps attempts) }
+        '409': { $ref: '#/components/responses/Error' }   # KYC_SUBMISSION_ACTIVE / STATE_INVALID / KYC_ATTEMPT_CAP
+        '422': { $ref: '#/components/responses/Error' }   # PROFILE_INCOMPLETE / VALIDATION_FAILED (dup id)
+  /kyc/submit:
+    post:
+      tags: [kyc]
+      summary: K1 DRAFT -> SUBMITTED (>=1 document + consent) -> KYC_SUBMITTED to admins
+      responses:
+        '201': { description: SUBMITTED }
+        '409': { $ref: '#/components/responses/Error' }   # KYC_SUBMISSION_ACTIVE
+        '422': { $ref: '#/components/responses/Error' }   # DOCUMENT_REQUIRED
+  /kyc/documents/upload-ticket:
+    post:
+      tags: [kyc]
+      summary: Issue signed upload ticket (documentId + uploadUrl, 10 min TTL)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [docType], properties: { docType: { type: string, enum: [ID_FRONT, ID_BACK, SELFIE, ADDRESS_PROOF] } } }
+      responses:
+        '201': { description: ticket }
+        '409': { $ref: '#/components/responses/Error' }   # not a draft
+  /kyc/upload/{ticket}:
+    put:
+      tags: [kyc]
+      summary: Fulfil ticket - multipart 'file' (image/*, <=5 MB), stored private + sha256
+      parameters:
+        - { name: ticket, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { type: object, required: [file], properties: { file: { type: string, format: binary } } }
+      responses:
+        '200': { description: document meta }
+        '413': { $ref: '#/components/responses/Error' }   # FILE_TOO_LARGE / FILE_TYPE_NOT_ALLOWED
+        '422': { $ref: '#/components/responses/Error' }   # invalid/expired ticket
+  /admin/kyc:
+    get:
+      tags: [admin]
+      summary: KYC queue (SUBMITTED/UNDER_REVIEW default, oldest first, waitingHours) - admin role
+      parameters:
+        - { name: cursor, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, default: 20 } }
+        - { name: status, in: query, schema: { type: string, enum: [SUBMITTED, UNDER_REVIEW, REJECTED] } }
+        - { name: q, in: query, schema: { type: string } }
+      responses:
+        '200': { description: '{ data: queue items, meta }' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }   # ROLE_REQUIRED
+  /admin/kyc/{id}:
+    get:
+      tags: [admin]
+      summary: Open submission (K2 pick -> UNDER_REVIEW persisted) + account + documents
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: detail }
+        '409': { $ref: '#/components/responses/Error' }   # STATE_INVALID (draft)
+  /admin/kyc/{id}/documents/{docType}:
+    get:
+      tags: [admin]
+      summary: Document bytes - every view writes document_access_log VIEW (section 20)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: docType, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: image/* bytes }
+        '404': { $ref: '#/components/responses/Error' }
+  /admin/kyc/{id}/decision:
+    post:
+      tags: [admin]
+      summary: K3/K4 decide - VERIFIED needs idNumberMatched attestation; REJECTED needs reason >=5 chars
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [decision, idNumberMatched], properties: { decision: { type: string, enum: [VERIFIED, REJECTED] }, reason: { type: string, maxLength: 255 }, idNumberMatched: { type: boolean } } }
+      responses:
+        '201': { description: submission + accountKycStatus; KYC_DECISION notified }
+        '409': { $ref: '#/components/responses/Error' }   # STATE_INVALID
+        '422': { $ref: '#/components/responses/Error' }
+  /admin/jobs/expire-sweep:
+    post:
+      tags: [admin]
+      summary: J10 system sweep — past-ends unfilled jobs → EXPIRED (+ application sweep, audit). Also runs hourly in-process.
+      responses:
+        '200': { description: '{ data: { expired } }' }
+        '403': { $ref: '#/components/responses/Error' }
+  /welfare/catalog:
+    get:
+      tags: [misc]
+      security: []
+      summary: Configurable welfare taxonomy (no hardcoded list — §26)
+      responses:
+        '200': { description: items }
+  /config:
+    get:
+      tags: [misc]
+      security: []
+      summary: Public bootstrap config (flags, bands, OTP/attendance/quickmatch params)
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/PublicConfig' } } } }
+  /ratings/pending:
+    get:
+      tags: [misc]
+      summary: 'Completed-job counterparts I have not rated yet (rate screen list)'
+      responses:
+        '200': { description: '{ data: [ { jobPublicId, jobTitle, ratee, rateeRole } ] }' }
+  /me/rating-summary:
+    get:
+      tags: [misc]
+      summary: My aggregate — avg milli, count, distribution, pendingCount
+      responses:
+        '200': { description: '{ data: { avgRatingMilli, ratingsCount, distribution, pendingCount } }' }
+  /quick-match/{id}/respond:
+    parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+    post:
+      tags: [matching]
+      summary: 'Worker ACCEPT/DECLINE an offer before respondBy (accept = atomic offer claim, application created)'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [response], properties: { response: { type: string, enum: [ACCEPT, DECLINE] }, coverNote: { type: string, maxLength: 500 } } }
+      responses:
+        '201': { description: status + application on ACCEPT }
+        '409': { $ref: '#/components/responses/Error' }   # QUICKMATCH_EXPIRED / already claimed
+  /complaints:
+    post:
+      tags: [complaints]
+      summary: 'File a case (20+ char narrative; link JOB|APPLICATION|EARNING|ATTENDANCE|ACCOUNT — an EARNING link holds that earning, P6)'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [type, narrative], properties: { type: { type: string, enum: [PAYMENT, SAFETY, HARASSMENT, NO_SHOW, FRAUD, OTHER] }, severity: { type: string, enum: [LOW, MEDIUM, HIGH] }, linkType: { type: string }, linkPublicId: { type: string }, narrative: { type: string, minLength: 20 } } }
+      responses:
+        '201': { description: created }
+        '429': { $ref: '#/components/responses/Error' }   # spam rate-limit
+    get:
+      tags: [complaints]
+      summary: 'My cases (?status=OPEN|UNDER_REVIEW|WAITING_ON_PARTY|RESOLVED|DISMISSED|CLOSED_TIMEOUT) with timeline events'
+      responses:
+        '200': { description: '{ data: [ complaint ] }' }
+  /complaints/{id}/reply:
+    parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+    post:
+      tags: [complaints]
+      summary: Party reply while WAITING_ON_PARTY (L3; L7 reopen once)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [body], properties: { body: { type: string, minLength: 2 }, evidenceUploadTickets: { type: array, items: { type: string } } } }
+      responses:
+        '201': { description: status + repliedAt }
+        '409': { $ref: '#/components/responses/Error' }
+  /admin/complaints:
+    get:
+      tags: [complaints, admin]
+      summary: 'Case queue (?status&type&severity&sort=SEVERITY|CREATED_AT) with timelines'
+      responses:
+        '200': { description: '{ data: [ complaint ] }' }
+  /admin/complaints/{id}/decision:
+    parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+    post:
+      tags: [complaints, admin]
+      summary: 'Admin status move + required note; RESOLVED may attach a remedy (WARN|SUSPEND|BAN|PAYMENT_HOLD)'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [status, note], properties: { status: { type: string, enum: [UNDER_REVIEW, WAITING_ON_PARTY, RESOLVED, DISMISSED, CLOSED_TIMEOUT] }, note: { type: string, minLength: 5 }, sanction: { type: object, properties: { type: { type: string, enum: [WARN, SUSPEND, BAN, PAYMENT_HOLD] }, reason: { type: string }, accountPublicId: { type: string } } } } }
+      responses:
+        '201': { description: status }
+        '409': { $ref: '#/components/responses/Error' }   # illegal M7 transition / reopen-once
+  /admin/stats:
+    get:
+      tags: [admin]
+      summary: Dashboard counters (accounts, jobs, cases, KYC, money states)
+      responses:
+        '200': { description: '{ data: { ...counts } }' }
+  /admin/audit:
+    get:
+      tags: [admin]
+      summary: 'Append-only trail (?action&entityType&entityPublicId&limit&offset) with before/after JSON'
+      responses:
+        '200': { description: '{ data: [ row ], meta } }' }
+  /admin/accounts:
+    get:
+      tags: [admin]
+      summary: 'Account search (?query=phone|id&status&role — max 25) with active sanctions'
+      responses:
+        '200': { description: '{ data: [ accountRow ] }' }
+  /admin/accounts/{id}:
+    parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+    get:
+      tags: [admin]
+      summary: Account detail — profile, sessions count, sanctions, recent audit
+      responses:
+        '200': { description: '{ data: detail }' }
+        '404': { $ref: '#/components/responses/Error' }
+  /admin/accounts/{id}/sanctions:
+    parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+    post:
+      tags: [admin]
+      summary: 'Direct M6 sanction (WARN|SUSPEND|BAN, reason 10+ chars) — SUSPEND/BAN revokes sessions (C2) + notifies'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [type, reason], properties: { type: { type: string, enum: [WARN, SUSPEND, BAN] }, reason: { type: string, minLength: 10 } } }
+      responses:
+        '201': { description: sanction + status }
+        '403': { $ref: '#/components/responses/Error' }   # self / admin-target guard
+        '422': { $ref: '#/components/responses/Error' }
+  /admin/accounts/{id}/reinstate:
+    parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+    post:
+      tags: [admin]
+      summary: Lift active sanctions + restore login (C3; note 5+ chars, audited)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [note], properties: { note: { type: string, minLength: 5 } } }
+      responses:
+        '201': { description: status ACTIVE }
+        '409': { $ref: '#/components/responses/Error' }   # already active
+  /admin/jobs:
+    get:
+      tags: [admin]
+      summary: 'Moderation list (?status&hidden=true|false&query, max 50)'
+      responses:
+        '200': { description: '{ data: [ jobRow ] }' }
+  /admin/jobs/{id}/hide:
+    parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+    post:
+      tags: [admin]
+      summary: Hide a job — removed from discovery + worker detail, owner keeps access (audited)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [reason], properties: { reason: { type: string, minLength: 5 } } }
+      responses:
+        '200': { description: '{ hidden: true }' }
+        '409': { $ref: '#/components/responses/Error' }   # already hidden
+  /admin/jobs/{id}/restore:
+    parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+    post:
+      tags: [admin]
+      summary: Restore a hidden job (audited)
+      responses:
+        '200': { description: '{ hidden: false }' }
+        '409': { $ref: '#/components/responses/Error' }   # not hidden
+  /admin/payments/overview:
+    get:
+      tags: [admin, payments]
+      summary: Payout queue (APPROVED), ON_HOLD rows + hold case, recent recorded transactions
+      responses:
+        '200': { description: '{ data: { awaitingPayment, onHold, recentTransactions } }' }
+  /admin/payments/earnings/{id}/release-hold:
+    parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+    post:
+      tags: [admin, payments]
+      summary: 'Manual hold release (P9 — reason 5+ chars, audited, worker notified)'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [reason], properties: { reason: { type: string, minLength: 5 } } }
+      responses:
+        '200': { description: status APPROVED }
+        '409': { $ref: '#/components/responses/Error' }   # not ON_HOLD
+  /admin/config:
+    get:
+      tags: [admin]
+      summary: platform_config flags + current match weights (percent convention, sums to 100)
+      responses:
+        '200': { description: '{ data: { flags, matchWeights } }' }
+  /admin/config/{key}:
+    parameters: [{ in: path, name: key, required: true, schema: { type: string, pattern: '^[A-Z][A-Z0-9_]{1,59}$' } }]
+    put:
+      tags: [admin]
+      summary: Write a flag — version bump + audit row (MATCH_WEIGHTS must sum to 100)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [value], properties: { value: {} } }
+      responses:
+        '200': { description: saved row }
+        '422': { $ref: '#/components/responses/Error' }
+  /me/notification-prefs:
+    get:
+      tags: [me, misc]
+      summary: My notification prefs (pushEnabled, smsEnabled, quietHours)
+      responses:
+        '200': { description: '{ data: prefs }' }
+    put:
+      tags: [me, misc]
+      summary: Update prefs — quiet hours window e.g. 22:00-07:00 (OTP always delivered)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, properties: { pushEnabled: { type: boolean }, smsEnabled: { type: boolean }, quietHours: { type: string, nullable: true } } }
+      responses:
+        '200': { description: saved prefs }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  responses:
+    Error:
+      description: Error envelope (§24)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string, examples: [JOB_ALREADY_FILLED, HIRE_RACE_LOST, OTP_INVALID] }
+            message: { type: string }
+            details:
+              type: array
+              items:
+                type: object
+                properties: { field: { type: string }, issue: { type: string }, message: { type: string } }
+            requestId: { type: string }
+    OtpRequest:
+      type: object
+      required: [phone]
+      properties: { phone: { type: string, pattern: '^\+91[6-9][0-9]{9}$' } }
+    OtpRequestResult:
+      type: object
+      properties:
+        challengeId: { type: string }
+        cooldownSec: { type: integer }
+        expiresSec: { type: integer }
+    OtpVerify:
+      type: object
+      required: [challengeId, code]
+      properties:
+        challengeId: { type: string }
+        code: { type: string, pattern: '^[0-9]{6}$' }
+    TokenPair:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        tokenType: { type: string, const: Bearer }
+        expiresInSec: { type: integer }
+    Me:
+      type: object
+      properties:
+        account: { type: object, additionalProperties: true }
+        workerProfile: { type: [object, 'null'], additionalProperties: true }
+        org: { type: [object, 'null'], additionalProperties: true }
+        notificationPrefs: { type: object, additionalProperties: true }
+    JobCreate:
+      type: object
+      required: [title, description, categoryId, city, areaId, addressLine, startsOn, endsOn, dayStartTime, dayEndTime, payType, payAmountPaise, headcountRequired]
+      properties:
+        title: { type: string, minLength: 5, maxLength: 120 }
+        description: { type: string, minLength: 20, maxLength: 5000 }
+        categoryId: { type: string }
+        city: { type: string }
+        areaId: { type: string }
+        addressLine: { type: string }
+        startsOn: { type: string, format: date }
+        endsOn: { type: string, format: date }
+        dayStartTime: { type: string, pattern: '^[0-9]{2}:[0-9]{2}$' }
+        dayEndTime: { type: string, pattern: '^[0-9]{2}:[0-9]{2}$' }
+        payType: { type: string, enum: [HOUR, DAY, TOTAL] }
+        payAmountPaise: { type: integer, minimum: 1, description: 'integer paise — ₹750 = 75000' }
+        headcountRequired: { type: integer, minimum: 1 }
+        skillIds: { type: array, items: { type: string } }
+        welfare: { type: array, items: { type: object, properties: { code: { type: string }, note: { type: string } } } }
+    Job:
+      type: object
+      properties:
+        publicId: { type: string }
+        title: { type: string }
+        status: { type: string, enum: [DRAFT, OPEN, HIRING, FILLED, IN_PROGRESS, COMPLETED, CLOSED, CANCELLED, EXPIRED] }
+        payAmountPaise: { type: integer }
+        currency: { type: string, const: INR }
+        hiredCount: { type: integer }
+        applicationCount: { type: integer }
+        viewerState: { type: object, additionalProperties: true }
+        additionalProperties: true
+    JobPage:
+      type: object
+      properties:
+        data: { type: array, items: { $ref: '#/components/schemas/Job' } }
+        meta: { type: object, properties: { nextCursor: { type: [string, 'null'] }, hasMore: { type: boolean }, limit: { type: integer } } }
+    Decision:
+      type: object
+      required: [action]
+      properties:
+        action: { type: string, enum: [shortlist, waitlist, reject, hire, release] }
+        note: { type: string, maxLength: 255 }
+        reason: { type: string, maxLength: 255, description: required for release }
+    AttendanceToken:
+      type: object
+      properties:
+        payload: { type: string, description: signed rotating payload — never trust client content }
+        expiresSec: { type: integer }
+        rotateEverySec: { type: integer, maximum: 60 }
+        jobPublicId: { type: string }
+        workDate: { type: string, format: date }
+    AttendanceCheck:
+      type: object
+      required: [payload, action]
+      properties:
+        payload: { type: string }
+        action: { type: string, enum: [IN, OUT] }
+        lat: { type: number }
+        lng: { type: number }
+        workerPublicId: { type: string, description: employer manual path only }
+        workDate: { type: string, format: date }
+        reason: { type: string }
+    MarkPaid:
+      type: object
+      required: [reference, totalPaise, currency]
+      properties:
+        earningIds: { type: array, items: { type: string } }
+        reference: { type: string, minLength: 3, maxLength: 64 }
+        paidAt: { type: string, format: date-time }
+        evidenceUploadTicket: { type: string }
+        totalPaise: { type: integer, description: must equal locked amounts (409 AMOUNT_MISMATCH otherwise) }
+        currency: { type: string, const: INR }
+        note: { type: string }
+    PublicConfig:
+      type: object
+      additionalProperties: true
+      properties:
+        appVersionMin: { type: string }
+        otp: { type: object, additionalProperties: true }
+        quickMatch: { type: object, additionalProperties: true }
+        attendance: { type: object, additionalProperties: true }
+        distanceBands: { type: object, additionalProperties: true }
+        features: { type: object, additionalProperties: { type: boolean } }
+        kycPolicy: { type: object, additionalProperties: true }
+        maintenanceMode: { type: boolean }

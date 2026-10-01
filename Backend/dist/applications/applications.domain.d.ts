@@ -1,0 +1,10 @@
+export type ApplicationAction = 'shortlist' | 'waitlist' | 'reject' | 'hire' | 'release' | 'withdraw';
+type From = string;
+export declare function assertApplicationAction(action: ApplicationAction, from: From): void;
+export declare function assertCanApply(jobStatus: string, headcountRequired: number, hiredCount: number): void;
+export declare function assertWithdraw(from: From, jobStatus: string): void;
+export declare function statusAfterFirstApplication(jobStatus: string): string;
+export declare function statusAfterHire(hiredCountAfter: number, headcountRequired: number): string;
+export declare function statusAfterRelease(hiredCountAfter: number, _headcountRequired: number): string;
+export declare function windowsOverlap(aStart: string, aEnd: string, bStart: string, bEnd: string): boolean;
+export {};

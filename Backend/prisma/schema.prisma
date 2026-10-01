@@ -1,0 +1,857 @@
+// WorkBridge — Prisma schema (Phase 1 deliverable)
+// Machine-readable twin of Database/ERD.md + ERD_supporting.md — KEEP IN SYNC.
+// Conventions (architecture §8): snake_case tables/columns via @map/@@map,
+//   BIGINT surrogate PKs + cuid public_id on external entities,
+//   money = paise (BigInt), timestamps = UTC (DATETIME(3)),
+//   status = String + CHECK (CHECKs applied in migration post-SQL, see Database/MIGRATION_PLAN.md),
+//   FKs = ON DELETE RESTRICT.
+// State machines: Database/STATE_MACHINES.md is authoritative.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ---------------------------------------------------------------------------
+// H1 / H2 — Accounts, profiles
+// ---------------------------------------------------------------------------
+
+model Account {
+  id              BigInt    @id @default(autoincrement())
+  publicId        String    @unique @default(cuid()) @map("public_id")
+  phone           String    @unique // E.164 +91… — one account per phone
+  role            String? // CHECK: worker|employer|admin — NULL until chosen post-verify (§11.1 role select); one role per account (V1)
+  status          String    @default("PENDING_VERIFICATION") // CHECK: PENDING_VERIFICATION|ACTIVE|SUSPENDED|CLOSED (§12.6)
+  phoneVerifiedAt DateTime? @map("phone_verified_at")
+  lastLoginAt     DateTime? @map("last_login_at")
+  closedAt        DateTime? @map("closed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  workerProfile    WorkerProfile?
+  employerProfile  EmployerProfile?
+  sessions         Session[]
+  pushTokens       PushToken[]
+  kycSubmissions   KycSubmission[]
+  kycDecisions     KycSubmission[]  @relation("KycDecider")
+  notifications    Notification[]   @relation("NotificationRecipient")
+  sanctions        Sanction[]       @relation("SanctionTarget")
+  auditActor       AuditLog[]       @relation("AuditActor")
+  complaintSubmits Complaint[]      @relation("ComplaintSubmitter")
+  complaintResols  Complaint[]      @relation("ComplaintResolver")
+  complaintEvents  ComplaintEvent[]
+  ratingsGiven     Rating[]           @relation("RatingGiver")
+  ratingsReceived  Rating[]           @relation("RatingReceiver")
+  sanctionsIssued  Sanction[]         @relation("SanctionIssuer")
+  notificationPref NotificationPref?
+  idemKeys         IdempotencyKey[]
+  matchLogs        MatchLog[]
+  payRecorded      PaymentTransaction[] @relation("PaymentRecorder")
+
+  @@index([role, status])
+  @@map("account")
+}
+
+model WorkerProfile {
+  id                  BigInt   @id @default(autoincrement())
+  publicId            String   @unique @default(cuid()) @map("public_id")
+  accountId           BigInt   @unique @map("account_id")
+  fullName            String   @map("full_name")
+  photoStorageKey     String?  @map("photo_storage_key")
+  city                String?
+  areaId              BigInt?  @map("area_id")
+  bio                 String?
+  experienceYears     Int?     @map("experience_years")
+  openToWork          Boolean  @default(false) @map("open_to_work") // ranking signal (§36a #17)
+  avgRatingMilli      Int      @default(0) @map("avg_rating_milli") // denorm ×1000 — set by M4
+  ratingsCount        Int      @default(0) @map("ratings_count")
+  jobsDoneCount       Int      @default(0) @map("jobs_done_count")
+  attendanceRateMilli Int?     @map("attendance_rate_milli") // derived reliability
+  profileCompletePct  Int      @default(0) @map("profile_complete_pct")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  account         Account           @relation(fields: [accountId], references: [id])
+  area            Area?             @relation(fields: [areaId], references: [id])
+  skills          WorkerSkill[]
+  availability    AvailabilitySlot[]
+  applications    Application[]
+  offers          QuickMatchOffer[]
+  crewMemberships CrewMember[]
+  attendances     AttendanceRecord[]
+  earnings        Earning[]
+
+  @@index([areaId])
+  @@map("worker_profile")
+}
+
+model EmployerProfile {
+  id                 BigInt   @id @default(autoincrement())
+  publicId           String   @unique @default(cuid()) @map("public_id")
+  accountId          BigInt   @unique @map("account_id")
+  orgName            String   @map("org_name")
+  orgType            String   @default("INDIVIDUAL") @map("org_type") // CHECK: INDIVIDUAL|FIRM|COMPANY|GOVT|NGO
+  contactName        String   @map("contact_name")
+  city               String
+  areaId             BigInt   @map("area_id")
+  addressLine        String   @map("address_line")
+  panRef             String?  @map("pan_ref")
+  gstin              String?
+  verificationStatus String   @default("UNVERIFIED") @map("verification_status")
+  welfareDefaults    Json?    @map("welfare_defaults")
+  avgRatingMilli     Int      @default(0) @map("avg_rating_milli")
+  ratingsCount       Int      @default(0) @map("ratings_count")
+  jobsPostedCount    Int      @default(0) @map("jobs_posted_count")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  account Account @relation(fields: [accountId], references: [id])
+  area    Area    @relation(fields: [areaId], references: [id])
+  jobs    Job[]
+
+  @@index([city, areaId])
+  @@map("employer_profile")
+}
+
+// ---------------------------------------------------------------------------
+// H3 — KYC
+// ---------------------------------------------------------------------------
+
+model KycSubmission {
+  id                 BigInt    @id @default(autoincrement())
+  publicId           String    @unique @default(cuid()) @map("public_id")
+  accountId          BigInt    @map("account_id")
+  status             String    @default("DRAFT") // CHECK: DRAFT|SUBMITTED|UNDER_REVIEW|VERIFIED|REJECTED (§12.5)
+  idType             String    @map("id_type") // CHECK: PAN|VOTER|DRIVING|PASSPORT (Aadhaar deferred — R2)
+  idNumberEnc        Bytes     @map("id_number_enc") // app-layer encrypted at rest
+  idNumberHash       String    @map("id_number_hash") // SHA-256 — dup/fraud dedupe
+  attempts           Int       @default(1)
+  rejectionReason    String?   @map("rejection_reason")
+  submittedAt        DateTime? @map("submitted_at")
+  decidedAt          DateTime? @map("decided_at")
+  decidedByAccountId BigInt?   @map("decided_by_account_id")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  account   Account        @relation(fields: [accountId], references: [id])
+  decidedBy Account?       @relation("KycDecider", fields: [decidedByAccountId], references: [id])
+  documents KycDocument[]
+  consent   KycConsent?
+
+  @@unique([accountId, idNumberHash])
+  @@index([status, createdAt])
+  @@map("kyc_submission")
+}
+
+model KycDocument {
+  id           BigInt   @id @default(autoincrement())
+  submissionId BigInt   @map("submission_id")
+  docType      String   @map("doc_type") // CHECK: ID_FRONT|ID_BACK|SELFIE|ADDRESS_PROOF
+  storageKey   String   @map("storage_key") // private bucket key
+  contentSha   String   @map("content_sha256")
+  mime         String
+  sizeBytes    Int      @map("size_bytes")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  submission KycSubmission      @relation(fields: [submissionId], references: [id])
+  accessLogs DocumentAccessLog[]
+
+  @@index([submissionId])
+  @@map("kyc_document")
+}
+
+model KycConsent {
+  id           BigInt   @id @default(autoincrement())
+  submissionId BigInt   @unique @map("submission_id")
+  consentVer   String   @map("consent_version")
+  grantedAt    DateTime @default(now()) @map("granted_at")
+  ipHash       String?  @map("ip_hash")
+  textSnapshot Json     @map("text_snapshot") // exact wording accepted (DPDP evidence)
+
+  submission KycSubmission @relation(fields: [submissionId], references: [id])
+  @@map("kyc_consent")
+}
+
+model DocumentAccessLog {
+  id         BigInt   @id @default(autoincrement())
+  documentId BigInt   @map("document_id")
+  actorId    BigInt   @map("actor_account_id")
+  action     String // CHECK: VIEW|DOWNLOAD|DELETE
+  at         DateTime @default(now())
+  ipHash     String?  @map("ip_hash")
+
+  document KycDocument @relation(fields: [documentId], references: [id])
+
+  @@index([documentId, at])
+  @@map("document_access_log")
+}
+
+// ---------------------------------------------------------------------------
+// H1 — Sessions, OTP, push
+// ---------------------------------------------------------------------------
+
+model Session {
+  id               BigInt    @id @default(autoincrement())
+  publicId         String    @unique @default(cuid()) @map("public_id")
+  accountId        BigInt    @map("account_id")
+  refreshTokenHash String    @unique @map("refresh_token_hash") // SHA-256; reuse ⇒ revoke family
+  familyId         String    @default(cuid()) @map("family_id") // login lineage — rotation keeps it; reuse of a rotated token revokes the family only
+  userAgent        String?   @map("user_agent")
+  ipHash           String?   @map("ip_hash")
+  issuedAt         DateTime  @default(now()) @map("issued_at")
+  expiresAt        DateTime  @map("expires_at")
+  revokedAt        DateTime? @map("revoked_at")
+  lastUsedAt       DateTime? @map("last_used_at")
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  @@index([accountId, revokedAt])
+  @@map("session")
+}
+
+model OtpChallenge {
+  id            BigInt    @id @default(autoincrement())
+  publicId      String    @unique @default(cuid()) @map("public_id") // challengeId
+  phone         String
+  purpose       String    @default("LOGIN") // CHECK: LOGIN|PHONE_CHANGE
+  codeHash      String    @map("code_hash") // never raw
+  attempts      Int       @default(0)
+  maxAttempts   Int       @default(5) @map("max_attempts")
+  expiresAt     DateTime  @map("expires_at") // +2 min
+  cooldownUntil DateTime? @map("cooldown_until") // 60 s request cooldown
+  consumedAt    DateTime? @map("consumed_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([phone, purpose, consumedAt])
+  @@map("otp_challenge")
+}
+
+model PushToken {
+  id         BigInt   @id @default(autoincrement())
+  accountId  BigInt   @map("account_id")
+  platform   String // CHECK: ANDROID|IOS|WEB
+  token      String
+  active     Boolean  @default(true)
+  lastSeenAt DateTime @default(now()) @map("last_seen_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  @@unique([accountId, token])
+  @@map("push_token")
+}
+
+// ---------------------------------------------------------------------------
+// Reference / taxonomy (seeded — Database/SEED_DATA.md)
+// ---------------------------------------------------------------------------
+
+model Area {
+  id        BigInt  @id @default(autoincrement())
+  publicId  String  @unique @default(cuid()) @map("public_id")
+  city      String
+  name      String
+  nameTa    String? @map("name_ta")
+  lat       Decimal? @db.Decimal(10, 7)
+  lng       Decimal? @db.Decimal(10, 7)
+  active    Boolean @default(true)
+  sortOrder Int     @default(0) @map("sort_order")
+
+  workerProfiles  WorkerProfile[]
+  employerProfiles EmployerProfile[]
+  jobs            Job[]
+  availability    AvailabilitySlot[]
+
+  @@unique([city, name])
+  @@index([city])
+  @@map("area")
+}
+
+model JobCategory {
+  id         BigInt  @id @default(autoincrement())
+  publicId   String  @unique @default(cuid()) @map("public_id")
+  code       String  @unique
+  name       String
+  nameTa     String? @map("name_ta")
+  parentId   BigInt? @map("parent_id")
+  sortOrder  Int     @default(0) @map("sort_order")
+  active     Boolean @default(true)
+  suggestedPayMinPaise BigInt? @map("suggested_pay_min_paise") // guidance only
+
+  parent   JobCategory?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children JobCategory[] @relation("CategoryTree")
+  jobs     Job[]
+  skills   Skill[]
+
+  @@index([parentId, sortOrder])
+  @@map("job_category")
+}
+
+model Skill {
+  id         BigInt  @id @default(autoincrement())
+  publicId   String  @unique @default(cuid()) @map("public_id")
+  code       String  @unique
+  name       String
+  nameTa     String? @map("name_ta")
+  categoryId BigInt? @map("category_id")
+  active     Boolean @default(true)
+  sortOrder  Int     @default(0) @map("sort_order")
+
+  jobSkills      JobSkill[]
+  workerSkills   WorkerSkill[]
+  category       JobCategory? @relation(fields: [categoryId], references: [id])
+
+  @@map("skill")
+}
+
+model WelfareItem {
+  id        BigInt  @id @default(autoincrement())
+  publicId  String  @unique @default(cuid()) @map("public_id")
+  code      String  @unique // e.g. MEAL_PROVIDED
+  label     String
+  labelTa   String? @map("label_ta")
+  sortOrder Int     @default(0) @map("sort_order")
+  active    Boolean @default(true)
+
+  jobWelfare JobWelfare[]
+
+  @@map("welfare_item")
+}
+
+model WorkerSkill {
+  id              BigInt @id @default(autoincrement())
+  workerProfileId BigInt @map("worker_profile_id")
+  skillId         BigInt @map("skill_id")
+  yearsHint       Int?   @map("years_hint")
+
+  workerProfile WorkerProfile @relation(fields: [workerProfileId], references: [id])
+  skill         Skill         @relation(fields: [skillId], references: [id])
+
+  @@unique([workerProfileId, skillId])
+  @@map("worker_skill")
+}
+
+// ---------------------------------------------------------------------------
+// H4 — Jobs
+// ---------------------------------------------------------------------------
+
+model Job {
+  id                 BigInt    @id @default(autoincrement())
+  publicId           String    @unique @default(cuid()) @map("public_id")
+  employerProfileId  BigInt    @map("employer_profile_id")
+  title              String    @db.VarChar(120)
+  description        String    @db.Text
+  categoryId         BigInt    @map("category_id")
+  city               String    @db.VarChar(60)
+  areaId             BigInt    @map("area_id")
+  addressLine        String    @map("address_line") @db.VarChar(255)
+  lat                Decimal?  @db.Decimal(10, 7)
+  lng                Decimal?  @db.Decimal(10, 7)
+  timezone           String    @default("Asia/Kolkata") @map("timezone")
+  startsOn           DateTime  @map("starts_on") @db.Date
+  endsOn             DateTime  @map("ends_on") @db.Date // CHECK: ends_on >= starts_on
+  dayStartTime       DateTime  @map("day_start_time") @db.Time(0)
+  dayEndTime         DateTime  @map("day_end_time") @db.Time(0)
+  payType            String    @map("pay_type") // CHECK: HOUR|DAY|TOTAL
+  payAmountPaise     BigInt    @map("pay_amount_paise") // CHECK: > 0
+  currency           String    @default("INR")
+  headcountRequired  Int       @map("headcount_required") // CHECK: > 0
+  hiredCount         Int       @default(0) @map("hired_count") // denorm, hire-tx maintained
+  applicationCount   Int       @default(0) @map("application_count") // denorm
+  status             String    @default("DRAFT") // CHECK: DRAFT|OPEN|HIRING|FILLED|IN_PROGRESS|COMPLETED|CLOSED|CANCELLED|EXPIRED (§12.1)
+  minExperienceYears Int?      @map("min_experience_years")
+  requirementsNote   String?   @map("requirements_note") @db.VarChar(500)
+  publishedAt        DateTime? @map("published_at")
+  hiddenAt           DateTime? @map("hidden_at") // admin moderation (jobs moderation page)
+  hiddenReason       String?   @map("hidden_reason") @db.VarChar(255)
+  cancelledAt        DateTime? @map("cancelled_at")
+  cancelReason       String?   @map("cancel_reason") @db.VarChar(255)
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  employer      EmployerProfile @relation(fields: [employerProfileId], references: [id])
+  category      JobCategory     @relation(fields: [categoryId], references: [id])
+  area          Area            @relation(fields: [areaId], references: [id])
+  workDays      JobWorkDay[]
+  skills        JobSkill[]
+  welfare       JobWelfare[]
+  applications  Application[]
+  offers        QuickMatchOffer[]
+  crew          CrewMember[]
+  attendances   AttendanceRecord[]
+  earnings      Earning[]
+  ratings       Rating[]
+  matchLogs     MatchLog[]
+
+  // Discovery path (status, category, city, area, date) + my-jobs + sweep
+  @@index([status, categoryId, city, areaId, startsOn])
+  @@index([employerProfileId, status])
+  @@index([status, endsOn])
+  @@map("job")
+}
+
+model JobWorkDay {
+  id         BigInt   @id @default(autoincrement())
+  jobId      BigInt   @map("job_id")
+  workDate   DateTime @map("work_date") @db.Date
+  startTime  DateTime @map("start_time") @db.Time(0)
+  endTime    DateTime @map("end_time") @db.Time(0)
+  headcount  Int?     @map("headcount") // per-day override
+
+  job         Job                @relation(fields: [jobId], references: [id])
+  attendances AttendanceRecord[]
+
+  @@unique([jobId, workDate])
+  @@map("job_work_day")
+}
+
+model JobSkill {
+  id      BigInt @id @default(autoincrement())
+  jobId   BigInt @map("job_id")
+  skillId BigInt @map("skill_id")
+
+  job   Job   @relation(fields: [jobId], references: [id])
+  skill Skill @relation(fields: [skillId], references: [id])
+
+  @@unique([jobId, skillId])
+  @@map("job_skill")
+}
+
+model JobWelfare {
+  id             BigInt  @id @default(autoincrement())
+  jobId          BigInt  @map("job_id")
+  welfareItemId  BigInt  @map("welfare_item_id")
+  note           String? @db.VarChar(255)
+
+  job          Job          @relation(fields: [jobId], references: [id])
+  welfareItem  WelfareItem  @relation(fields: [welfareItemId], references: [id])
+
+  @@unique([jobId, welfareItemId])
+  @@map("job_welfare")
+}
+
+// ---------------------------------------------------------------------------
+// H6 / M2 — Applications & Quick Match offers
+// ---------------------------------------------------------------------------
+
+model Application {
+  id                 BigInt    @id @default(autoincrement())
+  publicId           String    @unique @default(cuid()) @map("public_id")
+  jobId              BigInt    @map("job_id")
+  workerProfileId    BigInt    @map("worker_profile_id")
+  status             String    @default("APPLIED") // CHECK: APPLIED|SHORTLISTED|WAITLISTED|HIRED|REJECTED|WITHDRAWN|CANCELLED|EXPIRED (§12.2)
+  source             String    @default("APPLY") @map("source") // CHECK: APPLY|QUICK_MATCH
+  quickMatchOfferId  BigInt?   @unique @map("quick_match_offer_id") // 1:1 — an offer yields at most one application
+  coverNote          String?   @map("cover_note") @db.VarChar(300)
+  decisionNote       String?   @map("decision_note") @db.VarChar(255)
+  decidedAt          DateTime? @map("decided_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  job           Job               @relation(fields: [jobId], references: [id])
+  workerProfile WorkerProfile     @relation(fields: [workerProfileId], references: [id])
+  quickMatchOffer QuickMatchOffer? @relation(fields: [quickMatchOfferId], references: [id])
+  crewMember    CrewMember?
+
+  @@unique([jobId, workerProfileId]) // one application per (job, worker)
+  @@index([jobId, status]) // employer queue
+  @@index([workerProfileId, status]) // my applications
+  @@map("application")
+}
+
+model QuickMatchOffer {
+  id                BigInt    @id @default(autoincrement())
+  publicId          String    @unique @default(cuid()) @map("public_id")
+  jobId             BigInt    @map("job_id")
+  workerProfileId   BigInt    @map("worker_profile_id")
+  status            String    @default("PENDING") // CHECK: PENDING|ACCEPTED|DECLINED|EXPIRED|CANCELLED
+  waveNo            Int       @default(1) @map("wave_no")
+  requiredHeadcount Int       @map("required_headcount")
+  respondBy         DateTime  @map("respond_by") // server-side expiry (default +30 min)
+  respondedAt       DateTime? @map("responded_at")
+  requirementSnapshot String? @map("requirement_snapshot") @db.VarChar(255)
+  windowStart       DateTime? @map("window_start")
+  windowEnd         DateTime? @map("window_end")
+  distanceBand      String    @default("same-city") @map("distance_band") @db.VarChar(32)
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  job           Job           @relation(fields: [jobId], references: [id])
+  workerProfile WorkerProfile @relation(fields: [workerProfileId], references: [id])
+  application   Application?
+
+  @@unique([jobId, workerProfileId])
+  @@index([workerProfileId, status, respondBy]) // "my offers"
+  @@map("quick_match_offer")
+}
+
+// ---------------------------------------------------------------------------
+// H7 / H8 / H9 — Crew, attendance, money
+// ---------------------------------------------------------------------------
+
+model CrewMember {
+  id               BigInt    @id @default(autoincrement())
+  publicId         String    @unique @default(cuid()) @map("public_id")
+  jobId            BigInt    @map("job_id")
+  applicationId    BigInt    @unique @map("application_id") // 1:1 ⇔ application.status = 'HIRED'
+  workerProfileId  BigInt    @map("worker_profile_id")
+  status           String    @default("ACTIVE") // CHECK: ACTIVE|COMPLETED|RELEASED|NO_SHOW
+  releasedReason   String?   @map("released_reason") @db.VarChar(255)
+  hiredAt          DateTime  @default(now()) @map("hired_at")
+  releasedAt       DateTime? @map("released_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  job           Job               @relation(fields: [jobId], references: [id])
+  application   Application       @relation(fields: [applicationId], references: [id])
+  workerProfile WorkerProfile     @relation(fields: [workerProfileId], references: [id])
+  attendances   AttendanceRecord[]
+
+  @@unique([jobId, workerProfileId]) // double-hire guard (tx row lock target)
+  @@index([jobId, status]) // roster
+  @@map("crew_member")
+}
+
+model AttendanceRecord {
+  id                  BigInt    @id @default(autoincrement())
+  publicId            String    @unique @default(cuid()) @map("public_id")
+  jobId               BigInt    @map("job_id")
+  workDayId           BigInt    @map("work_day_id")
+  workerProfileId     BigInt    @map("worker_profile_id")
+  crewMemberId        BigInt    @map("crew_member_id")
+  status              String    @default("NOT_STARTED") // CHECK: NOT_STARTED|CHECKED_IN|CHECKED_OUT|APPROVED|NO_SHOW (§12.3)
+  checkInAt           DateTime? @map("check_in_at")
+  checkOutAt          DateTime? @map("check_out_at")
+  checkSource         String?   @map("check_source") // CHECK: SCAN|EMPLOYER|CORRECTED
+  checkTokenId        String?   @map("check_token_id") // replay guard
+  sourceLat           Decimal?  @map("source_lat") @db.Decimal(10, 7)
+  sourceLng           Decimal?  @map("source_lng") @db.Decimal(10, 7)
+  durationMinutes     Int?      @map("duration_minutes")
+  correctionReason    String?   @map("correction_reason") @db.VarChar(255)
+  correctedByAccountId BigInt?  @map("corrected_by_account_id")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  job        Job         @relation(fields: [jobId], references: [id])
+  workDay    JobWorkDay  @relation(fields: [workDayId], references: [id])
+  worker     WorkerProfile @relation(fields: [workerProfileId], references: [id])
+  crewMember CrewMember  @relation(fields: [crewMemberId], references: [id])
+
+  @@unique([jobId, workerProfileId, workDayId]) // one record per (job, worker, day)
+  @@index([jobId, status])
+  @@index([workDayId, status]) // day sweeps
+  @@map("attendance_record")
+}
+
+model Earning {
+  id                BigInt    @id @default(autoincrement())
+  publicId          String    @unique @default(cuid()) @map("public_id")
+  jobId             BigInt    @map("job_id")
+  workerProfileId   BigInt    @map("worker_profile_id")
+  status            String    @default("PENDING") // CHECK: PENDING|ELIGIBLE|APPROVED|PROCESSING|PAID|FAILED|ON_HOLD|CANCELLED (§12.4)
+  amountPaise       BigInt    @default(0) @map("amount_paise") // LOCKED at APPROVED
+  currency          String    @default("INR")
+  adjustmentPaise   BigInt    @default(0) @map("adjustment_paise") // signed, pre-PAID only
+  adjustmentReason  String?   @map("adjustment_reason") @db.VarChar(255)
+  holdComplaintId   BigInt?   @map("hold_complaint_id")
+  approvedAt        DateTime? @map("approved_at")
+  paidAt            DateTime? @map("paid_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  job        Job               @relation(fields: [jobId], references: [id])
+  worker     WorkerProfile     @relation(fields: [workerProfileId], references: [id])
+  holdComplaint Complaint?     @relation(fields: [holdComplaintId], references: [id])
+  payments   PaymentEarning[]
+
+  @@unique([jobId, workerProfileId]) // one earning per (job, worker)
+  @@index([jobId, status])
+  @@index([workerProfileId, status]) // "my earnings"
+  @@map("earning")
+}
+
+model PaymentTransaction {
+  id                BigInt    @id @default(autoincrement())
+  publicId          String    @unique @default(cuid()) @map("public_id")
+  status            String    @default("PROCESSING") // CHECK: PROCESSING|PAID|FAILED
+  amountPaise       BigInt    @map("amount_paise")
+  currency          String    @default("INR")
+  reference         String    @db.VarChar(64) // manual UTR / provider ref
+  evidenceStorageKey String?  @map("evidence_storage_key")
+  recordedByAccountId BigInt? @map("recorded_by_account_id")
+  paidAt            DateTime? @map("paid_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  recorder Account?           @relation("PaymentRecorder", fields: [recordedByAccountId], references: [id])
+  earnings PaymentEarning[]
+
+  @@index([status, createdAt])
+  @@map("payment_transaction")
+}
+
+model PaymentEarning {
+  earningId           BigInt @map("earning_id")
+  paymentTransactionId BigInt @map("payment_transaction_id")
+  amountPaise         BigInt @map("amount_paise")
+
+  earning Earning           @relation(fields: [earningId], references: [id])
+  txn     PaymentTransaction @relation(fields: [paymentTransactionId], references: [id])
+
+  @@id([earningId, paymentTransactionId]) // batch-capable (§13.4-1)
+  @@map("payment_earning")
+}
+
+// ---------------------------------------------------------------------------
+// M4 / M3 / M6 — Ratings, notifications, complaints
+// ---------------------------------------------------------------------------
+
+model Rating {
+  id        BigInt   @id @default(autoincrement())
+  publicId  String   @unique @default(cuid()) @map("public_id")
+  jobId     BigInt   @map("job_id")
+  raterAccountId BigInt @map("rater_account_id")
+  rateeAccountId BigInt @map("ratee_account_id")
+  raterRole String   @map("rater_role") // CHECK: WORKER|EMPLOYER
+  score     Int // CHECK: 1..5
+  tags      Json?
+  comment   String?  @db.VarChar(300)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  job  Job     @relation(fields: [jobId], references: [id])
+  rater Account @relation("RatingGiver", fields: [raterAccountId], references: [id])
+  ratee Account @relation("RatingReceiver", fields: [rateeAccountId], references: [id])
+
+  @@unique([jobId, raterAccountId, rateeAccountId]) // once per (job, rater, ratee)
+  @@index([rateeAccountId])
+  @@map("rating")
+}
+
+model Notification {
+  id                BigInt    @id @default(autoincrement())
+  publicId          String    @unique @default(cuid()) @map("public_id")
+  recipientAccountId BigInt   @map("recipient_account_id")
+  eventKey          String    @map("event_key") // catalog: packages/contracts events.ts
+  titleKey          String    @map("title_key") // i18n key — never pre-rendered text
+  bodyParams        Json?     @map("body_params") // templated params (no foreign PII)
+  contextType       String?   @map("context_type") // JOB|APPLICATION|EARNING|KYC|COMPLAINT|ACCOUNT
+  contextPublicId   String?   @map("context_public_id")
+  readAt            DateTime? @map("read_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  recipient Account @relation("NotificationRecipient", fields: [recipientAccountId], references: [id])
+
+  @@index([recipientAccountId, readAt, createdAt]) // unread-first inbox
+  @@map("notification")
+}
+
+model Complaint {
+  id                 BigInt    @id @default(autoincrement())
+  publicId           String    @unique @default(cuid()) @map("public_id")
+  submitterAccountId BigInt    @map("submitter_account_id")
+  type               String    @map("type") // CHECK: PAYMENT|SAFETY|HARASSMENT|NO_SHOW|FRAUD|OTHER
+  severity           String    @default("MEDIUM") // CHECK: LOW|MEDIUM|HIGH
+  status             String    @default("OPEN") // CHECK: OPEN|UNDER_REVIEW|WAITING_ON_PARTY|RESOLVED|DISMISSED|CLOSED_TIMEOUT (§12.7)
+  linkType           String?   @map("link_type") // CHECK: JOB|APPLICATION|EARNING|ATTENDANCE|ACCOUNT
+  linkPublicId       String?   @map("link_public_id")
+  narrative          String    @db.Text
+  resolutionNote     String?   @map("resolution_note") @db.Text
+  resolvedByAccountId BigInt? @map("resolved_by_account_id")
+  resolvedAt          DateTime? @map("resolved_at")
+  reopenedAt          DateTime? @map("reopened_at") // L7: reopen-once proof
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  submitter Account        @relation("ComplaintSubmitter", fields: [submitterAccountId], references: [id])
+  resolver  Account?       @relation("ComplaintResolver", fields: [resolvedByAccountId], references: [id])
+  events    ComplaintEvent[]
+  heldEarnings Earning[]
+  sanctions Sanction[]
+
+  @@index([status, severity]) // admin queue
+  @@index([submitterAccountId, createdAt]) // "mine"
+  @@map("complaint")
+}
+
+model ComplaintEvent {
+  id          BigInt   @unique @default(autoincrement())
+  publicId    String   @unique @default(cuid()) @map("public_id")
+  complaintId BigInt   @map("complaint_id")
+  actorId     BigInt   @map("actor_account_id")
+  kind        String // CHECK: NOTE|PARTY_REPLY|STATUS_CHANGE|EVIDENCE
+  body        String?  @db.Text
+  evidenceStorageKey String? @map("evidence_storage_key")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  complaint Complaint @relation(fields: [complaintId], references: [id])
+  actor     Account   @relation(fields: [actorId], references: [id])
+
+  @@index([complaintId, createdAt])
+  @@map("complaint_event")
+}
+
+// ---------------------------------------------------------------------------
+// M1 / M3 inputs & cross-cutting ops (ERD_supporting.md)
+// ---------------------------------------------------------------------------
+
+model AvailabilitySlot {
+  id              BigInt   @id @default(autoincrement())
+  publicId        String   @unique @default(cuid()) @map("public_id")
+  workerProfileId BigInt   @map("worker_profile_id")
+  workDate        DateTime @map("work_date") @db.Date
+  fromTime        DateTime @map("from_time") @db.Time(0)
+  toTime          DateTime @map("to_time") @db.Time(0)
+  areaId          BigInt?  @map("area_id") // NULL = home area only
+  status          String   @default("AVAILABLE") // CHECK: AVAILABLE|BOOKED_HINT
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  workerProfile WorkerProfile @relation(fields: [workerProfileId], references: [id])
+  area          Area?         @relation(fields: [areaId], references: [id])
+
+  @@unique([workerProfileId, workDate, fromTime, toTime])
+  @@index([workDate, areaId]) // matching scan
+  @@map("availability_slot")
+}
+
+model NotificationOutbox {
+  id            BigInt    @id @default(autoincrement())
+  eventKey      String    @map("event_key")
+  dedupeKey     String    @unique @map("dedupe_key") // event id — retry dedupe (§22)
+  payload       Json
+  status        String    @default("PENDING") // CHECK: PENDING|SENDING|SENT|FAILED|DEAD
+  attempts      Int       @default(0)
+  nextAttemptAt DateTime? @map("next_attempt_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  deliveries NotificationDelivery[]
+
+  @@index([status, nextAttemptAt]) // dispatcher poll
+  @@map("notification_outbox")
+}
+
+model NotificationDelivery {
+  id                BigInt   @id @default(autoincrement())
+  outboxId          BigInt   @map("outbox_id")
+  recipientAccountId BigInt  @map("recipient_account_id")
+  channel           String // CHECK: INAPP|PUSH|SMS|EMAIL (per §22 matrix)
+  status            String   @default("PENDING") // CHECK: PENDING|SENT|FAILED|SKIPPED
+  providerRef       String?  @map("provider_ref")
+  errorCode         String?  @map("error_code") @db.VarChar(40)
+  attemptedAt       DateTime? @map("attempted_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  outbox NotificationOutbox @relation(fields: [outboxId], references: [id])
+
+  @@index([outboxId, channel])
+  @@map("notification_delivery")
+}
+
+model NotificationPref {
+  accountId   BigInt   @id @map("account_id")
+  pushEnabled Boolean  @default(true) @map("push_enabled")
+  smsEnabled  Boolean  @default(true) @map("sms_enabled") // OTP exempt — unmuteable
+  quietHours  String?  @map("quiet_hours") @db.VarChar(20)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  account Account @relation(fields: [accountId], references: [id])
+  @@map("notification_pref")
+}
+
+model SmsLog {
+  id          BigInt   @id @default(autoincrement())
+  phoneHash   String   @map("phone_hash") // no raw phone in logs (DLT/cost audit)
+  templateId  String   @map("template_id")
+  purpose     String
+  providerRef String?  @map("provider_ref")
+  status      String
+  costPaise   Int?     @map("cost_paise")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("sms_log")
+}
+
+model AuditLog {
+  id             BigInt   @id @default(autoincrement())
+  at             DateTime @default(now())
+  actorAccountId BigInt?  @map("actor_account_id") // NULL = system action
+  actorRole      String?  @map("actor_role")
+  action         String   @db.VarChar(80) // e.g. APPLICATION_HIRED
+  entityType     String   @map("entity_type") @db.VarChar(40)
+  entityPublicId String   @map("entity_public_id") @db.VarChar(30)
+  beforeJson     Json?    @map("before_json")
+  afterJson      Json?    @map("after_json")
+  requestId      String?  @map("request_id") @db.VarChar(40)
+  ipHash         String?  @map("ip_hash")
+
+  actor Account? @relation("AuditActor", fields: [actorAccountId], references: [id])
+
+  @@index([entityType, entityPublicId])
+  @@index([actorAccountId, at])
+  @@index([at])
+  @@map("audit_log") // append-only: app role has no UPDATE/DELETE grant (migration 0003)
+}
+
+model Sanction {
+  id                 BigInt    @id @default(autoincrement())
+  accountId          BigInt    @map("account_id")
+  type               String    @map("type") // CHECK: WARN|SUSPEND|BAN|PAYMENT_HOLD
+  reason             String    @db.Text
+  linkedComplaintId  BigInt?   @map("linked_complaint_id")
+  issuedByAccountId  BigInt    @map("issued_by_account_id")
+  startsAt           DateTime  @default(now()) @map("starts_at")
+  endsAt             DateTime? @map("ends_at")
+  liftedAt           DateTime? @map("lifted_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  target   Account    @relation("SanctionTarget", fields: [accountId], references: [id])
+  issuer   Account    @relation("SanctionIssuer", fields: [issuedByAccountId], references: [id])
+  complaint Complaint? @relation(fields: [linkedComplaintId], references: [id])
+
+  @@index([accountId, liftedAt])
+  @@map("sanction")
+}
+
+model PlatformConfig {
+  key       String   @id // e.g. MATCH_WEIGHTS, OTP_MAX_ATTEMPTS
+  valueJson Json     @map("value_json")
+  scope     String   @default("GLOBAL")
+  version   Int      @default(1)
+  updatedByAccountId BigInt? @map("updated_by_account_id")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  @@map("platform_config")
+}
+
+model IdempotencyKey {
+  key         String   @id // "<Idempotency-Key>:<route>"
+  accountId   BigInt   @map("account_id")
+  requestHash String   @map("request_hash")
+  responseJson Json?   @map("response_json")
+  status      String   @default("IN_PROGRESS") // CHECK: IN_PROGRESS|DONE
+  createdAt   DateTime @default(now()) @map("created_at")
+  expiresAt   DateTime @map("expires_at")
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  @@index([expiresAt]) // TTL cleanup
+  @@map("idempotency_key")
+}
+
+model MatchLog {
+  id                BigInt    @id @default(autoincrement())
+  publicId          String    @unique @default(cuid()) @map("public_id")
+  jobId             BigInt    @map("job_id")
+  requestedByAccountId BigInt @map("requested_by_account_id")
+  candidatesJson    Json     @map("candidates_json") // top-N scores + reason codes (§16)
+  weightsVersion    Int      @map("weights_version")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  job       Job     @relation(fields: [jobId], references: [id])
+  requester Account @relation(fields: [requestedByAccountId], references: [id])
+
+  @@index([jobId, createdAt])
+  @@map("match_log")
+}
