@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { Colors } from '@/constants/theme';
 import Svg, { Path } from 'react-native-svg';
 
@@ -24,7 +25,8 @@ export function WingMotif({
       height={height}
       viewBox="0 0 200 130"
       fill="none"
-      accessibilityElementsHidden
+      aria-hidden={Platform.OS === 'web'}
+      accessibilityElementsHidden={Platform.OS !== 'web'}
       importantForAccessibility="no-hide-descendants"
       style={style}
     >
