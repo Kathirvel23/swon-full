@@ -182,6 +182,7 @@ export declare const ModelName: {
     readonly Application: "Application";
     readonly QuickMatchOffer: "QuickMatchOffer";
     readonly CrewMember: "CrewMember";
+    readonly JobStaffAssignment: "JobStaffAssignment";
     readonly AttendanceRecord: "AttendanceRecord";
     readonly Earning: "Earning";
     readonly PaymentTransaction: "PaymentTransaction";
@@ -212,7 +213,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         omit: GlobalOmitOptions;
     };
     meta: {
-        modelProps: "account" | "workerProfile" | "employerProfile" | "kycSubmission" | "kycDocument" | "kycConsent" | "documentAccessLog" | "session" | "otpChallenge" | "pushToken" | "area" | "jobCategory" | "skill" | "welfareItem" | "workerSkill" | "job" | "jobWorkDay" | "jobSkill" | "jobWelfare" | "application" | "quickMatchOffer" | "crewMember" | "attendanceRecord" | "earning" | "paymentTransaction" | "paymentEarning" | "rating" | "notification" | "complaint" | "complaintEvent" | "availabilitySlot" | "notificationOutbox" | "notificationDelivery" | "notificationPref" | "smsLog" | "auditLog" | "sanction" | "platformConfig" | "idempotencyKey" | "matchLog";
+        modelProps: "account" | "workerProfile" | "employerProfile" | "kycSubmission" | "kycDocument" | "kycConsent" | "documentAccessLog" | "session" | "otpChallenge" | "pushToken" | "area" | "jobCategory" | "skill" | "welfareItem" | "workerSkill" | "job" | "jobWorkDay" | "jobSkill" | "jobWelfare" | "application" | "quickMatchOffer" | "crewMember" | "jobStaffAssignment" | "attendanceRecord" | "earning" | "paymentTransaction" | "paymentEarning" | "rating" | "notification" | "complaint" | "complaintEvent" | "availabilitySlot" | "notificationOutbox" | "notificationDelivery" | "notificationPref" | "smsLog" | "auditLog" | "sanction" | "platformConfig" | "idempotencyKey" | "matchLog";
         txIsolationLevel: TransactionIsolationLevel;
     };
     model: {
@@ -1665,6 +1666,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
                 count: {
                     args: Prisma.CrewMemberCountArgs<ExtArgs>;
                     result: runtime.Types.Utils.Optional<Prisma.CrewMemberCountAggregateOutputType> | number;
+                };
+            };
+        };
+        JobStaffAssignment: {
+            payload: Prisma.$JobStaffAssignmentPayload<ExtArgs>;
+            fields: Prisma.JobStaffAssignmentFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.JobStaffAssignmentFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$JobStaffAssignmentPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.JobStaffAssignmentFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$JobStaffAssignmentPayload>;
+                };
+                findFirst: {
+                    args: Prisma.JobStaffAssignmentFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$JobStaffAssignmentPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.JobStaffAssignmentFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$JobStaffAssignmentPayload>;
+                };
+                findMany: {
+                    args: Prisma.JobStaffAssignmentFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$JobStaffAssignmentPayload>[];
+                };
+                create: {
+                    args: Prisma.JobStaffAssignmentCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$JobStaffAssignmentPayload>;
+                };
+                createMany: {
+                    args: Prisma.JobStaffAssignmentCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                delete: {
+                    args: Prisma.JobStaffAssignmentDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$JobStaffAssignmentPayload>;
+                };
+                update: {
+                    args: Prisma.JobStaffAssignmentUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$JobStaffAssignmentPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.JobStaffAssignmentDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.JobStaffAssignmentUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                upsert: {
+                    args: Prisma.JobStaffAssignmentUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$JobStaffAssignmentPayload>;
+                };
+                aggregate: {
+                    args: Prisma.JobStaffAssignmentAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateJobStaffAssignment>;
+                };
+                groupBy: {
+                    args: Prisma.JobStaffAssignmentGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.JobStaffAssignmentGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.JobStaffAssignmentCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.JobStaffAssignmentCountAggregateOutputType> | number;
                 };
             };
         };
@@ -3180,6 +3247,19 @@ export declare const CrewMemberScalarFieldEnum: {
     readonly updatedAt: "updatedAt";
 };
 export type CrewMemberScalarFieldEnum = (typeof CrewMemberScalarFieldEnum)[keyof typeof CrewMemberScalarFieldEnum];
+export declare const JobStaffAssignmentScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly jobId: "jobId";
+    readonly workerProfileId: "workerProfileId";
+    readonly role: "role";
+    readonly status: "status";
+    readonly assignedByAccountId: "assignedByAccountId";
+    readonly incentivePct: "incentivePct";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type JobStaffAssignmentScalarFieldEnum = (typeof JobStaffAssignmentScalarFieldEnum)[keyof typeof JobStaffAssignmentScalarFieldEnum];
 export declare const AttendanceRecordScalarFieldEnum: {
     readonly id: "id";
     readonly publicId: "publicId";
@@ -3574,6 +3654,12 @@ export declare const CrewMemberOrderByRelevanceFieldEnum: {
     readonly releasedReason: "releasedReason";
 };
 export type CrewMemberOrderByRelevanceFieldEnum = (typeof CrewMemberOrderByRelevanceFieldEnum)[keyof typeof CrewMemberOrderByRelevanceFieldEnum];
+export declare const JobStaffAssignmentOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly role: "role";
+    readonly status: "status";
+};
+export type JobStaffAssignmentOrderByRelevanceFieldEnum = (typeof JobStaffAssignmentOrderByRelevanceFieldEnum)[keyof typeof JobStaffAssignmentOrderByRelevanceFieldEnum];
 export declare const AttendanceRecordOrderByRelevanceFieldEnum: {
     readonly publicId: "publicId";
     readonly status: "status";
@@ -3748,6 +3834,7 @@ export type GlobalOmitConfig = {
     application?: Prisma.ApplicationOmit;
     quickMatchOffer?: Prisma.QuickMatchOfferOmit;
     crewMember?: Prisma.CrewMemberOmit;
+    jobStaffAssignment?: Prisma.JobStaffAssignmentOmit;
     attendanceRecord?: Prisma.AttendanceRecordOmit;
     earning?: Prisma.EarningOmit;
     paymentTransaction?: Prisma.PaymentTransactionOmit;

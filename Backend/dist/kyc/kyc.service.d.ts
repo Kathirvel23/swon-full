@@ -25,7 +25,6 @@ export declare class KycService {
     } & {
         publicId: string;
         accountId: bigint;
-        attempts: number;
         id: bigint;
         status: string;
         createdAt: Date;
@@ -33,6 +32,7 @@ export declare class KycService {
         idType: string;
         idNumberEnc: import("@prisma/client/runtime/client").Bytes;
         idNumberHash: string;
+        attempts: number;
         rejectionReason: string | null;
         submittedAt: Date | null;
         decidedAt: Date | null;

@@ -1,3 +1,4 @@
+'use no memo'; // React Compiler is incompatible with react-hook-form v7 Controller (drops keystrokes in controlled inputs) — opt this file out.
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -9,6 +10,7 @@ import { errorMessage } from '@/api/client';
 import { jobsApi } from '@/api/jobs';
 import { Button, Card, Screen } from '@/components/screen';
 import { Chip } from '@/components/ui';
+import { Dropdown, DateField } from '@/components/inputs';
 import { Colors, Fonts, Radius, Spacing, TypeScale } from '@/constants/theme';
 import { en } from '@/i18n/strings';
 
@@ -180,33 +182,21 @@ export default function PostJobScreen() {
         )}
       />
 
-      <Card title={en.jobs.f.category}>
-        <View style={s.chipRow}>
-          {categories.map((c) => (
-            <Chip
-              key={c.publicId}
-              label={c.name}
-              selected={categoryId === c.publicId}
-              onPress={() => setValue('categoryId', c.publicId)}
-            />
-          ))}
-        </View>
-        {errors.categoryId ? <Text style={s.error}>{en.jobs.f.category}</Text> : null}
-      </Card>
+      <Dropdown
+        label={en.jobs.f.category}
+        value={categoryId}
+        options={categories.map((c) => ({ value: c.publicId, label: c.name }))}
+        onChange={(v) => setValue('categoryId', v)}
+        error={errors.categoryId ? en.jobs.f.category : undefined}
+      />
 
-      <Card title={en.jobs.f.area}>
-        <View style={s.chipRow}>
-          {areas.map((a) => (
-            <Chip
-              key={a.publicId}
-              label={`${a.name} (${a.city})`}
-              selected={selectedArea === a.publicId}
-              onPress={() => setValue('areaId', a.publicId)}
-            />
-          ))}
-        </View>
-        {errors.areaId ? <Text style={s.error}>{en.jobs.f.area}</Text> : null}
-      </Card>
+      <Dropdown
+        label={en.jobs.f.area}
+        value={selectedArea}
+        options={areas.map((a) => ({ value: a.publicId, label: `${a.name} (${a.city})` }))}
+        onChange={(v) => setValue('areaId', v)}
+        error={errors.areaId ? en.jobs.f.area : undefined}
+      />
 
       <Controller
         control={control}
@@ -227,9 +217,9 @@ export default function PostJobScreen() {
           <Controller
             control={control}
             name="startsOn"
-            rules={{ required: true, pattern: { value: /^\d{4}-\d{2}-\d{2}$/, message: 'YYYY-MM-DD' } }}
+            rules={{ required: en.jobs.f.startDate, pattern: { value: /^\d{4}-\d{2}-\d{2}$/, message: 'YYYY-MM-DD' } }}
             render={({ field: { value, onChange } }) => (
-              <Field label={en.jobs.f.startDate} value={value} onChangeText={onChange} placeholder="2026-11-02" error={errors.startsOn?.message} />
+              <DateField label={en.jobs.f.startDate} value={value} onChange={onChange} error={errors.startsOn?.message} />
             )}
           />
         </View>
@@ -237,9 +227,9 @@ export default function PostJobScreen() {
           <Controller
             control={control}
             name="endsOn"
-            rules={{ required: true, pattern: { value: /^\d{4}-\d{2}-\d{2}$/, message: 'YYYY-MM-DD' } }}
+            rules={{ required: en.jobs.f.endDate, pattern: { value: /^\d{4}-\d{2}-\d{2}$/, message: 'YYYY-MM-DD' } }}
             render={({ field: { value, onChange } }) => (
-              <Field label={en.jobs.f.endDate} value={value} onChangeText={onChange} placeholder="2026-11-04" error={errors.endsOn?.message} />
+              <DateField label={en.jobs.f.endDate} value={value} onChange={onChange} error={errors.endsOn?.message} />
             )}
           />
         </View>
@@ -269,16 +259,16 @@ export default function PostJobScreen() {
       </View>
 
       <Card title={en.jobs.f.payType}>
-        <View style={s.chipRow}>
-          {(['HOUR', 'DAY', 'TOTAL'] as const).map((t) => (
-            <Chip
-              key={t}
-              label={t === 'HOUR' ? en.jobs.f.payH : t === 'DAY' ? en.jobs.f.payD : en.jobs.f.payT}
-              selected={payType === t}
-              onPress={() => setValue('payType', t)}
-            />
-          ))}
-        </View>
+        <Dropdown
+          label={en.jobs.f.payType}
+          value={payType}
+          options={[
+            { value: 'HOUR', label: en.jobs.f.payH },
+            { value: 'DAY', label: en.jobs.f.payD },
+            { value: 'TOTAL', label: en.jobs.f.payT },
+          ]}
+          onChange={(v) => setValue('payType', v as FormValues['payType'])}
+        />
         <Controller
           control={control}
           name="payAmount"

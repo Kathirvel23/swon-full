@@ -251,6 +251,7 @@ export type WorkerProfileWhereInput = {
     applications?: Prisma.ApplicationListRelationFilter;
     offers?: Prisma.QuickMatchOfferListRelationFilter;
     crewMemberships?: Prisma.CrewMemberListRelationFilter;
+    staffAssignments?: Prisma.JobStaffAssignmentListRelationFilter;
     attendances?: Prisma.AttendanceRecordListRelationFilter;
     earnings?: Prisma.EarningListRelationFilter;
 };
@@ -279,6 +280,7 @@ export type WorkerProfileOrderByWithRelationInput = {
     applications?: Prisma.ApplicationOrderByRelationAggregateInput;
     offers?: Prisma.QuickMatchOfferOrderByRelationAggregateInput;
     crewMemberships?: Prisma.CrewMemberOrderByRelationAggregateInput;
+    staffAssignments?: Prisma.JobStaffAssignmentOrderByRelationAggregateInput;
     attendances?: Prisma.AttendanceRecordOrderByRelationAggregateInput;
     earnings?: Prisma.EarningOrderByRelationAggregateInput;
     _relevance?: Prisma.WorkerProfileOrderByRelevanceInput;
@@ -311,6 +313,7 @@ export type WorkerProfileWhereUniqueInput = Prisma.AtLeast<{
     applications?: Prisma.ApplicationListRelationFilter;
     offers?: Prisma.QuickMatchOfferListRelationFilter;
     crewMemberships?: Prisma.CrewMemberListRelationFilter;
+    staffAssignments?: Prisma.JobStaffAssignmentListRelationFilter;
     attendances?: Prisma.AttendanceRecordListRelationFilter;
     earnings?: Prisma.EarningListRelationFilter;
 }, "id" | "publicId" | "accountId">;
@@ -383,6 +386,7 @@ export type WorkerProfileCreateInput = {
     applications?: Prisma.ApplicationCreateNestedManyWithoutWorkerProfileInput;
     offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutWorkerProfileInput;
     crewMemberships?: Prisma.CrewMemberCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutWorkerInput;
     attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutWorkerInput;
     earnings?: Prisma.EarningCreateNestedManyWithoutWorkerInput;
 };
@@ -409,6 +413,7 @@ export type WorkerProfileUncheckedCreateInput = {
     applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutWorkerProfileInput;
     offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutWorkerProfileInput;
     crewMemberships?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutWorkerInput;
     attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutWorkerInput;
     earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutWorkerInput;
 };
@@ -435,6 +440,7 @@ export type WorkerProfileUpdateInput = {
     applications?: Prisma.ApplicationUpdateManyWithoutWorkerProfileNestedInput;
     offers?: Prisma.QuickMatchOfferUpdateManyWithoutWorkerProfileNestedInput;
     crewMemberships?: Prisma.CrewMemberUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutWorkerNestedInput;
     attendances?: Prisma.AttendanceRecordUpdateManyWithoutWorkerNestedInput;
     earnings?: Prisma.EarningUpdateManyWithoutWorkerNestedInput;
 };
@@ -461,6 +467,7 @@ export type WorkerProfileUncheckedUpdateInput = {
     applications?: Prisma.ApplicationUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     crewMemberships?: Prisma.CrewMemberUncheckedUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutWorkerNestedInput;
     attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutWorkerNestedInput;
     earnings?: Prisma.EarningUncheckedUpdateManyWithoutWorkerNestedInput;
 };
@@ -757,6 +764,18 @@ export type WorkerProfileUpdateOneRequiredWithoutCrewMembershipsNestedInput = {
     connect?: Prisma.WorkerProfileWhereUniqueInput;
     update?: Prisma.XOR<Prisma.XOR<Prisma.WorkerProfileUpdateToOneWithWhereWithoutCrewMembershipsInput, Prisma.WorkerProfileUpdateWithoutCrewMembershipsInput>, Prisma.WorkerProfileUncheckedUpdateWithoutCrewMembershipsInput>;
 };
+export type WorkerProfileCreateNestedOneWithoutStaffAssignmentsInput = {
+    create?: Prisma.XOR<Prisma.WorkerProfileCreateWithoutStaffAssignmentsInput, Prisma.WorkerProfileUncheckedCreateWithoutStaffAssignmentsInput>;
+    connectOrCreate?: Prisma.WorkerProfileCreateOrConnectWithoutStaffAssignmentsInput;
+    connect?: Prisma.WorkerProfileWhereUniqueInput;
+};
+export type WorkerProfileUpdateOneRequiredWithoutStaffAssignmentsNestedInput = {
+    create?: Prisma.XOR<Prisma.WorkerProfileCreateWithoutStaffAssignmentsInput, Prisma.WorkerProfileUncheckedCreateWithoutStaffAssignmentsInput>;
+    connectOrCreate?: Prisma.WorkerProfileCreateOrConnectWithoutStaffAssignmentsInput;
+    upsert?: Prisma.WorkerProfileUpsertWithoutStaffAssignmentsInput;
+    connect?: Prisma.WorkerProfileWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.WorkerProfileUpdateToOneWithWhereWithoutStaffAssignmentsInput, Prisma.WorkerProfileUpdateWithoutStaffAssignmentsInput>, Prisma.WorkerProfileUncheckedUpdateWithoutStaffAssignmentsInput>;
+};
 export type WorkerProfileCreateNestedOneWithoutAttendancesInput = {
     create?: Prisma.XOR<Prisma.WorkerProfileCreateWithoutAttendancesInput, Prisma.WorkerProfileUncheckedCreateWithoutAttendancesInput>;
     connectOrCreate?: Prisma.WorkerProfileCreateOrConnectWithoutAttendancesInput;
@@ -815,6 +834,7 @@ export type WorkerProfileCreateWithoutAccountInput = {
     applications?: Prisma.ApplicationCreateNestedManyWithoutWorkerProfileInput;
     offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutWorkerProfileInput;
     crewMemberships?: Prisma.CrewMemberCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutWorkerInput;
     attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutWorkerInput;
     earnings?: Prisma.EarningCreateNestedManyWithoutWorkerInput;
 };
@@ -840,6 +860,7 @@ export type WorkerProfileUncheckedCreateWithoutAccountInput = {
     applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutWorkerProfileInput;
     offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutWorkerProfileInput;
     crewMemberships?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutWorkerInput;
     attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutWorkerInput;
     earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutWorkerInput;
 };
@@ -878,6 +899,7 @@ export type WorkerProfileUpdateWithoutAccountInput = {
     applications?: Prisma.ApplicationUpdateManyWithoutWorkerProfileNestedInput;
     offers?: Prisma.QuickMatchOfferUpdateManyWithoutWorkerProfileNestedInput;
     crewMemberships?: Prisma.CrewMemberUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutWorkerNestedInput;
     attendances?: Prisma.AttendanceRecordUpdateManyWithoutWorkerNestedInput;
     earnings?: Prisma.EarningUpdateManyWithoutWorkerNestedInput;
 };
@@ -903,6 +925,7 @@ export type WorkerProfileUncheckedUpdateWithoutAccountInput = {
     applications?: Prisma.ApplicationUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     crewMemberships?: Prisma.CrewMemberUncheckedUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutWorkerNestedInput;
     attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutWorkerNestedInput;
     earnings?: Prisma.EarningUncheckedUpdateManyWithoutWorkerNestedInput;
 };
@@ -928,6 +951,7 @@ export type WorkerProfileCreateWithoutAreaInput = {
     applications?: Prisma.ApplicationCreateNestedManyWithoutWorkerProfileInput;
     offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutWorkerProfileInput;
     crewMemberships?: Prisma.CrewMemberCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutWorkerInput;
     attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutWorkerInput;
     earnings?: Prisma.EarningCreateNestedManyWithoutWorkerInput;
 };
@@ -953,6 +977,7 @@ export type WorkerProfileUncheckedCreateWithoutAreaInput = {
     applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutWorkerProfileInput;
     offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutWorkerProfileInput;
     crewMemberships?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutWorkerInput;
     attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutWorkerInput;
     earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutWorkerInput;
 };
@@ -1021,6 +1046,7 @@ export type WorkerProfileCreateWithoutSkillsInput = {
     applications?: Prisma.ApplicationCreateNestedManyWithoutWorkerProfileInput;
     offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutWorkerProfileInput;
     crewMemberships?: Prisma.CrewMemberCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutWorkerInput;
     attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutWorkerInput;
     earnings?: Prisma.EarningCreateNestedManyWithoutWorkerInput;
 };
@@ -1046,6 +1072,7 @@ export type WorkerProfileUncheckedCreateWithoutSkillsInput = {
     applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutWorkerProfileInput;
     offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutWorkerProfileInput;
     crewMemberships?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutWorkerInput;
     attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutWorkerInput;
     earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutWorkerInput;
 };
@@ -1084,6 +1111,7 @@ export type WorkerProfileUpdateWithoutSkillsInput = {
     applications?: Prisma.ApplicationUpdateManyWithoutWorkerProfileNestedInput;
     offers?: Prisma.QuickMatchOfferUpdateManyWithoutWorkerProfileNestedInput;
     crewMemberships?: Prisma.CrewMemberUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutWorkerNestedInput;
     attendances?: Prisma.AttendanceRecordUpdateManyWithoutWorkerNestedInput;
     earnings?: Prisma.EarningUpdateManyWithoutWorkerNestedInput;
 };
@@ -1109,6 +1137,7 @@ export type WorkerProfileUncheckedUpdateWithoutSkillsInput = {
     applications?: Prisma.ApplicationUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     crewMemberships?: Prisma.CrewMemberUncheckedUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutWorkerNestedInput;
     attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutWorkerNestedInput;
     earnings?: Prisma.EarningUncheckedUpdateManyWithoutWorkerNestedInput;
 };
@@ -1134,6 +1163,7 @@ export type WorkerProfileCreateWithoutApplicationsInput = {
     availability?: Prisma.AvailabilitySlotCreateNestedManyWithoutWorkerProfileInput;
     offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutWorkerProfileInput;
     crewMemberships?: Prisma.CrewMemberCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutWorkerInput;
     attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutWorkerInput;
     earnings?: Prisma.EarningCreateNestedManyWithoutWorkerInput;
 };
@@ -1159,6 +1189,7 @@ export type WorkerProfileUncheckedCreateWithoutApplicationsInput = {
     availability?: Prisma.AvailabilitySlotUncheckedCreateNestedManyWithoutWorkerProfileInput;
     offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutWorkerProfileInput;
     crewMemberships?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutWorkerInput;
     attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutWorkerInput;
     earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutWorkerInput;
 };
@@ -1197,6 +1228,7 @@ export type WorkerProfileUpdateWithoutApplicationsInput = {
     availability?: Prisma.AvailabilitySlotUpdateManyWithoutWorkerProfileNestedInput;
     offers?: Prisma.QuickMatchOfferUpdateManyWithoutWorkerProfileNestedInput;
     crewMemberships?: Prisma.CrewMemberUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutWorkerNestedInput;
     attendances?: Prisma.AttendanceRecordUpdateManyWithoutWorkerNestedInput;
     earnings?: Prisma.EarningUpdateManyWithoutWorkerNestedInput;
 };
@@ -1222,6 +1254,7 @@ export type WorkerProfileUncheckedUpdateWithoutApplicationsInput = {
     availability?: Prisma.AvailabilitySlotUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     crewMemberships?: Prisma.CrewMemberUncheckedUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutWorkerNestedInput;
     attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutWorkerNestedInput;
     earnings?: Prisma.EarningUncheckedUpdateManyWithoutWorkerNestedInput;
 };
@@ -1247,6 +1280,7 @@ export type WorkerProfileCreateWithoutOffersInput = {
     availability?: Prisma.AvailabilitySlotCreateNestedManyWithoutWorkerProfileInput;
     applications?: Prisma.ApplicationCreateNestedManyWithoutWorkerProfileInput;
     crewMemberships?: Prisma.CrewMemberCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutWorkerInput;
     attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutWorkerInput;
     earnings?: Prisma.EarningCreateNestedManyWithoutWorkerInput;
 };
@@ -1272,6 +1306,7 @@ export type WorkerProfileUncheckedCreateWithoutOffersInput = {
     availability?: Prisma.AvailabilitySlotUncheckedCreateNestedManyWithoutWorkerProfileInput;
     applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutWorkerProfileInput;
     crewMemberships?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutWorkerInput;
     attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutWorkerInput;
     earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutWorkerInput;
 };
@@ -1310,6 +1345,7 @@ export type WorkerProfileUpdateWithoutOffersInput = {
     availability?: Prisma.AvailabilitySlotUpdateManyWithoutWorkerProfileNestedInput;
     applications?: Prisma.ApplicationUpdateManyWithoutWorkerProfileNestedInput;
     crewMemberships?: Prisma.CrewMemberUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutWorkerNestedInput;
     attendances?: Prisma.AttendanceRecordUpdateManyWithoutWorkerNestedInput;
     earnings?: Prisma.EarningUpdateManyWithoutWorkerNestedInput;
 };
@@ -1335,6 +1371,7 @@ export type WorkerProfileUncheckedUpdateWithoutOffersInput = {
     availability?: Prisma.AvailabilitySlotUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     applications?: Prisma.ApplicationUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     crewMemberships?: Prisma.CrewMemberUncheckedUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutWorkerNestedInput;
     attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutWorkerNestedInput;
     earnings?: Prisma.EarningUncheckedUpdateManyWithoutWorkerNestedInput;
 };
@@ -1360,6 +1397,7 @@ export type WorkerProfileCreateWithoutCrewMembershipsInput = {
     availability?: Prisma.AvailabilitySlotCreateNestedManyWithoutWorkerProfileInput;
     applications?: Prisma.ApplicationCreateNestedManyWithoutWorkerProfileInput;
     offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutWorkerInput;
     attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutWorkerInput;
     earnings?: Prisma.EarningCreateNestedManyWithoutWorkerInput;
 };
@@ -1385,6 +1423,7 @@ export type WorkerProfileUncheckedCreateWithoutCrewMembershipsInput = {
     availability?: Prisma.AvailabilitySlotUncheckedCreateNestedManyWithoutWorkerProfileInput;
     applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutWorkerProfileInput;
     offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutWorkerInput;
     attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutWorkerInput;
     earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutWorkerInput;
 };
@@ -1423,6 +1462,7 @@ export type WorkerProfileUpdateWithoutCrewMembershipsInput = {
     availability?: Prisma.AvailabilitySlotUpdateManyWithoutWorkerProfileNestedInput;
     applications?: Prisma.ApplicationUpdateManyWithoutWorkerProfileNestedInput;
     offers?: Prisma.QuickMatchOfferUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutWorkerNestedInput;
     attendances?: Prisma.AttendanceRecordUpdateManyWithoutWorkerNestedInput;
     earnings?: Prisma.EarningUpdateManyWithoutWorkerNestedInput;
 };
@@ -1448,6 +1488,124 @@ export type WorkerProfileUncheckedUpdateWithoutCrewMembershipsInput = {
     availability?: Prisma.AvailabilitySlotUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     applications?: Prisma.ApplicationUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutWorkerNestedInput;
+    attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutWorkerNestedInput;
+    earnings?: Prisma.EarningUncheckedUpdateManyWithoutWorkerNestedInput;
+};
+export type WorkerProfileCreateWithoutStaffAssignmentsInput = {
+    id?: bigint | number;
+    publicId?: string;
+    fullName: string;
+    photoStorageKey?: string | null;
+    city?: string | null;
+    bio?: string | null;
+    experienceYears?: number | null;
+    openToWork?: boolean;
+    avgRatingMilli?: number;
+    ratingsCount?: number;
+    jobsDoneCount?: number;
+    attendanceRateMilli?: number | null;
+    profileCompletePct?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    account: Prisma.AccountCreateNestedOneWithoutWorkerProfileInput;
+    area?: Prisma.AreaCreateNestedOneWithoutWorkerProfilesInput;
+    skills?: Prisma.WorkerSkillCreateNestedManyWithoutWorkerProfileInput;
+    availability?: Prisma.AvailabilitySlotCreateNestedManyWithoutWorkerProfileInput;
+    applications?: Prisma.ApplicationCreateNestedManyWithoutWorkerProfileInput;
+    offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutWorkerProfileInput;
+    crewMemberships?: Prisma.CrewMemberCreateNestedManyWithoutWorkerProfileInput;
+    attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutWorkerInput;
+    earnings?: Prisma.EarningCreateNestedManyWithoutWorkerInput;
+};
+export type WorkerProfileUncheckedCreateWithoutStaffAssignmentsInput = {
+    id?: bigint | number;
+    publicId?: string;
+    accountId: bigint | number;
+    fullName: string;
+    photoStorageKey?: string | null;
+    city?: string | null;
+    areaId?: bigint | number | null;
+    bio?: string | null;
+    experienceYears?: number | null;
+    openToWork?: boolean;
+    avgRatingMilli?: number;
+    ratingsCount?: number;
+    jobsDoneCount?: number;
+    attendanceRateMilli?: number | null;
+    profileCompletePct?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    skills?: Prisma.WorkerSkillUncheckedCreateNestedManyWithoutWorkerProfileInput;
+    availability?: Prisma.AvailabilitySlotUncheckedCreateNestedManyWithoutWorkerProfileInput;
+    applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutWorkerProfileInput;
+    offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutWorkerProfileInput;
+    crewMemberships?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutWorkerProfileInput;
+    attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutWorkerInput;
+    earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutWorkerInput;
+};
+export type WorkerProfileCreateOrConnectWithoutStaffAssignmentsInput = {
+    where: Prisma.WorkerProfileWhereUniqueInput;
+    create: Prisma.XOR<Prisma.WorkerProfileCreateWithoutStaffAssignmentsInput, Prisma.WorkerProfileUncheckedCreateWithoutStaffAssignmentsInput>;
+};
+export type WorkerProfileUpsertWithoutStaffAssignmentsInput = {
+    update: Prisma.XOR<Prisma.WorkerProfileUpdateWithoutStaffAssignmentsInput, Prisma.WorkerProfileUncheckedUpdateWithoutStaffAssignmentsInput>;
+    create: Prisma.XOR<Prisma.WorkerProfileCreateWithoutStaffAssignmentsInput, Prisma.WorkerProfileUncheckedCreateWithoutStaffAssignmentsInput>;
+    where?: Prisma.WorkerProfileWhereInput;
+};
+export type WorkerProfileUpdateToOneWithWhereWithoutStaffAssignmentsInput = {
+    where?: Prisma.WorkerProfileWhereInput;
+    data: Prisma.XOR<Prisma.WorkerProfileUpdateWithoutStaffAssignmentsInput, Prisma.WorkerProfileUncheckedUpdateWithoutStaffAssignmentsInput>;
+};
+export type WorkerProfileUpdateWithoutStaffAssignmentsInput = {
+    id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number;
+    publicId?: Prisma.StringFieldUpdateOperationsInput | string;
+    fullName?: Prisma.StringFieldUpdateOperationsInput | string;
+    photoStorageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    openToWork?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    avgRatingMilli?: Prisma.IntFieldUpdateOperationsInput | number;
+    ratingsCount?: Prisma.IntFieldUpdateOperationsInput | number;
+    jobsDoneCount?: Prisma.IntFieldUpdateOperationsInput | number;
+    attendanceRateMilli?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    profileCompletePct?: Prisma.IntFieldUpdateOperationsInput | number;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    account?: Prisma.AccountUpdateOneRequiredWithoutWorkerProfileNestedInput;
+    area?: Prisma.AreaUpdateOneWithoutWorkerProfilesNestedInput;
+    skills?: Prisma.WorkerSkillUpdateManyWithoutWorkerProfileNestedInput;
+    availability?: Prisma.AvailabilitySlotUpdateManyWithoutWorkerProfileNestedInput;
+    applications?: Prisma.ApplicationUpdateManyWithoutWorkerProfileNestedInput;
+    offers?: Prisma.QuickMatchOfferUpdateManyWithoutWorkerProfileNestedInput;
+    crewMemberships?: Prisma.CrewMemberUpdateManyWithoutWorkerProfileNestedInput;
+    attendances?: Prisma.AttendanceRecordUpdateManyWithoutWorkerNestedInput;
+    earnings?: Prisma.EarningUpdateManyWithoutWorkerNestedInput;
+};
+export type WorkerProfileUncheckedUpdateWithoutStaffAssignmentsInput = {
+    id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number;
+    publicId?: Prisma.StringFieldUpdateOperationsInput | string;
+    accountId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number;
+    fullName?: Prisma.StringFieldUpdateOperationsInput | string;
+    photoStorageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    areaId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null;
+    bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    openToWork?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    avgRatingMilli?: Prisma.IntFieldUpdateOperationsInput | number;
+    ratingsCount?: Prisma.IntFieldUpdateOperationsInput | number;
+    jobsDoneCount?: Prisma.IntFieldUpdateOperationsInput | number;
+    attendanceRateMilli?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    profileCompletePct?: Prisma.IntFieldUpdateOperationsInput | number;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    skills?: Prisma.WorkerSkillUncheckedUpdateManyWithoutWorkerProfileNestedInput;
+    availability?: Prisma.AvailabilitySlotUncheckedUpdateManyWithoutWorkerProfileNestedInput;
+    applications?: Prisma.ApplicationUncheckedUpdateManyWithoutWorkerProfileNestedInput;
+    offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutWorkerProfileNestedInput;
+    crewMemberships?: Prisma.CrewMemberUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutWorkerNestedInput;
     earnings?: Prisma.EarningUncheckedUpdateManyWithoutWorkerNestedInput;
 };
@@ -1474,6 +1632,7 @@ export type WorkerProfileCreateWithoutAttendancesInput = {
     applications?: Prisma.ApplicationCreateNestedManyWithoutWorkerProfileInput;
     offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutWorkerProfileInput;
     crewMemberships?: Prisma.CrewMemberCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutWorkerInput;
     earnings?: Prisma.EarningCreateNestedManyWithoutWorkerInput;
 };
 export type WorkerProfileUncheckedCreateWithoutAttendancesInput = {
@@ -1499,6 +1658,7 @@ export type WorkerProfileUncheckedCreateWithoutAttendancesInput = {
     applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutWorkerProfileInput;
     offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutWorkerProfileInput;
     crewMemberships?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutWorkerInput;
     earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutWorkerInput;
 };
 export type WorkerProfileCreateOrConnectWithoutAttendancesInput = {
@@ -1537,6 +1697,7 @@ export type WorkerProfileUpdateWithoutAttendancesInput = {
     applications?: Prisma.ApplicationUpdateManyWithoutWorkerProfileNestedInput;
     offers?: Prisma.QuickMatchOfferUpdateManyWithoutWorkerProfileNestedInput;
     crewMemberships?: Prisma.CrewMemberUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutWorkerNestedInput;
     earnings?: Prisma.EarningUpdateManyWithoutWorkerNestedInput;
 };
 export type WorkerProfileUncheckedUpdateWithoutAttendancesInput = {
@@ -1562,6 +1723,7 @@ export type WorkerProfileUncheckedUpdateWithoutAttendancesInput = {
     applications?: Prisma.ApplicationUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     crewMemberships?: Prisma.CrewMemberUncheckedUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutWorkerNestedInput;
     earnings?: Prisma.EarningUncheckedUpdateManyWithoutWorkerNestedInput;
 };
 export type WorkerProfileCreateWithoutEarningsInput = {
@@ -1587,6 +1749,7 @@ export type WorkerProfileCreateWithoutEarningsInput = {
     applications?: Prisma.ApplicationCreateNestedManyWithoutWorkerProfileInput;
     offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutWorkerProfileInput;
     crewMemberships?: Prisma.CrewMemberCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutWorkerInput;
     attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutWorkerInput;
 };
 export type WorkerProfileUncheckedCreateWithoutEarningsInput = {
@@ -1612,6 +1775,7 @@ export type WorkerProfileUncheckedCreateWithoutEarningsInput = {
     applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutWorkerProfileInput;
     offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutWorkerProfileInput;
     crewMemberships?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutWorkerInput;
     attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutWorkerInput;
 };
 export type WorkerProfileCreateOrConnectWithoutEarningsInput = {
@@ -1650,6 +1814,7 @@ export type WorkerProfileUpdateWithoutEarningsInput = {
     applications?: Prisma.ApplicationUpdateManyWithoutWorkerProfileNestedInput;
     offers?: Prisma.QuickMatchOfferUpdateManyWithoutWorkerProfileNestedInput;
     crewMemberships?: Prisma.CrewMemberUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutWorkerNestedInput;
     attendances?: Prisma.AttendanceRecordUpdateManyWithoutWorkerNestedInput;
 };
 export type WorkerProfileUncheckedUpdateWithoutEarningsInput = {
@@ -1675,6 +1840,7 @@ export type WorkerProfileUncheckedUpdateWithoutEarningsInput = {
     applications?: Prisma.ApplicationUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     crewMemberships?: Prisma.CrewMemberUncheckedUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutWorkerNestedInput;
     attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutWorkerNestedInput;
 };
 export type WorkerProfileCreateWithoutAvailabilityInput = {
@@ -1699,6 +1865,7 @@ export type WorkerProfileCreateWithoutAvailabilityInput = {
     applications?: Prisma.ApplicationCreateNestedManyWithoutWorkerProfileInput;
     offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutWorkerProfileInput;
     crewMemberships?: Prisma.CrewMemberCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutWorkerInput;
     attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutWorkerInput;
     earnings?: Prisma.EarningCreateNestedManyWithoutWorkerInput;
 };
@@ -1724,6 +1891,7 @@ export type WorkerProfileUncheckedCreateWithoutAvailabilityInput = {
     applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutWorkerProfileInput;
     offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutWorkerProfileInput;
     crewMemberships?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutWorkerProfileInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutWorkerInput;
     attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutWorkerInput;
     earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutWorkerInput;
 };
@@ -1762,6 +1930,7 @@ export type WorkerProfileUpdateWithoutAvailabilityInput = {
     applications?: Prisma.ApplicationUpdateManyWithoutWorkerProfileNestedInput;
     offers?: Prisma.QuickMatchOfferUpdateManyWithoutWorkerProfileNestedInput;
     crewMemberships?: Prisma.CrewMemberUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutWorkerNestedInput;
     attendances?: Prisma.AttendanceRecordUpdateManyWithoutWorkerNestedInput;
     earnings?: Prisma.EarningUpdateManyWithoutWorkerNestedInput;
 };
@@ -1787,6 +1956,7 @@ export type WorkerProfileUncheckedUpdateWithoutAvailabilityInput = {
     applications?: Prisma.ApplicationUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     crewMemberships?: Prisma.CrewMemberUncheckedUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutWorkerNestedInput;
     attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutWorkerNestedInput;
     earnings?: Prisma.EarningUncheckedUpdateManyWithoutWorkerNestedInput;
 };
@@ -1830,6 +2000,7 @@ export type WorkerProfileUpdateWithoutAreaInput = {
     applications?: Prisma.ApplicationUpdateManyWithoutWorkerProfileNestedInput;
     offers?: Prisma.QuickMatchOfferUpdateManyWithoutWorkerProfileNestedInput;
     crewMemberships?: Prisma.CrewMemberUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutWorkerNestedInput;
     attendances?: Prisma.AttendanceRecordUpdateManyWithoutWorkerNestedInput;
     earnings?: Prisma.EarningUpdateManyWithoutWorkerNestedInput;
 };
@@ -1855,6 +2026,7 @@ export type WorkerProfileUncheckedUpdateWithoutAreaInput = {
     applications?: Prisma.ApplicationUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutWorkerProfileNestedInput;
     crewMemberships?: Prisma.CrewMemberUncheckedUpdateManyWithoutWorkerProfileNestedInput;
+    staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutWorkerNestedInput;
     attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutWorkerNestedInput;
     earnings?: Prisma.EarningUncheckedUpdateManyWithoutWorkerNestedInput;
 };
@@ -1882,6 +2054,7 @@ export type WorkerProfileCountOutputType = {
     applications: number;
     offers: number;
     crewMemberships: number;
+    staffAssignments: number;
     attendances: number;
     earnings: number;
 };
@@ -1891,6 +2064,7 @@ export type WorkerProfileCountOutputTypeSelect<ExtArgs extends runtime.Types.Ext
     applications?: boolean | WorkerProfileCountOutputTypeCountApplicationsArgs;
     offers?: boolean | WorkerProfileCountOutputTypeCountOffersArgs;
     crewMemberships?: boolean | WorkerProfileCountOutputTypeCountCrewMembershipsArgs;
+    staffAssignments?: boolean | WorkerProfileCountOutputTypeCountStaffAssignmentsArgs;
     attendances?: boolean | WorkerProfileCountOutputTypeCountAttendancesArgs;
     earnings?: boolean | WorkerProfileCountOutputTypeCountEarningsArgs;
 };
@@ -1911,6 +2085,9 @@ export type WorkerProfileCountOutputTypeCountOffersArgs<ExtArgs extends runtime.
 };
 export type WorkerProfileCountOutputTypeCountCrewMembershipsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     where?: Prisma.CrewMemberWhereInput;
+};
+export type WorkerProfileCountOutputTypeCountStaffAssignmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.JobStaffAssignmentWhereInput;
 };
 export type WorkerProfileCountOutputTypeCountAttendancesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     where?: Prisma.AttendanceRecordWhereInput;
@@ -1943,6 +2120,7 @@ export type WorkerProfileSelect<ExtArgs extends runtime.Types.Extensions.Interna
     applications?: boolean | Prisma.WorkerProfile$applicationsArgs<ExtArgs>;
     offers?: boolean | Prisma.WorkerProfile$offersArgs<ExtArgs>;
     crewMemberships?: boolean | Prisma.WorkerProfile$crewMembershipsArgs<ExtArgs>;
+    staffAssignments?: boolean | Prisma.WorkerProfile$staffAssignmentsArgs<ExtArgs>;
     attendances?: boolean | Prisma.WorkerProfile$attendancesArgs<ExtArgs>;
     earnings?: boolean | Prisma.WorkerProfile$earningsArgs<ExtArgs>;
     _count?: boolean | Prisma.WorkerProfileCountOutputTypeDefaultArgs<ExtArgs>;
@@ -1975,6 +2153,7 @@ export type WorkerProfileInclude<ExtArgs extends runtime.Types.Extensions.Intern
     applications?: boolean | Prisma.WorkerProfile$applicationsArgs<ExtArgs>;
     offers?: boolean | Prisma.WorkerProfile$offersArgs<ExtArgs>;
     crewMemberships?: boolean | Prisma.WorkerProfile$crewMembershipsArgs<ExtArgs>;
+    staffAssignments?: boolean | Prisma.WorkerProfile$staffAssignmentsArgs<ExtArgs>;
     attendances?: boolean | Prisma.WorkerProfile$attendancesArgs<ExtArgs>;
     earnings?: boolean | Prisma.WorkerProfile$earningsArgs<ExtArgs>;
     _count?: boolean | Prisma.WorkerProfileCountOutputTypeDefaultArgs<ExtArgs>;
@@ -1989,6 +2168,7 @@ export type $WorkerProfilePayload<ExtArgs extends runtime.Types.Extensions.Inter
         applications: Prisma.$ApplicationPayload<ExtArgs>[];
         offers: Prisma.$QuickMatchOfferPayload<ExtArgs>[];
         crewMemberships: Prisma.$CrewMemberPayload<ExtArgs>[];
+        staffAssignments: Prisma.$JobStaffAssignmentPayload<ExtArgs>[];
         attendances: Prisma.$AttendanceRecordPayload<ExtArgs>[];
         earnings: Prisma.$EarningPayload<ExtArgs>[];
     };
@@ -2067,6 +2247,7 @@ export interface Prisma__WorkerProfileClient<T, Null = never, ExtArgs extends ru
     applications<T extends Prisma.WorkerProfile$applicationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkerProfile$applicationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ApplicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     offers<T extends Prisma.WorkerProfile$offersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkerProfile$offersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$QuickMatchOfferPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     crewMemberships<T extends Prisma.WorkerProfile$crewMembershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkerProfile$crewMembershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CrewMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    staffAssignments<T extends Prisma.WorkerProfile$staffAssignmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkerProfile$staffAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$JobStaffAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     attendances<T extends Prisma.WorkerProfile$attendancesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkerProfile$attendancesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AttendanceRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     earnings<T extends Prisma.WorkerProfile$earningsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkerProfile$earningsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EarningPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): runtime.Types.Utils.JsPromise<TResult1 | TResult2>;
@@ -2237,6 +2418,17 @@ export type WorkerProfile$crewMembershipsArgs<ExtArgs extends runtime.Types.Exte
     take?: number;
     skip?: number;
     distinct?: Prisma.CrewMemberScalarFieldEnum | Prisma.CrewMemberScalarFieldEnum[];
+};
+export type WorkerProfile$staffAssignmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.JobStaffAssignmentSelect<ExtArgs> | null;
+    omit?: Prisma.JobStaffAssignmentOmit<ExtArgs> | null;
+    include?: Prisma.JobStaffAssignmentInclude<ExtArgs> | null;
+    where?: Prisma.JobStaffAssignmentWhereInput;
+    orderBy?: Prisma.JobStaffAssignmentOrderByWithRelationInput | Prisma.JobStaffAssignmentOrderByWithRelationInput[];
+    cursor?: Prisma.JobStaffAssignmentWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.JobStaffAssignmentScalarFieldEnum | Prisma.JobStaffAssignmentScalarFieldEnum[];
 };
 export type WorkerProfile$attendancesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     select?: Prisma.AttendanceRecordSelect<ExtArgs> | null;

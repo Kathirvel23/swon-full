@@ -24,6 +24,7 @@ export type JobWelfare = Prisma.JobWelfareModel;
 export type Application = Prisma.ApplicationModel;
 export type QuickMatchOffer = Prisma.QuickMatchOfferModel;
 export type CrewMember = Prisma.CrewMemberModel;
+export type JobStaffAssignment = Prisma.JobStaffAssignmentModel;
 export type AttendanceRecord = Prisma.AttendanceRecordModel;
 export type Earning = Prisma.EarningModel;
 export type PaymentTransaction = Prisma.PaymentTransactionModel;

@@ -73,6 +73,7 @@ export const ModelName = {
   Application: 'Application',
   QuickMatchOffer: 'QuickMatchOffer',
   CrewMember: 'CrewMember',
+  JobStaffAssignment: 'JobStaffAssignment',
   AttendanceRecord: 'AttendanceRecord',
   Earning: 'Earning',
   PaymentTransaction: 'PaymentTransaction',
@@ -466,6 +467,22 @@ export const CrewMemberScalarFieldEnum = {
 } as const
 
 export type CrewMemberScalarFieldEnum = (typeof CrewMemberScalarFieldEnum)[keyof typeof CrewMemberScalarFieldEnum]
+
+
+export const JobStaffAssignmentScalarFieldEnum = {
+  id: 'id',
+  publicId: 'publicId',
+  jobId: 'jobId',
+  workerProfileId: 'workerProfileId',
+  role: 'role',
+  status: 'status',
+  assignedByAccountId: 'assignedByAccountId',
+  incentivePct: 'incentivePct',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type JobStaffAssignmentScalarFieldEnum = (typeof JobStaffAssignmentScalarFieldEnum)[keyof typeof JobStaffAssignmentScalarFieldEnum]
 
 
 export const AttendanceRecordScalarFieldEnum = {
@@ -989,6 +1006,15 @@ export const CrewMemberOrderByRelevanceFieldEnum = {
 } as const
 
 export type CrewMemberOrderByRelevanceFieldEnum = (typeof CrewMemberOrderByRelevanceFieldEnum)[keyof typeof CrewMemberOrderByRelevanceFieldEnum]
+
+
+export const JobStaffAssignmentOrderByRelevanceFieldEnum = {
+  publicId: 'publicId',
+  role: 'role',
+  status: 'status'
+} as const
+
+export type JobStaffAssignmentOrderByRelevanceFieldEnum = (typeof JobStaffAssignmentOrderByRelevanceFieldEnum)[keyof typeof JobStaffAssignmentOrderByRelevanceFieldEnum]
 
 
 export const AttendanceRecordOrderByRelevanceFieldEnum = {

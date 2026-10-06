@@ -82,6 +82,7 @@ model WorkerProfile {
   applications    Application[]
   offers          QuickMatchOffer[]
   crewMemberships CrewMember[]
+  staffAssignments JobStaffAssignment[]
   attendances     AttendanceRecord[]
   earnings        Earning[]
 
@@ -381,6 +382,7 @@ model Job {
   applications  Application[]
   offers        QuickMatchOffer[]
   crew          CrewMember[]
+  staffAssignments JobStaffAssignment[]
   attendances   AttendanceRecord[]
   earnings      Earning[]
   ratings       Rating[]
@@ -512,6 +514,31 @@ model CrewMember {
   @@unique([jobId, workerProfileId]) // double-hire guard (tx row lock target)
   @@index([jobId, status]) // roster
   @@map("crew_member")
+}
+
+/// Event-scoped staff role (owner brief 2026-10-05). A HIRED worker can be
+/// given ATTENDANCE_MANAGER for ONE job — and only that job. It is NOT a global
+/// role: the same person stays a normal worker everywhere else.
+model JobStaffAssignment {
+  id                  BigInt    @id @default(autoincrement())
+  publicId            String    @unique @default(cuid()) @map("public_id")
+  jobId               BigInt    @map("job_id")
+  workerProfileId     BigInt    @map("worker_profile_id")
+  role                String    @default("ATTENDANCE_MANAGER") // CHECK: ATTENDANCE_MANAGER
+  status              String    @default("ACTIVE") // CHECK: ACTIVE|REVOKED
+  assignedByAccountId BigInt?   @map("assigned_by_account_id")
+  /// per-event override of the platform incentive % — NULL = use platform_config
+  incentivePct        Decimal?  @map("incentive_pct") @db.Decimal(5, 2)
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  job    Job           @relation(fields: [jobId], references: [id])
+  worker WorkerProfile @relation(fields: [workerProfileId], references: [id])
+
+  @@unique([jobId, workerProfileId, role]) // one manager slot per worker per event
+  @@index([workerProfileId, status]) // "am I a manager anywhere?"
+  @@index([jobId, status]) // event roster of staff
+  @@map("job_staff_assignment")
 }
 
 model AttendanceRecord {

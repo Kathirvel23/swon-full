@@ -18,6 +18,7 @@ import { ConfigController } from './meta/config.controller.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { ProfilesModule } from './profiles/profiles.module.js';
+import { StaffModule } from './staff/staff.module.js';
 
 /**
  * Root module. Wave wiring (execution plan §7): W1 Prisma/Auth/Profiles +
@@ -40,6 +41,7 @@ import { ProfilesModule } from './profiles/profiles.module.js';
     MatchingModule,
     ComplaintsModule,
     AdminModule,
+    StaffModule,
   ],
   controllers: [ConfigController, CatalogController],
 })

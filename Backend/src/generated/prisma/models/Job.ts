@@ -481,6 +481,7 @@ export type JobWhereInput = {
   applications?: Prisma.ApplicationListRelationFilter
   offers?: Prisma.QuickMatchOfferListRelationFilter
   crew?: Prisma.CrewMemberListRelationFilter
+  staffAssignments?: Prisma.JobStaffAssignmentListRelationFilter
   attendances?: Prisma.AttendanceRecordListRelationFilter
   earnings?: Prisma.EarningListRelationFilter
   ratings?: Prisma.RatingListRelationFilter
@@ -529,6 +530,7 @@ export type JobOrderByWithRelationInput = {
   applications?: Prisma.ApplicationOrderByRelationAggregateInput
   offers?: Prisma.QuickMatchOfferOrderByRelationAggregateInput
   crew?: Prisma.CrewMemberOrderByRelationAggregateInput
+  staffAssignments?: Prisma.JobStaffAssignmentOrderByRelationAggregateInput
   attendances?: Prisma.AttendanceRecordOrderByRelationAggregateInput
   earnings?: Prisma.EarningOrderByRelationAggregateInput
   ratings?: Prisma.RatingOrderByRelationAggregateInput
@@ -581,6 +583,7 @@ export type JobWhereUniqueInput = Prisma.AtLeast<{
   applications?: Prisma.ApplicationListRelationFilter
   offers?: Prisma.QuickMatchOfferListRelationFilter
   crew?: Prisma.CrewMemberListRelationFilter
+  staffAssignments?: Prisma.JobStaffAssignmentListRelationFilter
   attendances?: Prisma.AttendanceRecordListRelationFilter
   earnings?: Prisma.EarningListRelationFilter
   ratings?: Prisma.RatingListRelationFilter
@@ -704,6 +707,7 @@ export type JobCreateInput = {
   applications?: Prisma.ApplicationCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingCreateNestedManyWithoutJobInput
@@ -749,6 +753,7 @@ export type JobUncheckedCreateInput = {
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutJobInput
@@ -794,6 +799,7 @@ export type JobUpdateInput = {
   applications?: Prisma.ApplicationUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUpdateManyWithoutJobNestedInput
@@ -839,6 +845,7 @@ export type JobUncheckedUpdateInput = {
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUncheckedUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUncheckedUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutJobNestedInput
@@ -1311,6 +1318,20 @@ export type JobUpdateOneRequiredWithoutCrewNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.JobUpdateToOneWithWhereWithoutCrewInput, Prisma.JobUpdateWithoutCrewInput>, Prisma.JobUncheckedUpdateWithoutCrewInput>
 }
 
+export type JobCreateNestedOneWithoutStaffAssignmentsInput = {
+  create?: Prisma.XOR<Prisma.JobCreateWithoutStaffAssignmentsInput, Prisma.JobUncheckedCreateWithoutStaffAssignmentsInput>
+  connectOrCreate?: Prisma.JobCreateOrConnectWithoutStaffAssignmentsInput
+  connect?: Prisma.JobWhereUniqueInput
+}
+
+export type JobUpdateOneRequiredWithoutStaffAssignmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.JobCreateWithoutStaffAssignmentsInput, Prisma.JobUncheckedCreateWithoutStaffAssignmentsInput>
+  connectOrCreate?: Prisma.JobCreateOrConnectWithoutStaffAssignmentsInput
+  upsert?: Prisma.JobUpsertWithoutStaffAssignmentsInput
+  connect?: Prisma.JobWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.JobUpdateToOneWithWhereWithoutStaffAssignmentsInput, Prisma.JobUpdateWithoutStaffAssignmentsInput>, Prisma.JobUncheckedUpdateWithoutStaffAssignmentsInput>
+}
+
 export type JobCreateNestedOneWithoutAttendancesInput = {
   create?: Prisma.XOR<Prisma.JobCreateWithoutAttendancesInput, Prisma.JobUncheckedCreateWithoutAttendancesInput>
   connectOrCreate?: Prisma.JobCreateOrConnectWithoutAttendancesInput
@@ -1405,6 +1426,7 @@ export type JobCreateWithoutEmployerInput = {
   applications?: Prisma.ApplicationCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingCreateNestedManyWithoutJobInput
@@ -1449,6 +1471,7 @@ export type JobUncheckedCreateWithoutEmployerInput = {
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutJobInput
@@ -1557,6 +1580,7 @@ export type JobCreateWithoutAreaInput = {
   applications?: Prisma.ApplicationCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingCreateNestedManyWithoutJobInput
@@ -1601,6 +1625,7 @@ export type JobUncheckedCreateWithoutAreaInput = {
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutJobInput
@@ -1671,6 +1696,7 @@ export type JobCreateWithoutCategoryInput = {
   applications?: Prisma.ApplicationCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingCreateNestedManyWithoutJobInput
@@ -1715,6 +1741,7 @@ export type JobUncheckedCreateWithoutCategoryInput = {
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutJobInput
@@ -1785,6 +1812,7 @@ export type JobCreateWithoutWorkDaysInput = {
   applications?: Prisma.ApplicationCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingCreateNestedManyWithoutJobInput
@@ -1829,6 +1857,7 @@ export type JobUncheckedCreateWithoutWorkDaysInput = {
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutJobInput
@@ -1889,6 +1918,7 @@ export type JobUpdateWithoutWorkDaysInput = {
   applications?: Prisma.ApplicationUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUpdateManyWithoutJobNestedInput
@@ -1933,6 +1963,7 @@ export type JobUncheckedUpdateWithoutWorkDaysInput = {
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUncheckedUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUncheckedUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutJobNestedInput
@@ -1977,6 +2008,7 @@ export type JobCreateWithoutSkillsInput = {
   applications?: Prisma.ApplicationCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingCreateNestedManyWithoutJobInput
@@ -2021,6 +2053,7 @@ export type JobUncheckedCreateWithoutSkillsInput = {
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutJobInput
@@ -2081,6 +2114,7 @@ export type JobUpdateWithoutSkillsInput = {
   applications?: Prisma.ApplicationUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUpdateManyWithoutJobNestedInput
@@ -2125,6 +2159,7 @@ export type JobUncheckedUpdateWithoutSkillsInput = {
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUncheckedUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUncheckedUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutJobNestedInput
@@ -2169,6 +2204,7 @@ export type JobCreateWithoutWelfareInput = {
   applications?: Prisma.ApplicationCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingCreateNestedManyWithoutJobInput
@@ -2213,6 +2249,7 @@ export type JobUncheckedCreateWithoutWelfareInput = {
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutJobInput
@@ -2273,6 +2310,7 @@ export type JobUpdateWithoutWelfareInput = {
   applications?: Prisma.ApplicationUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUpdateManyWithoutJobNestedInput
@@ -2317,6 +2355,7 @@ export type JobUncheckedUpdateWithoutWelfareInput = {
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUncheckedUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUncheckedUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutJobNestedInput
@@ -2361,6 +2400,7 @@ export type JobCreateWithoutApplicationsInput = {
   welfare?: Prisma.JobWelfareCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingCreateNestedManyWithoutJobInput
@@ -2405,6 +2445,7 @@ export type JobUncheckedCreateWithoutApplicationsInput = {
   welfare?: Prisma.JobWelfareUncheckedCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutJobInput
@@ -2465,6 +2506,7 @@ export type JobUpdateWithoutApplicationsInput = {
   welfare?: Prisma.JobWelfareUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUpdateManyWithoutJobNestedInput
@@ -2509,6 +2551,7 @@ export type JobUncheckedUpdateWithoutApplicationsInput = {
   welfare?: Prisma.JobWelfareUncheckedUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUncheckedUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUncheckedUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutJobNestedInput
@@ -2553,6 +2596,7 @@ export type JobCreateWithoutOffersInput = {
   welfare?: Prisma.JobWelfareCreateNestedManyWithoutJobInput
   applications?: Prisma.ApplicationCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingCreateNestedManyWithoutJobInput
@@ -2597,6 +2641,7 @@ export type JobUncheckedCreateWithoutOffersInput = {
   welfare?: Prisma.JobWelfareUncheckedCreateNestedManyWithoutJobInput
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutJobInput
@@ -2657,6 +2702,7 @@ export type JobUpdateWithoutOffersInput = {
   welfare?: Prisma.JobWelfareUpdateManyWithoutJobNestedInput
   applications?: Prisma.ApplicationUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUpdateManyWithoutJobNestedInput
@@ -2701,6 +2747,7 @@ export type JobUncheckedUpdateWithoutOffersInput = {
   welfare?: Prisma.JobWelfareUncheckedUpdateManyWithoutJobNestedInput
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUncheckedUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUncheckedUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutJobNestedInput
@@ -2745,6 +2792,7 @@ export type JobCreateWithoutCrewInput = {
   welfare?: Prisma.JobWelfareCreateNestedManyWithoutJobInput
   applications?: Prisma.ApplicationCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingCreateNestedManyWithoutJobInput
@@ -2789,6 +2837,7 @@ export type JobUncheckedCreateWithoutCrewInput = {
   welfare?: Prisma.JobWelfareUncheckedCreateNestedManyWithoutJobInput
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutJobInput
@@ -2849,6 +2898,7 @@ export type JobUpdateWithoutCrewInput = {
   welfare?: Prisma.JobWelfareUpdateManyWithoutJobNestedInput
   applications?: Prisma.ApplicationUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUpdateManyWithoutJobNestedInput
@@ -2893,6 +2943,203 @@ export type JobUncheckedUpdateWithoutCrewInput = {
   welfare?: Prisma.JobWelfareUncheckedUpdateManyWithoutJobNestedInput
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutJobNestedInput
+  attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutJobNestedInput
+  earnings?: Prisma.EarningUncheckedUpdateManyWithoutJobNestedInput
+  ratings?: Prisma.RatingUncheckedUpdateManyWithoutJobNestedInput
+  matchLogs?: Prisma.MatchLogUncheckedUpdateManyWithoutJobNestedInput
+}
+
+export type JobCreateWithoutStaffAssignmentsInput = {
+  id?: bigint | number
+  publicId?: string
+  title: string
+  description: string
+  city: string
+  addressLine: string
+  lat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lng?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  timezone?: string
+  startsOn: Date | string
+  endsOn: Date | string
+  dayStartTime: Date | string
+  dayEndTime: Date | string
+  payType: string
+  payAmountPaise: bigint | number
+  currency?: string
+  headcountRequired: number
+  hiredCount?: number
+  applicationCount?: number
+  status?: string
+  minExperienceYears?: number | null
+  requirementsNote?: string | null
+  publishedAt?: Date | string | null
+  hiddenAt?: Date | string | null
+  hiddenReason?: string | null
+  cancelledAt?: Date | string | null
+  cancelReason?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  employer: Prisma.EmployerProfileCreateNestedOneWithoutJobsInput
+  category: Prisma.JobCategoryCreateNestedOneWithoutJobsInput
+  area: Prisma.AreaCreateNestedOneWithoutJobsInput
+  workDays?: Prisma.JobWorkDayCreateNestedManyWithoutJobInput
+  skills?: Prisma.JobSkillCreateNestedManyWithoutJobInput
+  welfare?: Prisma.JobWelfareCreateNestedManyWithoutJobInput
+  applications?: Prisma.ApplicationCreateNestedManyWithoutJobInput
+  offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutJobInput
+  crew?: Prisma.CrewMemberCreateNestedManyWithoutJobInput
+  attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutJobInput
+  earnings?: Prisma.EarningCreateNestedManyWithoutJobInput
+  ratings?: Prisma.RatingCreateNestedManyWithoutJobInput
+  matchLogs?: Prisma.MatchLogCreateNestedManyWithoutJobInput
+}
+
+export type JobUncheckedCreateWithoutStaffAssignmentsInput = {
+  id?: bigint | number
+  publicId?: string
+  employerProfileId: bigint | number
+  title: string
+  description: string
+  categoryId: bigint | number
+  city: string
+  areaId: bigint | number
+  addressLine: string
+  lat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lng?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  timezone?: string
+  startsOn: Date | string
+  endsOn: Date | string
+  dayStartTime: Date | string
+  dayEndTime: Date | string
+  payType: string
+  payAmountPaise: bigint | number
+  currency?: string
+  headcountRequired: number
+  hiredCount?: number
+  applicationCount?: number
+  status?: string
+  minExperienceYears?: number | null
+  requirementsNote?: string | null
+  publishedAt?: Date | string | null
+  hiddenAt?: Date | string | null
+  hiddenReason?: string | null
+  cancelledAt?: Date | string | null
+  cancelReason?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  workDays?: Prisma.JobWorkDayUncheckedCreateNestedManyWithoutJobInput
+  skills?: Prisma.JobSkillUncheckedCreateNestedManyWithoutJobInput
+  welfare?: Prisma.JobWelfareUncheckedCreateNestedManyWithoutJobInput
+  applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutJobInput
+  offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutJobInput
+  crew?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutJobInput
+  attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutJobInput
+  earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutJobInput
+  ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutJobInput
+  matchLogs?: Prisma.MatchLogUncheckedCreateNestedManyWithoutJobInput
+}
+
+export type JobCreateOrConnectWithoutStaffAssignmentsInput = {
+  where: Prisma.JobWhereUniqueInput
+  create: Prisma.XOR<Prisma.JobCreateWithoutStaffAssignmentsInput, Prisma.JobUncheckedCreateWithoutStaffAssignmentsInput>
+}
+
+export type JobUpsertWithoutStaffAssignmentsInput = {
+  update: Prisma.XOR<Prisma.JobUpdateWithoutStaffAssignmentsInput, Prisma.JobUncheckedUpdateWithoutStaffAssignmentsInput>
+  create: Prisma.XOR<Prisma.JobCreateWithoutStaffAssignmentsInput, Prisma.JobUncheckedCreateWithoutStaffAssignmentsInput>
+  where?: Prisma.JobWhereInput
+}
+
+export type JobUpdateToOneWithWhereWithoutStaffAssignmentsInput = {
+  where?: Prisma.JobWhereInput
+  data: Prisma.XOR<Prisma.JobUpdateWithoutStaffAssignmentsInput, Prisma.JobUncheckedUpdateWithoutStaffAssignmentsInput>
+}
+
+export type JobUpdateWithoutStaffAssignmentsInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  publicId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  addressLine?: Prisma.StringFieldUpdateOperationsInput | string
+  lat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lng?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  startsOn?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endsOn?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dayStartTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dayEndTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  payType?: Prisma.StringFieldUpdateOperationsInput | string
+  payAmountPaise?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  headcountRequired?: Prisma.IntFieldUpdateOperationsInput | number
+  hiredCount?: Prisma.IntFieldUpdateOperationsInput | number
+  applicationCount?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  minExperienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  requirementsNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  hiddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  hiddenReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  employer?: Prisma.EmployerProfileUpdateOneRequiredWithoutJobsNestedInput
+  category?: Prisma.JobCategoryUpdateOneRequiredWithoutJobsNestedInput
+  area?: Prisma.AreaUpdateOneRequiredWithoutJobsNestedInput
+  workDays?: Prisma.JobWorkDayUpdateManyWithoutJobNestedInput
+  skills?: Prisma.JobSkillUpdateManyWithoutJobNestedInput
+  welfare?: Prisma.JobWelfareUpdateManyWithoutJobNestedInput
+  applications?: Prisma.ApplicationUpdateManyWithoutJobNestedInput
+  offers?: Prisma.QuickMatchOfferUpdateManyWithoutJobNestedInput
+  crew?: Prisma.CrewMemberUpdateManyWithoutJobNestedInput
+  attendances?: Prisma.AttendanceRecordUpdateManyWithoutJobNestedInput
+  earnings?: Prisma.EarningUpdateManyWithoutJobNestedInput
+  ratings?: Prisma.RatingUpdateManyWithoutJobNestedInput
+  matchLogs?: Prisma.MatchLogUpdateManyWithoutJobNestedInput
+}
+
+export type JobUncheckedUpdateWithoutStaffAssignmentsInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  publicId?: Prisma.StringFieldUpdateOperationsInput | string
+  employerProfileId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  areaId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  addressLine?: Prisma.StringFieldUpdateOperationsInput | string
+  lat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lng?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  startsOn?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endsOn?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dayStartTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dayEndTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  payType?: Prisma.StringFieldUpdateOperationsInput | string
+  payAmountPaise?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  headcountRequired?: Prisma.IntFieldUpdateOperationsInput | number
+  hiredCount?: Prisma.IntFieldUpdateOperationsInput | number
+  applicationCount?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  minExperienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  requirementsNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  hiddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  hiddenReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workDays?: Prisma.JobWorkDayUncheckedUpdateManyWithoutJobNestedInput
+  skills?: Prisma.JobSkillUncheckedUpdateManyWithoutJobNestedInput
+  welfare?: Prisma.JobWelfareUncheckedUpdateManyWithoutJobNestedInput
+  applications?: Prisma.ApplicationUncheckedUpdateManyWithoutJobNestedInput
+  offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutJobNestedInput
+  crew?: Prisma.CrewMemberUncheckedUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUncheckedUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutJobNestedInput
@@ -2938,6 +3185,7 @@ export type JobCreateWithoutAttendancesInput = {
   applications?: Prisma.ApplicationCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingCreateNestedManyWithoutJobInput
   matchLogs?: Prisma.MatchLogCreateNestedManyWithoutJobInput
@@ -2982,6 +3230,7 @@ export type JobUncheckedCreateWithoutAttendancesInput = {
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutJobInput
   matchLogs?: Prisma.MatchLogUncheckedCreateNestedManyWithoutJobInput
@@ -3042,6 +3291,7 @@ export type JobUpdateWithoutAttendancesInput = {
   applications?: Prisma.ApplicationUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUpdateManyWithoutJobNestedInput
   matchLogs?: Prisma.MatchLogUpdateManyWithoutJobNestedInput
@@ -3086,6 +3336,7 @@ export type JobUncheckedUpdateWithoutAttendancesInput = {
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUncheckedUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUncheckedUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutJobNestedInput
   matchLogs?: Prisma.MatchLogUncheckedUpdateManyWithoutJobNestedInput
@@ -3130,6 +3381,7 @@ export type JobCreateWithoutEarningsInput = {
   applications?: Prisma.ApplicationCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingCreateNestedManyWithoutJobInput
   matchLogs?: Prisma.MatchLogCreateNestedManyWithoutJobInput
@@ -3174,6 +3426,7 @@ export type JobUncheckedCreateWithoutEarningsInput = {
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutJobInput
   matchLogs?: Prisma.MatchLogUncheckedCreateNestedManyWithoutJobInput
@@ -3234,6 +3487,7 @@ export type JobUpdateWithoutEarningsInput = {
   applications?: Prisma.ApplicationUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUpdateManyWithoutJobNestedInput
   matchLogs?: Prisma.MatchLogUpdateManyWithoutJobNestedInput
@@ -3278,6 +3532,7 @@ export type JobUncheckedUpdateWithoutEarningsInput = {
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUncheckedUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutJobNestedInput
   matchLogs?: Prisma.MatchLogUncheckedUpdateManyWithoutJobNestedInput
@@ -3322,6 +3577,7 @@ export type JobCreateWithoutRatingsInput = {
   applications?: Prisma.ApplicationCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningCreateNestedManyWithoutJobInput
   matchLogs?: Prisma.MatchLogCreateNestedManyWithoutJobInput
@@ -3366,6 +3622,7 @@ export type JobUncheckedCreateWithoutRatingsInput = {
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutJobInput
   matchLogs?: Prisma.MatchLogUncheckedCreateNestedManyWithoutJobInput
@@ -3426,6 +3683,7 @@ export type JobUpdateWithoutRatingsInput = {
   applications?: Prisma.ApplicationUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUpdateManyWithoutJobNestedInput
   matchLogs?: Prisma.MatchLogUpdateManyWithoutJobNestedInput
@@ -3470,6 +3728,7 @@ export type JobUncheckedUpdateWithoutRatingsInput = {
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUncheckedUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUncheckedUpdateManyWithoutJobNestedInput
   matchLogs?: Prisma.MatchLogUncheckedUpdateManyWithoutJobNestedInput
@@ -3514,6 +3773,7 @@ export type JobCreateWithoutMatchLogsInput = {
   applications?: Prisma.ApplicationCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingCreateNestedManyWithoutJobInput
@@ -3558,6 +3818,7 @@ export type JobUncheckedCreateWithoutMatchLogsInput = {
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutJobInput
   offers?: Prisma.QuickMatchOfferUncheckedCreateNestedManyWithoutJobInput
   crew?: Prisma.CrewMemberUncheckedCreateNestedManyWithoutJobInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedCreateNestedManyWithoutJobInput
   attendances?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutJobInput
   earnings?: Prisma.EarningUncheckedCreateNestedManyWithoutJobInput
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutJobInput
@@ -3618,6 +3879,7 @@ export type JobUpdateWithoutMatchLogsInput = {
   applications?: Prisma.ApplicationUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUpdateManyWithoutJobNestedInput
@@ -3662,6 +3924,7 @@ export type JobUncheckedUpdateWithoutMatchLogsInput = {
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUncheckedUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUncheckedUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutJobNestedInput
@@ -3739,6 +4002,7 @@ export type JobUpdateWithoutEmployerInput = {
   applications?: Prisma.ApplicationUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUpdateManyWithoutJobNestedInput
@@ -3783,6 +4047,7 @@ export type JobUncheckedUpdateWithoutEmployerInput = {
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUncheckedUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUncheckedUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutJobNestedInput
@@ -3895,6 +4160,7 @@ export type JobUpdateWithoutAreaInput = {
   applications?: Prisma.ApplicationUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUpdateManyWithoutJobNestedInput
@@ -3939,6 +4205,7 @@ export type JobUncheckedUpdateWithoutAreaInput = {
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUncheckedUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUncheckedUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutJobNestedInput
@@ -4051,6 +4318,7 @@ export type JobUpdateWithoutCategoryInput = {
   applications?: Prisma.ApplicationUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUpdateManyWithoutJobNestedInput
@@ -4095,6 +4363,7 @@ export type JobUncheckedUpdateWithoutCategoryInput = {
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutJobNestedInput
   offers?: Prisma.QuickMatchOfferUncheckedUpdateManyWithoutJobNestedInput
   crew?: Prisma.CrewMemberUncheckedUpdateManyWithoutJobNestedInput
+  staffAssignments?: Prisma.JobStaffAssignmentUncheckedUpdateManyWithoutJobNestedInput
   attendances?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutJobNestedInput
   earnings?: Prisma.EarningUncheckedUpdateManyWithoutJobNestedInput
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutJobNestedInput
@@ -4147,6 +4416,7 @@ export type JobCountOutputType = {
   applications: number
   offers: number
   crew: number
+  staffAssignments: number
   attendances: number
   earnings: number
   ratings: number
@@ -4160,6 +4430,7 @@ export type JobCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.In
   applications?: boolean | JobCountOutputTypeCountApplicationsArgs
   offers?: boolean | JobCountOutputTypeCountOffersArgs
   crew?: boolean | JobCountOutputTypeCountCrewArgs
+  staffAssignments?: boolean | JobCountOutputTypeCountStaffAssignmentsArgs
   attendances?: boolean | JobCountOutputTypeCountAttendancesArgs
   earnings?: boolean | JobCountOutputTypeCountEarningsArgs
   ratings?: boolean | JobCountOutputTypeCountRatingsArgs
@@ -4216,6 +4487,13 @@ export type JobCountOutputTypeCountOffersArgs<ExtArgs extends runtime.Types.Exte
  */
 export type JobCountOutputTypeCountCrewArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.CrewMemberWhereInput
+}
+
+/**
+ * JobCountOutputType without action
+ */
+export type JobCountOutputTypeCountStaffAssignmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.JobStaffAssignmentWhereInput
 }
 
 /**
@@ -4289,6 +4567,7 @@ export type JobSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
   applications?: boolean | Prisma.Job$applicationsArgs<ExtArgs>
   offers?: boolean | Prisma.Job$offersArgs<ExtArgs>
   crew?: boolean | Prisma.Job$crewArgs<ExtArgs>
+  staffAssignments?: boolean | Prisma.Job$staffAssignmentsArgs<ExtArgs>
   attendances?: boolean | Prisma.Job$attendancesArgs<ExtArgs>
   earnings?: boolean | Prisma.Job$earningsArgs<ExtArgs>
   ratings?: boolean | Prisma.Job$ratingsArgs<ExtArgs>
@@ -4344,6 +4623,7 @@ export type JobInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   applications?: boolean | Prisma.Job$applicationsArgs<ExtArgs>
   offers?: boolean | Prisma.Job$offersArgs<ExtArgs>
   crew?: boolean | Prisma.Job$crewArgs<ExtArgs>
+  staffAssignments?: boolean | Prisma.Job$staffAssignmentsArgs<ExtArgs>
   attendances?: boolean | Prisma.Job$attendancesArgs<ExtArgs>
   earnings?: boolean | Prisma.Job$earningsArgs<ExtArgs>
   ratings?: boolean | Prisma.Job$ratingsArgs<ExtArgs>
@@ -4363,6 +4643,7 @@ export type $JobPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
     applications: Prisma.$ApplicationPayload<ExtArgs>[]
     offers: Prisma.$QuickMatchOfferPayload<ExtArgs>[]
     crew: Prisma.$CrewMemberPayload<ExtArgs>[]
+    staffAssignments: Prisma.$JobStaffAssignmentPayload<ExtArgs>[]
     attendances: Prisma.$AttendanceRecordPayload<ExtArgs>[]
     earnings: Prisma.$EarningPayload<ExtArgs>[]
     ratings: Prisma.$RatingPayload<ExtArgs>[]
@@ -4750,6 +5031,7 @@ export interface Prisma__JobClient<T, Null = never, ExtArgs extends runtime.Type
   applications<T extends Prisma.Job$applicationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Job$applicationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ApplicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   offers<T extends Prisma.Job$offersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Job$offersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$QuickMatchOfferPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   crew<T extends Prisma.Job$crewArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Job$crewArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CrewMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  staffAssignments<T extends Prisma.Job$staffAssignmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Job$staffAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$JobStaffAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   attendances<T extends Prisma.Job$attendancesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Job$attendancesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AttendanceRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   earnings<T extends Prisma.Job$earningsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Job$earningsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EarningPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ratings<T extends Prisma.Job$ratingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Job$ratingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RatingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -5304,6 +5586,30 @@ export type Job$crewArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   take?: number
   skip?: number
   distinct?: Prisma.CrewMemberScalarFieldEnum | Prisma.CrewMemberScalarFieldEnum[]
+}
+
+/**
+ * Job.staffAssignments
+ */
+export type Job$staffAssignmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the JobStaffAssignment
+   */
+  select?: Prisma.JobStaffAssignmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the JobStaffAssignment
+   */
+  omit?: Prisma.JobStaffAssignmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.JobStaffAssignmentInclude<ExtArgs> | null
+  where?: Prisma.JobStaffAssignmentWhereInput
+  orderBy?: Prisma.JobStaffAssignmentOrderByWithRelationInput | Prisma.JobStaffAssignmentOrderByWithRelationInput[]
+  cursor?: Prisma.JobStaffAssignmentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.JobStaffAssignmentScalarFieldEnum | Prisma.JobStaffAssignmentScalarFieldEnum[]
 }
 
 /**

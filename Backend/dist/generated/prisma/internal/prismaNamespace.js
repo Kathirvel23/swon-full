@@ -46,6 +46,7 @@ export const ModelName = {
     Application: 'Application',
     QuickMatchOffer: 'QuickMatchOffer',
     CrewMember: 'CrewMember',
+    JobStaffAssignment: 'JobStaffAssignment',
     AttendanceRecord: 'AttendanceRecord',
     Earning: 'Earning',
     PaymentTransaction: 'PaymentTransaction',
@@ -339,6 +340,18 @@ export const CrewMemberScalarFieldEnum = {
     releasedReason: 'releasedReason',
     hiredAt: 'hiredAt',
     releasedAt: 'releasedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+};
+export const JobStaffAssignmentScalarFieldEnum = {
+    id: 'id',
+    publicId: 'publicId',
+    jobId: 'jobId',
+    workerProfileId: 'workerProfileId',
+    role: 'role',
+    status: 'status',
+    assignedByAccountId: 'assignedByAccountId',
+    incentivePct: 'incentivePct',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
 };
@@ -692,6 +705,11 @@ export const CrewMemberOrderByRelevanceFieldEnum = {
     publicId: 'publicId',
     status: 'status',
     releasedReason: 'releasedReason'
+};
+export const JobStaffAssignmentOrderByRelevanceFieldEnum = {
+    publicId: 'publicId',
+    role: 'role',
+    status: 'status'
 };
 export const AttendanceRecordOrderByRelevanceFieldEnum = {
     publicId: 'publicId',

@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { errorMessage } from '@/api/client';
 import { attendanceApi, type RosterRow } from '@/api/attendance';
+import { staffApi } from '@/api/staff';
 import { AttendanceQR } from '@/components/QR';
 import { CountdownRing, Sheet } from '@/components/feedback';
 import { Button, Screen } from '@/components/screen';
@@ -186,6 +187,9 @@ export default function EmployerAttendanceScreen() {
     await queryClient.invalidateQueries({ queryKey: ['roster', publicId] });
     await queryClient.invalidateQueries({ queryKey: ['attendance-token', publicId] });
     await queryClient.invalidateQueries({ queryKey: ['job-earnings', publicId] });
+    await queryClient.invalidateQueries({ queryKey: ['event-staff', publicId] });
+    await queryClient.invalidateQueries({ queryKey: ['event-incentive', publicId] });
+    await queryClient.invalidateQueries({ queryKey: ['my-event-staff'] });
   };
 
   const act = (fn: () => Promise<unknown>) => {
@@ -247,6 +251,43 @@ export default function EmployerAttendanceScreen() {
 
   const rows = roster.data?.rows ?? [];
   const present = rows.filter((r) => PRESENT_STATUSES.has(r.attendance?.status ?? '')).length;
+
+  /** Event Attendance Manager (owner brief §17): the host designates ONE hired
+   *  crew member who can then mark this event's attendance from their phone.
+   *  The capability is scoped to this job and can be taken back at any time.
+   *  The incentive % is chosen here but computed and written by the server. */
+  const staffQ = useQuery({
+    queryKey: ['event-staff', publicId],
+    queryFn: () => staffApi.staff(publicId),
+    retry: 1,
+  });
+  const manager = staffQ.data?.staff[0] ?? null;
+
+  const makeManager = (row: RosterRow) =>
+    act(async () => {
+      const res = await staffApi.assign(publicId, { workerPublicId: row.worker.publicId });
+      showAlert(
+        'Attendance manager',
+        `${res.worker.fullName} can now mark attendance for this event (incentive ${res.incentivePct}%).`,
+      );
+    });
+
+  const removeManager = () => {
+    if (!manager) return;
+    act(async () => {
+      await staffApi.revoke(publicId, manager.worker.publicId);
+      showAlert('Attendance manager', 'Removed — they are a normal worker on this event again.');
+    });
+  };
+
+  const stampIncentive = () =>
+    act(async () => {
+      const res = await staffApi.applyIncentive(publicId);
+      showAlert(
+        'Manager incentive',
+        `${res.pct}% → ₹${Math.round(res.incentivePaise / 100).toLocaleString('en-IN')} added to the manager's earnings.`,
+      );
+    });
   const secsLeft = token.data
     ? countdown && countdown.key === token.data.payload
       ? countdown.value
@@ -343,6 +384,50 @@ export default function EmployerAttendanceScreen() {
           }}
         />
       ))}
+
+      <Text accessibilityRole="header" style={s.sectionTitle}>
+        Attendance manager
+      </Text>
+      {manager ? (
+        <View style={s.wcard}>
+          <View style={s.wcTop}>
+            <Avatar name={manager.worker.fullName} size={48} />
+            <View style={s.wcMain}>
+              <Text numberOfLines={1} style={s.wcName}>
+                {manager.worker.fullName}
+              </Text>
+              <Text numberOfLines={1} style={s.wcSub}>
+                {`Can mark attendance · incentive ${manager.incentivePct}%`}
+              </Text>
+            </View>
+            <ToneTag status="ACTIVE" label="MANAGER" />
+          </View>
+          <View style={s.wcActions}>
+            <View style={s.grow}>
+              <Button label="Apply incentive" variant="money" size="md" onPress={stampIncentive} />
+            </View>
+            <View style={s.grow}>
+              <Button label="Remove" variant="danger" size="md" onPress={removeManager} />
+            </View>
+          </View>
+        </View>
+      ) : (
+        <>
+          <Text style={s.lede}>
+            No manager yet. Pick one crew member who can mark attendance for this event from their
+            phone.
+          </Text>
+          {rows.map((row) => (
+            <Button
+              key={row.worker.publicId}
+              label={`Make ${row.worker.fullName} manager`}
+              variant="secondary"
+              size="md"
+              onPress={() => makeManager(row)}
+            />
+          ))}
+        </>
+      )}
 
       <Text style={s.footNote}>
         QR + location verify presence; manual marks leave an audit trail.

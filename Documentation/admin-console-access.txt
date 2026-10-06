@@ -1,0 +1,49 @@
+SWON ADMIN CONSOLE — LIVE ACCESS
+=================================
+
+URL:      https://admin.swon.in
+Username: Swon_Admin
+Password: 123456
+
+How it works now
+----------------
+- Opening the URL asks ONLY for the username/password above (browser prompt).
+- Behind that the console signs in to the API silently — you never see a phone
+  or OTP screen. Its API identity is the mobile number that last signed in on
+  this server; that number is registered in ADMIN_PHONES and injected into the
+  console server-side (config.js), so it is never typed or shown.
+
+!! SECURITY — PLEASE READ !!
+----------------------------
+- The password is currently "123456". This console exposes workers' KYC
+  documents and personal data, and the URL is on the public internet. Anyone who
+  finds it and guesses that password gets in. Change it now:
+      printf 'Swon_Admin:%s\n' "$(openssl passwd -apr1 'YOUR-NEW-PASSWORD')" > /etc/nginx/.htpasswd-admin
+      chown root:www-data /etc/nginx/.htpasswd-admin && chmod 640 /etc/nginx/.htpasswd-admin
+      nginx -t && systemctl reload nginx
+- The silent sign-in depends on the API running in simulated-OTP mode
+  (OTP_SIM=true). When a real SMS provider is wired, replace it with a proper
+  admin username/password login on the API, then remove this gate.
+
+To change which admin number the console uses
+---------------------------------------------
+1. Add the new number to ADMIN_PHONES in /var/www/swon/Backend/.env
+2. systemctl restart swon-backend.service
+3. Edit /var/www/swon/admin-site/config.js (window.__ADMIN_PHONE__ = "+91...")
+   Use a number YOU own: the backend grants admin to whoever holds it.
+
+Where things live on the server (201.18.212.164 / srv2025691)
+------------------------------------------------------------
+- Console files:   /var/www/swon/admin-site   (config.js holds the admin number)
+- nginx site:      /etc/nginx/sites-available/swon-admin  (+ symlink in sites-enabled)
+- Password file:   /etc/nginx/.htpasswd-admin   (must be readable by www-data)
+- Certificate:     /etc/letsencrypt/live/admin.swon.in/   (auto-renews)
+- Admin numbers:   ADMIN_PHONES in /var/www/swon/Backend/.env
+- API it talks to: same server, /api proxied to 127.0.0.1:3000
+
+To redeploy after a change to the console:
+    cd "C:\Users\kathi\WorkBridge\Admin"
+    npm run build
+    scp -r dist/. root@201.18.212.164:/var/www/swon/admin-site/
+    # then on the server re-write config.js and re-add the
+    # <script src="/config.js"></script> tag to index.html (upload overwrites both)

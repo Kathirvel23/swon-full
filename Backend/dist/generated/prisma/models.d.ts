@@ -20,6 +20,7 @@ export type * from './models/JobWelfare.js';
 export type * from './models/Application.js';
 export type * from './models/QuickMatchOffer.js';
 export type * from './models/CrewMember.js';
+export type * from './models/JobStaffAssignment.js';
 export type * from './models/AttendanceRecord.js';
 export type * from './models/Earning.js';
 export type * from './models/PaymentTransaction.js';

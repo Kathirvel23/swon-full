@@ -38,112 +38,83 @@ const NAV: { id: PageId; label: string; hint: string }[] = [
 
 type Account = { publicId: string; role: string | null };
 
-function LoginScreen({ onLogin }: { onLogin: (tokens: Tokens) => void }): ReactElement {
-  const [phone, setPhone] = useState('');
-  const [code, setCode] = useState('');
-  const [challengeId, setChallengeId] = useState<string | null>(null);
-  const [devCode, setDevCode] = useState<string | null>(null);
+/**
+ * Console sign-in.
+ *
+ * The visible gate is the web-server username/password prompt (nginx basic-auth
+ * on admin.swon.in). Behind it the console signs in to the API silently on a
+ * fixed admin number, so the operator never sees a phone/OTP screen.
+ *
+ * Ops note: VITE_ADMIN_PHONE must be a number listed in ADMIN_PHONES on the
+ * backend, and the API must be in simulated-OTP mode. When real SMS is wired
+ * this should become a proper admin username/password sign-in.
+ */
+const ADMIN_PHONE =
+  (typeof window !== 'undefined'
+    ? (window as unknown as { __ADMIN_PHONE__?: string }).__ADMIN_PHONE__
+    : undefined) ??
+  (import.meta.env.VITE_ADMIN_PHONE as string | undefined) ??
+  '';
+
+function ConsoleSignIn({ onLogin }: { onLogin: (tokens: Tokens) => void }): ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const sendCode = async () => {
+  const signIn = useCallback(async () => {
     setBusy(true);
     setError(null);
     try {
-      const res = await api.post<{ challengeId: string; devCode?: string }>('/auth/otp/request', {
-        phone: phone.trim(),
+      if (!ADMIN_PHONE) throw new Error('Console is not configured (missing VITE_ADMIN_PHONE).');
+      const sent = await api.post<{ challengeId: string; devCode?: string }>('/auth/otp/request', {
+        phone: ADMIN_PHONE,
       });
-      setChallengeId(res.challengeId);
-      setDevCode(res.devCode ?? null);
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Could not send the code');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const verify = async () => {
-    if (!challengeId) return;
-    setBusy(true);
-    setError(null);
-    try {
+      if (!sent.devCode) {
+        throw new Error('Could not sign in automatically. Ask ops to finish the console setup.');
+      }
       const res = await api.post<{ accessToken: string; refreshToken: string; account: Account }>(
         '/auth/otp/verify',
-        { challengeId, code: code.trim() },
+        { challengeId: sent.challengeId, code: sent.devCode },
       );
       if (res.account.role !== 'admin') {
-        setTokens(null);
-        setError('Signed in, but this account has no admin role. Use an admin phone number.');
-        return;
+        throw new Error(
+          'This console account is not an admin on the server. Ask ops to add its number to ADMIN_PHONES.',
+        );
       }
       const tokens = { accessToken: res.accessToken, refreshToken: res.refreshToken };
       setTokens(tokens);
       onLogin(tokens);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Verification failed');
+      setError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : 'Sign-in failed');
     } finally {
       setBusy(false);
     }
-  };
+  }, [onLogin]);
+
+  useEffect(() => {
+    void signIn();
+  }, [signIn]);
 
   return (
     <div className="shell">
       <main className="content" style={{ maxWidth: 440, margin: '0 auto' }}>
         <header>
-          <h1>Admin sign-in</h1>
-          <p className="muted">Phone OTP — same login as the app; admin role is granted server-side.</p>
+          <h1>SWON Admin</h1>
+          <p className="muted">
+            {busy
+              ? 'Opening your console…'
+              : 'Access is protected by the username and password prompt.'}
+          </p>
         </header>
         <Card>
-          <label className="field-label" htmlFor="admin-phone">
-            Mobile number
-          </label>
-          <input
-            id="admin-phone"
-            className="full"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="+91XXXXXXXXXX"
-            autoComplete="tel"
-          />
-          {!challengeId ? (
+          {busy ? <p className="muted">Signing in…</p> : null}
+          <ErrorBanner error={error} />
+          {error && !busy ? (
             <div className="row-end">
-              <Button
-                variant="primary"
-                className="btn-block"
-                onClick={() => void sendCode()}
-                disabled={busy || phone.length < 12}
-              >
-                {busy ? 'Sending…' : 'Send code'}
+              <Button variant="primary" className="btn-block" onClick={() => void signIn()}>
+                Try again
               </Button>
             </div>
-          ) : (
-            <>
-              <label className="field-label" htmlFor="admin-otp">
-                6-digit code
-              </label>
-              <input
-                id="admin-otp"
-                className="full"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="123456"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-              />
-              {devCode ? <p className="muted">DEV build — your code is {devCode}</p> : null}
-              <div className="row-end">
-                <Button
-                  variant="primary"
-                  className="btn-block"
-                  onClick={() => void verify()}
-                  disabled={busy || code.length !== 6}
-                >
-                  {busy ? 'Verifying…' : 'Verify & enter'}
-                </Button>
-              </div>
-            </>
-          )}
-          <ErrorBanner error={error} />
+          ) : null}
         </Card>
       </main>
     </div>
@@ -366,9 +337,46 @@ function HealthTile(): ReactElement {
 export function App(): ReactElement {
   const [tokens, setTokensState] = useState<Tokens | null>(getTokens());
   const [page, setPage] = useState<PageId>('dashboard');
+  const [checking, setChecking] = useState<boolean>(() => getTokens() !== null);
+
+  // A stale or non-admin session left in localStorage must never hide the
+  // sign-in (it would silently 403 every call). Verify once, then drop it.
+  useEffect(() => {
+    if (!tokens) return;
+    let cancelled = false;
+    api
+      .get<{ account: { role: string | null } }>('/me')
+      .then((me) => {
+        if (!cancelled && me.account.role !== 'admin') {
+          setTokens(null);
+          setTokensState(null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setTokens(null);
+          setTokensState(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setChecking(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [tokens]);
 
   if (!tokens) {
-    return <LoginScreen onLogin={(t) => setTokensState(t)} />;
+    return <ConsoleSignIn onLogin={(t) => setTokensState(t)} />;
+  }
+  if (checking) {
+    return (
+      <div className="shell">
+        <main className="content" style={{ maxWidth: 440, margin: '0 auto' }}>
+          <p className="muted">Opening your console…</p>
+        </main>
+      </div>
+    );
   }
 
   const current = NAV.find((n) => n.id === page)!;
@@ -399,7 +407,7 @@ export function App(): ReactElement {
         <div className="sidebar-foot">
           <HealthTile />
           <button type="button" className="nav" onClick={logout}>
-            Log out
+            Reload session
           </button>
         </div>
       </aside>

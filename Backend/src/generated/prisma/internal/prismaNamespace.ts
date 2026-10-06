@@ -419,6 +419,7 @@ export const ModelName = {
   Application: 'Application',
   QuickMatchOffer: 'QuickMatchOffer',
   CrewMember: 'CrewMember',
+  JobStaffAssignment: 'JobStaffAssignment',
   AttendanceRecord: 'AttendanceRecord',
   Earning: 'Earning',
   PaymentTransaction: 'PaymentTransaction',
@@ -452,7 +453,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "account" | "workerProfile" | "employerProfile" | "kycSubmission" | "kycDocument" | "kycConsent" | "documentAccessLog" | "session" | "otpChallenge" | "pushToken" | "area" | "jobCategory" | "skill" | "welfareItem" | "workerSkill" | "job" | "jobWorkDay" | "jobSkill" | "jobWelfare" | "application" | "quickMatchOffer" | "crewMember" | "attendanceRecord" | "earning" | "paymentTransaction" | "paymentEarning" | "rating" | "notification" | "complaint" | "complaintEvent" | "availabilitySlot" | "notificationOutbox" | "notificationDelivery" | "notificationPref" | "smsLog" | "auditLog" | "sanction" | "platformConfig" | "idempotencyKey" | "matchLog"
+    modelProps: "account" | "workerProfile" | "employerProfile" | "kycSubmission" | "kycDocument" | "kycConsent" | "documentAccessLog" | "session" | "otpChallenge" | "pushToken" | "area" | "jobCategory" | "skill" | "welfareItem" | "workerSkill" | "job" | "jobWorkDay" | "jobSkill" | "jobWelfare" | "application" | "quickMatchOffer" | "crewMember" | "jobStaffAssignment" | "attendanceRecord" | "earning" | "paymentTransaction" | "paymentEarning" | "rating" | "notification" | "complaint" | "complaintEvent" | "availabilitySlot" | "notificationOutbox" | "notificationDelivery" | "notificationPref" | "smsLog" | "auditLog" | "sanction" | "platformConfig" | "idempotencyKey" | "matchLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1905,6 +1906,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.CrewMemberCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.CrewMemberCountAggregateOutputType> | number
+        }
+      }
+    }
+    JobStaffAssignment: {
+      payload: Prisma.$JobStaffAssignmentPayload<ExtArgs>
+      fields: Prisma.JobStaffAssignmentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.JobStaffAssignmentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobStaffAssignmentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.JobStaffAssignmentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobStaffAssignmentPayload>
+        }
+        findFirst: {
+          args: Prisma.JobStaffAssignmentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobStaffAssignmentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.JobStaffAssignmentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobStaffAssignmentPayload>
+        }
+        findMany: {
+          args: Prisma.JobStaffAssignmentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobStaffAssignmentPayload>[]
+        }
+        create: {
+          args: Prisma.JobStaffAssignmentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobStaffAssignmentPayload>
+        }
+        createMany: {
+          args: Prisma.JobStaffAssignmentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.JobStaffAssignmentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobStaffAssignmentPayload>
+        }
+        update: {
+          args: Prisma.JobStaffAssignmentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobStaffAssignmentPayload>
+        }
+        deleteMany: {
+          args: Prisma.JobStaffAssignmentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.JobStaffAssignmentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.JobStaffAssignmentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobStaffAssignmentPayload>
+        }
+        aggregate: {
+          args: Prisma.JobStaffAssignmentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateJobStaffAssignment>
+        }
+        groupBy: {
+          args: Prisma.JobStaffAssignmentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JobStaffAssignmentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.JobStaffAssignmentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JobStaffAssignmentCountAggregateOutputType> | number
         }
       }
     }
@@ -3494,6 +3561,22 @@ export const CrewMemberScalarFieldEnum = {
 export type CrewMemberScalarFieldEnum = (typeof CrewMemberScalarFieldEnum)[keyof typeof CrewMemberScalarFieldEnum]
 
 
+export const JobStaffAssignmentScalarFieldEnum = {
+  id: 'id',
+  publicId: 'publicId',
+  jobId: 'jobId',
+  workerProfileId: 'workerProfileId',
+  role: 'role',
+  status: 'status',
+  assignedByAccountId: 'assignedByAccountId',
+  incentivePct: 'incentivePct',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type JobStaffAssignmentScalarFieldEnum = (typeof JobStaffAssignmentScalarFieldEnum)[keyof typeof JobStaffAssignmentScalarFieldEnum]
+
+
 export const AttendanceRecordScalarFieldEnum = {
   id: 'id',
   publicId: 'publicId',
@@ -4017,6 +4100,15 @@ export const CrewMemberOrderByRelevanceFieldEnum = {
 export type CrewMemberOrderByRelevanceFieldEnum = (typeof CrewMemberOrderByRelevanceFieldEnum)[keyof typeof CrewMemberOrderByRelevanceFieldEnum]
 
 
+export const JobStaffAssignmentOrderByRelevanceFieldEnum = {
+  publicId: 'publicId',
+  role: 'role',
+  status: 'status'
+} as const
+
+export type JobStaffAssignmentOrderByRelevanceFieldEnum = (typeof JobStaffAssignmentOrderByRelevanceFieldEnum)[keyof typeof JobStaffAssignmentOrderByRelevanceFieldEnum]
+
+
 export const AttendanceRecordOrderByRelevanceFieldEnum = {
   publicId: 'publicId',
   status: 'status',
@@ -4430,6 +4522,7 @@ export type GlobalOmitConfig = {
   application?: Prisma.ApplicationOmit
   quickMatchOffer?: Prisma.QuickMatchOfferOmit
   crewMember?: Prisma.CrewMemberOmit
+  jobStaffAssignment?: Prisma.JobStaffAssignmentOmit
   attendanceRecord?: Prisma.AttendanceRecordOmit
   earning?: Prisma.EarningOmit
   paymentTransaction?: Prisma.PaymentTransactionOmit

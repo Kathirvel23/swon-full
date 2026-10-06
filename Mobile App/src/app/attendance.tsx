@@ -10,6 +10,7 @@ import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming } fr
 
 import { errorMessage } from '@/api/client';
 import { attendanceApi } from '@/api/attendance';
+import { staffApi } from '@/api/staff';
 import { jobsApi } from '@/api/jobs';
 import { AttendanceQR } from '@/components/QR';
 import { CountdownRing } from '@/components/feedback';
@@ -182,6 +183,17 @@ export default function TodayScreen() {
     enabled: jobPublicId != null,
     retry: 1,
   });
+
+  /** Event Attendance Manager (owner brief 2026-10-05 §16): the host can make
+   *  THIS worker the attendance manager for one event. The entry card only
+   *  appears when such an event-scoped assignment exists — a normal worker
+   *  never sees it. */
+  const managerQ = useQuery({
+    queryKey: ['my-event-staff'],
+    queryFn: () => staffApi.myEvents(),
+    retry: 1,
+  });
+  const managerEvents = managerQ.data?.events ?? [];
 
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ['attendance-today'] });
@@ -417,6 +429,29 @@ export default function TodayScreen() {
           ) : null}
         </>
       )}
+
+      {/* ---- event attendance manager (only when designated for an event) ---- */}
+      {managerEvents.length > 0 ? (
+        <View style={styles.card}>
+          <Text style={styles.statLabel}>Attendance manager</Text>
+          <Text style={styles.statValue}>
+            The host asked you to mark attendance for these events
+          </Text>
+          {managerEvents.map((e) => (
+            <Button
+              key={e.job.publicId}
+              label={`Mark attendance · ${e.job.title}`}
+              variant="primary"
+              onPress={() =>
+                router.push({
+                  pathname: '/event-attendance/[publicId]',
+                  params: { publicId: e.job.publicId },
+                })
+              }
+            />
+          ))}
+        </View>
+      ) : null}
 
       <Button label={en.common.retry} variant="secondary" onPress={() => void today.refetch()} />
       <Button label={en.common.back} variant="ghost" onPress={() => router.back()} />

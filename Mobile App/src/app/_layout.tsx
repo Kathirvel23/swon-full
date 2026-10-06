@@ -4,11 +4,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useSession } from '@/store/session';
 import { OfflineBanner } from '@/components/OfflineBanner';
+import { SplashScreen } from '@/components/SplashScreen';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,6 +32,8 @@ const queryClient = new QueryClient({
  */
 export default function RootLayout() {
   const hydrate = useSession((state) => state.hydrate);
+  const hydrated = useSession((state) => state.hydrated);
+  const [splashHidden, setSplashHidden] = useState(false);
   const [fontsLoaded] = useFonts({
     BricolageGrotesque_600SemiBold,
     BricolageGrotesque_800ExtraBold,
@@ -54,6 +57,9 @@ export default function RootLayout() {
         <StatusBar style="auto" />
         <OfflineBanner />
         <Stack screenOptions={{ headerShown: false }} />
+        {!splashHidden ? (
+          <SplashScreen ready={hydrated} onHidden={() => setSplashHidden(true)} />
+        ) : null}
       </SafeAreaProvider>
     </QueryClientProvider>
   );

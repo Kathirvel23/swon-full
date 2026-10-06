@@ -1,26 +1,29 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { api, errorMessage } from '@/api/client';
 import { jobsApi, type JobCard } from '@/api/jobs';
+import { SearchRadar } from '@/components/searchRadar';
 import { Button, Card, Screen } from '@/components/screen';
 import { Chip, StatusChip } from '@/components/ui';
 import { Colors, Elevation, Fonts, Radius, Spacing, TypeScale } from '@/constants/theme';
 import { en } from '@/i18n/strings';
 
 /**
- * Quick Hire hub (owner brief §13/§17) — a deliberately thin screen that
- * REUSES the existing endpoints, nothing new:
- *  - `GET /jobs/mine` (same query key as the home/jobs screens, so the list
- *    is already cached) filtered client-side to OPEN/HIRING opportunities;
- *  - `GET /quick-match/availability?jobPublicId&radiusKm` (owner-only) for
- *    the REAL aggregate counts + distance-band distribution.
- * Every number on screen comes from the server — no invented figures, no
- * premium pricing (none is configured), no map (architecture has none):
- * the counts + bands panel is the smallest viable §17 solution.
+ * Quick Hire hub — thin screen that REUSES existing endpoints, nothing new:
+ *  - `GET /jobs/mine` (shared cache with home/opportunities) filtered to
+ *    OPEN/HIRING opportunities;
+ *  - `GET /quick-match/availability?jobPublicId&radiusKm` (owner-only) for the
+ *    REAL aggregate counts + distance-band distribution.
+ *
+ * V4 reskin (owner brief, 2026-10-05): the counts panel becomes a SWON-branded
+ * SEARCH RADAR (components/searchRadar) with explicit states — ready /
+ * scanning / results / no results / error. The radar is decoration only: the
+ * API exposes counts + distance BANDS, never worker coordinates, so no worker
+ * position is plotted or invented. Every figure still comes from the server.
  */
 
 /** Owner-only availability payload (Backend matching.service.availability). */
@@ -40,10 +43,9 @@ const RADII = [5, 10, 25] as const;
 /** Distance-band labels, verbatim from matching.domain distanceBand(). */
 const BAND_ORDER = ['<2km', '<5km', '<10km', '<25km', '25km+', 'same-city', 'unknown'];
 
-/** Literal §13 copy (i18n parity is owned by another agent). */
 const INTRO = 'Find available workers nearby and fill your requirement faster.';
-const AVAIL_EMPTY = 'Availability will appear when opportunities are open';
 const NO_OPEN_JOBS = 'No open opportunity yet';
+const READY = 'Pick an opportunity to scan its area.';
 
 const bandRank = (band: string): number => {
   const i = BAND_ORDER.indexOf(band);
@@ -107,6 +109,14 @@ export default function QuickHireScreen() {
   const router = useRouter();
   const [picked, setPicked] = useState<string | null>(null);
   const [radius, setRadius] = useState<number>(5);
+  // the radar must not animate while the screen is off-top or unmounted
+  const [focused, setFocused] = useState(true);
+  useFocusEffect(
+    useCallback(() => {
+      setFocused(true);
+      return () => setFocused(false);
+    }, []),
+  );
 
   // same endpoint + query key as the home / opportunities screens (shared cache)
   const mine = useQuery({ queryKey: ['jobs-mine'], queryFn: jobsApi.mine, retry: 1 });
@@ -130,38 +140,15 @@ export default function QuickHireScreen() {
     ? [...data.bands].sort((a, b) => bandRank(a.band) - bandRank(b.band))
     : [];
 
-  const availBody = mine.isLoading || avail.isLoading ? (
-    <View style={s.loadingRow}>
-      <ActivityIndicator size="small" color={Colors.light.primary} />
-      <Text style={s.lede}>Checking nearby availability…</Text>
-    </View>
-  ) : data ? (
-    <>
-      <CountRow label="Available nearby" value={data.availableNearby} />
-      <CountRow label="Matching skills" value={data.matchingSkills} />
-      <CountRow label="Currently working" value={data.currentlyWorking} />
-      <CountRow label="Potential matches" value={data.potentialMatches} />
-      {bands.length > 0 ? (
-        <>
-          <Text style={s.bandHead}>By distance</Text>
-          <View style={s.bandRow}>
-            {bands.map((b) => (
-              <Chip key={b.band} label={`${b.band} · ${b.count}`} size="sm" />
-            ))}
-          </View>
-        </>
-      ) : null}
-    </>
-  ) : (
-    // error / no open job yet — friendly, never fabricated numbers
-    <Text style={s.lede}>{AVAIL_EMPTY}</Text>
-  );
+  const scanning = focused && avail.isFetching;
+  const noJob = openJobs.length === 0 && !mine.isLoading;
+  const found = data?.availableNearby ?? 0;
 
   return (
     <Screen title="Quick Hire" tab="opportunities">
       <Text style={s.intro}>{INTRO}</Text>
 
-      <Card title="Nearby Availability">
+      <Card title="Search area">
         {openJobs.length > 1 ? (
           <View style={s.pickBlock}>
             <Text style={s.pickLabel}>Opportunity</Text>
@@ -209,14 +196,63 @@ export default function QuickHireScreen() {
           </View>
         </View>
 
-        {availBody}
+        {/* the radar — real state drives the animation, never faked positions */}
+        <View style={s.radarWrap}>
+          <SearchRadar active={!noJob && scanning} done={!!data} />
+        </View>
+
+        {/* ---- explicit states ---- */}
+        {mine.isLoading ? (
+          <Text style={s.status}>Loading your opportunities…</Text>
+        ) : noJob ? (
+          <Text style={s.status}>{READY}</Text>
+        ) : avail.isError ? (
+          <>
+            <Text style={s.error}>{errorMessage(avail.error)}</Text>
+            <Button label="Try again" variant="secondary" onPress={() => void avail.refetch()} />
+          </>
+        ) : scanning ? (
+          <Text style={s.status}>Scanning nearby workers…</Text>
+        ) : data && found > 0 ? (
+          <View style={s.resultHead}>
+            <Text style={s.resultCount}>{found}</Text>
+            <Text style={s.resultLabel}>
+              {`worker${found === 1 ? '' : 's'} found within ${data.radiusKm} km`}
+            </Text>
+          </View>
+        ) : data ? (
+          <>
+            <Text style={s.status}>No available workers nearby.</Text>
+            <Text style={s.lede}>Try a wider radius — the bands below show where they are.</Text>
+          </>
+        ) : (
+          <Text style={s.status}>{READY}</Text>
+        )}
+
+        {data ? (
+          <>
+            <View style={s.divider} />
+            <CountRow label="Available nearby" value={data.availableNearby} />
+            <CountRow label="Matching skills" value={data.matchingSkills} />
+            <CountRow label="Currently working" value={data.currentlyWorking} />
+            <CountRow label="Potential matches" value={data.potentialMatches} />
+            {bands.length > 0 ? (
+              <>
+                <Text style={s.bandHead}>By distance</Text>
+                <View style={s.bandRow}>
+                  {bands.map((b) => (
+                    <Chip key={b.band} label={`${b.band} · ${b.count}`} size="sm" />
+                  ))}
+                </View>
+              </>
+            ) : null}
+          </>
+        ) : null}
       </Card>
 
       <Card title="Open opportunities">
         {mine.isError ? <Text style={s.error}>{errorMessage(mine.error)}</Text> : null}
-        {openJobs.length === 0 && !mine.isLoading ? (
-          <Text style={s.lede}>{NO_OPEN_JOBS}</Text>
-        ) : null}
+        {noJob ? <Text style={s.lede}>{NO_OPEN_JOBS}</Text> : null}
         {openJobs.map((job) => (
           <JobRow
             key={job.publicId}
@@ -257,10 +293,39 @@ const s = StyleSheet.create({
     ...TypeScale.bodySm,
     color: Colors.light.danger,
   },
-  loadingRow: {
-    flexDirection: 'row',
+
+  // --- radar + status ---
+  radarWrap: {
     alignItems: 'center',
-    gap: Spacing.two,
+    paddingVertical: Spacing.two,
+  },
+  status: {
+    ...TypeScale.bodySm,
+    fontFamily: Fonts.bodyBold,
+    color: Colors.light.textMuted,
+    textAlign: 'center',
+  },
+  resultHead: {
+    alignItems: 'center',
+    gap: 2,
+  },
+  resultCount: {
+    fontFamily: Fonts.display,
+    fontSize: 34,
+    lineHeight: 38,
+    color: Colors.light.primaryDark,
+    fontVariant: ['tabular-nums'],
+  },
+  resultLabel: {
+    ...TypeScale.bodySm,
+    fontFamily: Fonts.bodySemi,
+    color: Colors.light.textMuted,
+    textAlign: 'center',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: Colors.light.line,
+    marginVertical: Spacing.half,
   },
 
   // --- job picker (availability scope) ---

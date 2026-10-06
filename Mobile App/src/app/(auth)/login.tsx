@@ -1,23 +1,31 @@
+'use no memo'; // React Compiler is incompatible with react-hook-form v7 Controller (drops keystrokes in controlled inputs) — opt this file out.
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import type { TextInputProps } from 'react-native';
+import {
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import type { ImageSourcePropType, TextInputProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { z } from 'zod';
 
 import { errorMessage } from '@/api/client';
 import { authApi } from '@/api/auth';
-import { BrandLogo } from '@/components/brandLogo';
 import { Enter } from '@/components/motion';
 import { Button } from '@/components/screen';
 import {
   Colors,
   Elevation,
   Fonts,
-  Gradients,
   MaxContentWidth,
   Radius,
   Spacing,
@@ -34,49 +42,45 @@ import { en } from '@/i18n/strings';
  *
  * RN convention: RHF <Controller> + onChangeText (register() breaks on RN).
  *
- * V3 auth reskin (prototype s-login): the screen no longer sits under the
- * shared teal topbar — auth screens are full-bleed `--g-home` (teal gradient
- * + warm top-right radial glow), so this file owns its own shell: gradient
- * root → SafeAreaView → ScrollView → centred column. Above the white auth
- * card sits the centred auth-top (brand lockup, tag line, tiny caps line);
- * the card itself is r-xl (24) with 24px top padding, `--shadow-pop`, the
- * canvas pill field (+91 prefix), full-width primary CTA and the legal line.
- * The login stats row + KYC pill from the prototype close the screen.
- * Presentation only — schema, controller and request are untouched.
+ * V4 login reskin — warm, human, work-first (owner reference, 2026-10-05):
+ * the screen moves off the full-bleed teal shell onto the V3 warm canvas with a
+ * soft mint wash up top. The top ~38% is a HERO: brand wordmark, the
+ * "WORKER · OPPORTUNITY · HOST" eyebrow, the "Work Today. A Better Tomorrow."
+ * headline, the "Find work. Build trust. Get paid." line, and a single real
+ * work photo (bundled assets/jobs/*) with two small circular work photos —
+ * communicating worker + opportunity + host without a stock-recruitment look.
+ * Below sits the white login card (r-xxl, --shadow-pop) carrying the unchanged
+ * form: canvas pill field (+91 prefix), full-width primary CTA, hint and legal.
+ * The stats strip + KYC pill close the screen on the warm canvas.
  *
- * Brand entrance ("soft arrival" v2 — owner smoothness pass, 2026-09-30): the
- * auth-top renders the animated BrandLogo lockup (icon ease → wordmark rise →
- * complete halo pulse; timing-based, no spring, no rotating arc) and the card
- * follows at 560ms with a soft 420ms fade-up via Enter. Form logic untouched.
+ * PRESENTATION ONLY. Schema, RHF controller, OTPhand-off, session and routing
+ * are byte-for-byte the same as before. The card is a plain View on purpose
+ * (the field keeps focus on Android / New Architecture); only non-input blocks
+ * carry the FadeInDown entrance (components/motion Enter).
  */
 
 const phoneSchema = z.string().regex(/^[6-9][0-9]{9}$/, en.auth.invalidPhone);
 
 type LoginFormValues = { phone: string };
 
-/** Prototype `.auth-top .ta` — the tiny tracked caps line under the tag. */
+/** Two real, bundled work photos (assets/jobs — CC-licensed, see CREDITS.md). */
+const HERO_PHOTO = require('../../../assets/jobs/construction.jpg') as ImageSourcePropType;
+const CIRCLE_A = require('../../../assets/jobs/delivery.jpg') as ImageSourcePropType;
+const CIRCLE_B = require('../../../assets/jobs/cleaning.jpg') as ImageSourcePropType;
+const WORDMARK = require('../../../assets/brand/swon-wordmark.png') as ImageSourcePropType;
+const WORD_ASPECT = 323 / 1119;
+
+/** Hero copy (owner reference, 2026-10-05). */
+const HEADLINE = 'Work Today.\nA Better Tomorrow.';
+const SUBLINE = 'Find work. Build trust. Get paid.';
 const CAPS = 'WORKER · OPPORTUNITY · HOST';
 
-/** Prototype login stats strip (decorative, verbatim copy). */
+/** Simplified trust strip (existing copy, quieted to feel like real metrics). */
 const STATS = [
-  { value: '12,400+', label: 'WORKERS IN THE FLOCK', tone: Colors.light.onPrimary },
-  { value: '3,200', label: 'OPPORTUNITIES THIS WEEK', tone: Colors.light.yellow },
-  { value: '4.8★', label: 'AVG TRUSTSCORE', tone: Colors.light.primaryLight },
+  { value: '12,400+', label: 'WORKERS IN THE FLOCK', tone: Colors.light.primary },
+  { value: '3,200', label: 'OPPORTUNITIES THIS WEEK', tone: Colors.light.orange },
+  { value: '4.8★', label: 'AVG TRUSTSCORE', tone: Colors.light.green },
 ] as const;
-
-/** Alpha-composited theme token (prototype --g-home warm corner glow). */
-function glow(hex: string, alpha: number): string {
-  const rgb = parseInt(hex.replace('#', ''), 16);
-  return `rgba(${(rgb >> 16) & 255}, ${(rgb >> 8) & 255}, ${rgb & 255}, ${alpha})`;
-}
-
-/** --g-home's radial: warm 0.30 at the top-right corner, feathered to 0. */
-const WARM_GLOW = [
-  glow(Colors.light.orange, 0.3),
-  glow(Colors.light.orange, 0.14),
-  glow(Colors.light.orange, 0),
-] as const;
-
 
 /** Prototype `.field` — canvas box (r14, 1.5px border), label above, teal focus ring. */
 function PillField({
@@ -87,9 +91,10 @@ function PillField({
 }: { label: string; error?: string; prefix?: string } & TextInputProps) {
   const [focused, setFocused] = useState(false);
   return (
-    <View style={styles.field}>
+    <View collapsable={false} style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
       <View
+        collapsable={false}
         style={[
           styles.fieldBox,
           focused && styles.fieldBoxFocus,
@@ -155,39 +160,66 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.root}>
-      {/* prototype --g-home: linear-gradient(160deg, #0F766E 0%, #0B4540 78%) */}
+      {/* soft mint wash across the hero, settling onto the warm canvas */}
       <LinearGradient
-        colors={[...Gradients.teal]}
-        locations={[0, 0.78]}
-        start={{ x: 0.35, y: 0 }}
-        end={{ x: 0.65, y: 1 }}
-        style={StyleSheet.absoluteFill}
-      />
-      {/* ...plus the warm radial glow in the top-right corner */}
-      <LinearGradient
-        colors={WARM_GLOW}
-        locations={[0, 0.34, 0.72]}
-        start={{ x: 1, y: 0 }}
-        end={{ x: 0.1, y: 0.95 }}
+        colors={[Colors.light.tint, Colors.light.background]}
+        locations={[0, 0.55]}
+        start={{ x: 0.1, y: 0 }}
+        end={{ x: 0.3, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
 
-      <SafeAreaView edges={['top']} style={styles.safe}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.inner}>
-            {/* prototype .auth-top — centred brand lockup, tag line, caps line */}
-            <View style={styles.authTop}>
-              <BrandLogo />
-              <Text style={styles.tag}>Find work. Build trust. Get paid.</Text>
-              <Text style={styles.caps}>{CAPS}</Text>
-            </View>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <SafeAreaView edges={['top']} style={styles.flex}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="always"
+          >
+            <View style={styles.inner}>
+              {/* ---- HERO: brand + story + real work photography ---- */}
+              <Enter style={styles.hero}>
+                <Image
+                  source={WORDMARK}
+                  resizeMode="contain"
+                  style={styles.wordmark}
+                  accessibilityRole="image"
+                  accessibilityLabel="SWON"
+                />
+                <Text style={styles.eyebrow}>{CAPS}</Text>
+                <Text style={styles.headline} accessibilityRole="header">
+                  {HEADLINE}
+                </Text>
+                <Text style={styles.subline}>{SUBLINE}</Text>
 
-            {/* brand entrance first (icon → wordmark → halo), then the card follows
-                softly — tightened in the 2026-09-30 smoothness pass (was 780ms/240) */}
-            <Enter delay={560} duration={420}>
+                <View style={styles.photoStage}>
+                  <View style={styles.photoWrap}>
+                    <Image source={HERO_PHOTO} resizeMode="cover" style={styles.photo} />
+                    {/* gentle deep-teal scrim so the photo reads as brand, not stock */}
+                    <LinearGradient
+                      colors={['rgba(11, 69, 64, 0)', 'rgba(11, 69, 64, 0.42)']}
+                      start={{ x: 0.5, y: 0.35 }}
+                      end={{ x: 0.5, y: 1 }}
+                      style={StyleSheet.absoluteFill}
+                    />
+                  </View>
+                  {/* supporting work visuals float OVER the photo edge (siblings of the
+                      clipped photo, so they never get cropped by its rounded corner) */}
+                  <View style={[styles.bubble, styles.bubbleTopRight]} pointerEvents="none">
+                    <Image source={CIRCLE_A} resizeMode="cover" style={styles.bubbleImg} />
+                  </View>
+                  <View style={[styles.bubble, styles.bubbleBottomLeft]} pointerEvents="none">
+                    <Image source={CIRCLE_B} resizeMode="cover" style={styles.bubbleImg} />
+                  </View>
+                </View>
+              </Enter>
+
+              {/* ---- LOGIN CARD: unchanged form, new surface ---- */}
+              {/* Plain View on purpose: wrapping the TextInput in an animated
+                  container made the field lose focus on Android (New Architecture
+                  re-creates/moves the native view). */}
               <View style={styles.card}>
                 <View style={styles.cardHead}>
                   <Text style={styles.cardTitle} accessibilityRole="header">
@@ -241,28 +273,28 @@ export default function LoginScreen() {
                   <Text style={styles.legal}>{en.auth.legal}</Text>
                 </View>
               </View>
-            </Enter>
 
-            {/* prototype login stats strip */}
-            <View style={styles.stats}>
-              {STATS.map((stat) => (
-                <View key={stat.label} style={styles.statBox}>
-                  <Text style={[styles.statValue, { color: stat.tone }]}>{stat.value}</Text>
-                  <Text style={styles.statLabel}>{stat.label}</Text>
+              {/* ---- trust strip (simplified) ---- */}
+              <Enter delay={220} style={styles.stats}>
+                {STATS.map((stat) => (
+                  <View key={stat.label} style={styles.statBox}>
+                    <Text style={[styles.statValue, { color: stat.tone }]}>{stat.value}</Text>
+                    <Text style={styles.statLabel}>{stat.label}</Text>
+                  </View>
+                ))}
+              </Enter>
+
+              {/* ---- KYC pill ---- */}
+              <Enter delay={280} style={styles.kycWrap}>
+                <View style={styles.kyc}>
+                  <Ionicons name="shield-checkmark" size={14} color={Colors.light.primaryDark} />
+                  <Text style={styles.kycText}>KYC-protected marketplace</Text>
                 </View>
-              ))}
+              </Enter>
             </View>
-
-            {/* prototype KYC pill — pinned to the bottom of the column */}
-            <View style={styles.kycWrap}>
-              <View style={styles.kyc}>
-                <Ionicons name="shield-checkmark" size={14} color={Colors.light.onPrimary} />
-                <Text style={styles.kycText}>KYC-protected marketplace</Text>
-              </View>
-            </View>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
+          </ScrollView>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -270,14 +302,14 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: Colors.light.primaryDeep,
+    backgroundColor: Colors.light.background,
   },
-  safe: {
+  flex: {
     flex: 1,
   },
   scrollContent: {
     padding: Spacing.three,
-    paddingTop: 46, // prototype .auth-screen .screen-body { padding-top: 46px }
+    paddingTop: Spacing.two,
     flexGrow: 1,
   },
   inner: {
@@ -286,43 +318,95 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     flexGrow: 1,
   },
-  authTop: {
-    alignItems: 'center',
-    marginBottom: 22, // prototype .auth-top { margin-bottom: 22px }
+  // ---- hero ----
+  hero: {
+    gap: 0,
   },
-  tag: {
-    marginTop: 7,
+  wordmark: {
+    width: 112,
+    height: Math.round(112 * WORD_ASPECT),
+    marginBottom: 16,
+  },
+  eyebrow: {
+    fontSize: 11.5,
+    lineHeight: 16,
+    letterSpacing: 1.75,
+    fontFamily: Fonts.bodySemi,
+    color: Colors.light.primary,
+    marginBottom: 6,
+  },
+  headline: {
+    fontFamily: Fonts.display,
+    fontSize: 27,
+    lineHeight: 32,
+    color: Colors.light.primaryDeep,
+    marginBottom: 6,
+  },
+  subline: {
+    fontFamily: Fonts.bodySemi,
     fontSize: 14,
     lineHeight: 20,
-    fontFamily: Fonts.bodyBold,
-    color: Colors.light.onPrimarySoft,
-    textAlign: 'center',
+    color: Colors.light.textMuted,
+    marginBottom: 16,
   },
-  caps: {
-    marginTop: 3,
-    fontSize: 12.5,
-    lineHeight: 17,
-    letterSpacing: 1.75, // prototype .auth-top .ta { letter-spacing: .14em }
-    fontFamily: Fonts.bodySemi,
-    color: 'rgba(255, 255, 255, 0.6)',
-    textAlign: 'center',
+  photoStage: {
+    height: 148,
   },
+  photoWrap: {
+    flex: 1,
+    borderRadius: Radius.xl,
+    overflow: 'hidden',
+    backgroundColor: Colors.light.primaryDeep,
+    ...Elevation.card,
+  },
+  photo: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+  },
+  bubble: {
+    position: 'absolute',
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    borderWidth: 3,
+    borderColor: Colors.light.card,
+    overflow: 'hidden',
+    backgroundColor: Colors.light.card,
+    ...Elevation.card,
+  },
+  bubbleTopRight: {
+    right: -4,
+    top: -4,
+  },
+  bubbleBottomLeft: {
+    left: -4,
+    bottom: -4,
+  },
+  bubbleImg: {
+    width: '100%',
+    height: '100%',
+  },
+  // ---- card ----
   card: {
     gap: Spacing.three,
     backgroundColor: Colors.light.card,
-    borderRadius: Radius.xl, // prototype .auth-card radius 24
-    paddingTop: Spacing.four, // 24 top
-    paddingHorizontal: Spacing.three,
-    paddingBottom: Spacing.three,
-    ...Elevation.pop, // prototype --shadow-pop
+    borderRadius: Radius.xxl, // 30 — soft, native "sheet" feel
+    padding: 22,
+    marginTop: 18,
+    ...Elevation.pop,
   },
   cardHead: {
     gap: Spacing.one,
   },
   cardTitle: {
-    fontSize: 19,
-    lineHeight: 24,
-    fontFamily: Fonts.display, // prototype .auth-card h (display 19/800)
+    fontSize: 22,
+    lineHeight: 28,
+    fontFamily: Fonts.display,
     color: Colors.light.text,
   },
   lead: {
@@ -331,7 +415,7 @@ const styles = StyleSheet.create({
     color: Colors.light.textMuted,
   },
   field: {
-    gap: 6, // prototype .field-label { margin: 14px 0 6px }
+    gap: 6,
   },
   fieldLabel: {
     ...TypeScale.caption,
@@ -347,19 +431,17 @@ const styles = StyleSheet.create({
     minHeight: Touch.min,
     borderWidth: 1.5,
     borderColor: Colors.light.border,
-    borderRadius: Radius.btn, // prototype .field { border-radius: 14px }
+    borderRadius: Radius.btn,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    backgroundColor: Colors.light.background, // prototype var(--canvas)
+    backgroundColor: Colors.light.background,
   },
   fieldBoxFocus: {
+    // Only recolor on focus. Adding elevation/shadow here changes native view
+    // properties mid-focus, which on the New Architecture can move the
+    // TextInput in the native hierarchy and drop focus.
     borderColor: Colors.light.primary,
     backgroundColor: Colors.light.card,
-    shadowColor: Colors.light.primary,
-    shadowOpacity: 0.18,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 2,
   },
   fieldBoxError: {
     borderColor: Colors.light.danger,
@@ -367,29 +449,29 @@ const styles = StyleSheet.create({
   },
   prefix: {
     ...TypeScale.body,
-    fontFamily: Fonts.bodyExtra, // prototype .field .pfx { font-weight: 800 }
+    fontFamily: Fonts.bodyExtra,
     color: Colors.light.textMuted,
   },
   fieldInput: {
     flex: 1,
     ...TypeScale.body,
-    fontFamily: Fonts.bodyBold, // prototype .field input { 16.5 / 700 }
+    fontFamily: Fonts.bodyBold,
     color: Colors.light.text,
   },
   msgRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginTop: -6, // grid gap 16 → prototype .form-msg { margin-top: 10px }
+    marginTop: -6,
   },
   msgInField: {
-    marginTop: 10, // field gap 6 + 4 → prototype .form-msg { margin-top: 10px }
+    marginTop: 10,
   },
   msgText: {
     flex: 1,
     fontSize: 13.5,
     lineHeight: 18,
-    fontFamily: Fonts.bodyBold, // prototype .form-msg
+    fontFamily: Fonts.bodyBold,
     color: Colors.light.danger,
   },
   cardFoot: {
@@ -406,58 +488,61 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     lineHeight: 17,
     textAlign: 'center',
-    fontFamily: Fonts.bodySemi, // prototype .legal
+    fontFamily: Fonts.bodySemi,
     color: Colors.light.textMuted,
     marginTop: Spacing.one,
   },
+  // ---- stats ----
   stats: {
     flexDirection: 'row',
     gap: Spacing.two,
-    marginTop: 22, // prototype stats strip { margin-top: 22px }
+    marginTop: 14,
   },
   statBox: {
     flex: 1,
     alignItems: 'center',
     gap: 2,
-    paddingVertical: 11,
+    paddingVertical: 12,
     paddingHorizontal: 6,
     borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: Colors.light.card,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    ...Elevation.card,
   },
   statValue: {
     fontFamily: Fonts.display,
-    fontSize: 20,
-    lineHeight: 24,
+    fontSize: 19,
+    lineHeight: 23,
   },
   statLabel: {
-    fontSize: 10.5,
+    fontSize: 10,
     lineHeight: 13,
     fontFamily: Fonts.bodyBold,
-    color: 'rgba(255, 255, 255, 0.75)',
+    color: Colors.light.textMuted,
     textAlign: 'center',
   },
+  // ---- KYC pill ----
   kycWrap: {
-    marginTop: 'auto', // prototype KYC pill sits at the bottom of the column
-    paddingTop: 18,
+    marginTop: 'auto',
+    paddingTop: 12,
     alignItems: 'center',
   },
   kyc: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
+    paddingVertical: 5,
+    paddingHorizontal: 11,
     borderRadius: Radius.pill,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: Colors.light.tint,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    borderColor: Colors.light.primaryLight,
   },
   kycText: {
     fontSize: 11.5,
     lineHeight: 15,
     fontFamily: Fonts.bodyExtra,
-    color: Colors.light.onPrimary,
+    color: Colors.light.primaryDark,
   },
 });

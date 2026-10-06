@@ -33,6 +33,7 @@ export declare const ModelName: {
     readonly Application: "Application";
     readonly QuickMatchOffer: "QuickMatchOffer";
     readonly CrewMember: "CrewMember";
+    readonly JobStaffAssignment: "JobStaffAssignment";
     readonly AttendanceRecord: "AttendanceRecord";
     readonly Earning: "Earning";
     readonly PaymentTransaction: "PaymentTransaction";
@@ -353,6 +354,19 @@ export declare const CrewMemberScalarFieldEnum: {
     readonly updatedAt: "updatedAt";
 };
 export type CrewMemberScalarFieldEnum = (typeof CrewMemberScalarFieldEnum)[keyof typeof CrewMemberScalarFieldEnum];
+export declare const JobStaffAssignmentScalarFieldEnum: {
+    readonly id: "id";
+    readonly publicId: "publicId";
+    readonly jobId: "jobId";
+    readonly workerProfileId: "workerProfileId";
+    readonly role: "role";
+    readonly status: "status";
+    readonly assignedByAccountId: "assignedByAccountId";
+    readonly incentivePct: "incentivePct";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type JobStaffAssignmentScalarFieldEnum = (typeof JobStaffAssignmentScalarFieldEnum)[keyof typeof JobStaffAssignmentScalarFieldEnum];
 export declare const AttendanceRecordScalarFieldEnum: {
     readonly id: "id";
     readonly publicId: "publicId";
@@ -747,6 +761,12 @@ export declare const CrewMemberOrderByRelevanceFieldEnum: {
     readonly releasedReason: "releasedReason";
 };
 export type CrewMemberOrderByRelevanceFieldEnum = (typeof CrewMemberOrderByRelevanceFieldEnum)[keyof typeof CrewMemberOrderByRelevanceFieldEnum];
+export declare const JobStaffAssignmentOrderByRelevanceFieldEnum: {
+    readonly publicId: "publicId";
+    readonly role: "role";
+    readonly status: "status";
+};
+export type JobStaffAssignmentOrderByRelevanceFieldEnum = (typeof JobStaffAssignmentOrderByRelevanceFieldEnum)[keyof typeof JobStaffAssignmentOrderByRelevanceFieldEnum];
 export declare const AttendanceRecordOrderByRelevanceFieldEnum: {
     readonly publicId: "publicId";
     readonly status: "status";

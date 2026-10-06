@@ -23,6 +23,7 @@ import { ConfigController } from './meta/config.controller.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { ProfilesModule } from './profiles/profiles.module.js';
+import { StaffModule } from './staff/staff.module.js';
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -43,6 +44,7 @@ AppModule = __decorate([
             MatchingModule,
             ComplaintsModule,
             AdminModule,
+            StaffModule,
         ],
         controllers: [ConfigController, CatalogController],
     })

@@ -115,11 +115,16 @@ export function Enter({
   style?: StyleProp<ViewStyle>;
 }) {
   const reduced = useReducedMotion();
-  if (reduced) {
-    return <View style={style}>{children}</View>;
-  }
+  // Keep the element type stable across the async reduced-motion resolution.
+  // Switching between <View> and <Animated.View> would remount this entire
+  // subtree (including a focused TextInput) — on Android that blurs the field
+  // and closes the keyboard. Toggling `entering` honors reduced motion without
+  // ever changing the component type.
   return (
-    <Animated.View entering={FadeInDown.duration(duration).delay(delay)} style={style}>
+    <Animated.View
+      entering={reduced ? undefined : FadeInDown.duration(duration).delay(delay)}
+      style={style}
+    >
       {children}
     </Animated.View>
   );

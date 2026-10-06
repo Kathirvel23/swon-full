@@ -96,6 +96,9 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
     get crewMember(): Prisma.CrewMemberDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;
+    get jobStaffAssignment(): Prisma.JobStaffAssignmentDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
     get attendanceRecord(): Prisma.AttendanceRecordDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;

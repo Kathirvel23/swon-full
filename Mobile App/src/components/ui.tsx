@@ -218,13 +218,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   fieldBoxFocus: {
+    // Recolor only — elevation/shadows/borderWidth in the focused style move
+    // the native TextInput on New Architecture and drop focus (see profile).
     borderColor: Colors.light.primary,
-    borderWidth: 2,
-    shadowColor: Colors.light.primary,
-    shadowOpacity: 0.18,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 2,
   },
   fieldBoxError: {
     borderColor: Colors.light.danger,
@@ -265,7 +261,7 @@ export function SearchBar({
 }) {
   const [focused, setFocused] = useState(false);
   return (
-    <View style={[styles.search, focused && styles.searchFocus]}>
+    <View collapsable={false} style={[styles.search, focused && styles.searchFocus]}>
       <Ionicons
         name="search"
         size={20}
@@ -426,9 +422,10 @@ export function TextField({
 }: { label?: string; error?: string } & TextInputProps) {
   const [focused, setFocused] = useState(false);
   return (
-    <View style={styles.field}>
+    <View collapsable={false} style={styles.field}>
       {label ? <Text style={styles.fieldLabel}>{label}</Text> : null}
       <View
+        collapsable={false}
         style={[
           styles.fieldBox,
           focused && styles.fieldBoxFocus,

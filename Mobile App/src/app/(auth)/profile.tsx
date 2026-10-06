@@ -1,8 +1,10 @@
+'use no memo'; // React Compiler is incompatible with react-hook-form v7 Controller (drops keystrokes in controlled inputs) — opt this file out.
+import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { TextInputProps } from 'react-native';
 import { z } from 'zod';
 
@@ -52,9 +54,10 @@ function PillField({
   const [focused, setFocused] = useState(false);
   const multiline = input.multiline === true;
   return (
-    <View style={styles.field}>
+    <View collapsable={false} style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
       <View
+        collapsable={false}
         style={[
           styles.fieldBox,
           multiline && styles.fieldBoxMultiline,
@@ -91,6 +94,7 @@ export default function ProfileScreen() {
   const [areaId, setAreaId] = useState<string | null>(null);
   const [areaTouched, setAreaTouched] = useState(false);
   const [areaSearch, setAreaSearch] = useState('');
+  const [areaOpen, setAreaOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -157,39 +161,26 @@ export default function ProfileScreen() {
       if (!needle) return true;
       return `${area.city} ${area.name}`.toLowerCase().includes(needle);
     });
+    const selected = areas.find((a) => a.publicId === areaId);
     return (
       <View style={styles.field}>
         <Text style={styles.fieldLabel}>{en.auth.areaPick}</Text>
-        <TextInput
-          accessibilityLabel={en.auth.areaSearch}
-          placeholder={en.auth.areaSearch}
-          placeholderTextColor={Colors.light.textMuted}
-          value={areaSearch}
-          onChangeText={setAreaSearch}
-          style={styles.areaSearch}
-        />
-        <ScrollView style={styles.areaScroll}>
-          {areas.map((area) => {
-            const active = areaId === area.publicId;
-            return (
-              <Pressable
-                key={area.publicId}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-                onPress={() => {
-                  setAreaId(area.publicId);
-                  setAreaTouched(true);
-                }}
-                style={[styles.chip, active && styles.chipActive]}
-              >
-                <Text style={[styles.chipText, active && styles.chipTextActive]}>
-                  {area.city} · {area.name}
-                </Text>
-              </Pressable>
-            );
-          })}
-          {areas.length === 0 ? <Text style={styles.muted}>No areas match.</Text> : null}
-        </ScrollView>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            setAreaTouched(true);
+            setAreaOpen(true);
+          }}
+          style={[styles.fieldBox, areaId != null && styles.fieldBoxSelected]}
+        >
+          <Text
+            style={[styles.fieldInput, areaId == null && styles.areaPlaceholder]}
+            numberOfLines={1}
+          >
+            {selected ? `${selected.city} · ${selected.name}` : 'Select your area…'}
+          </Text>
+          <Ionicons name="chevron-down" size={18} color={Colors.light.textMuted} />
+        </Pressable>
         {areaTouched && !areaId ? (
           <Text style={styles.fieldError}>{en.auth.areaRequired}</Text>
         ) : null}
@@ -198,6 +189,54 @@ export default function ProfileScreen() {
             {errorMessage(catalog.error instanceof AppError ? catalog.error : new Error('catalog'))}
           </Text>
         ) : null}
+
+        <Modal
+          visible={areaOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setAreaOpen(false)}
+        >
+          <Pressable style={styles.modalBackdrop} onPress={() => setAreaOpen(false)}>
+            <Pressable style={styles.modalCard} onPress={() => {}}>
+              <Text style={styles.modalTitle}>{en.auth.areaPick}</Text>
+              <TextInput
+                accessibilityLabel={en.auth.areaSearch}
+                placeholder={en.auth.areaSearch}
+                placeholderTextColor={Colors.light.textMuted}
+                value={areaSearch}
+                onChangeText={setAreaSearch}
+                style={[styles.fieldBox, styles.areaSearchInput]}
+              />
+              <ScrollView style={styles.areaScroll} keyboardShouldPersistTaps="handled">
+                {areas.map((area) => {
+                  const active = areaId === area.publicId;
+                  return (
+                    <Pressable
+                      key={area.publicId}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: active }}
+                      onPress={() => {
+                        setAreaId(area.publicId);
+                        setAreaOpen(false);
+                      }}
+                      style={[styles.dropdownRow, active && styles.dropdownRowSelected]}
+                    >
+                      <Text
+                        style={[styles.dropdownRowText, active && styles.dropdownRowTextSelected]}
+                      >
+                        {area.city} · {area.name}
+                      </Text>
+                      {active ? (
+                        <Ionicons name="checkmark" size={16} color={Colors.light.primary} />
+                      ) : null}
+                    </Pressable>
+                  );
+                })}
+                {areas.length === 0 ? <Text style={styles.muted}>No areas match.</Text> : null}
+              </ScrollView>
+            </Pressable>
+          </Pressable>
+        </Modal>
       </View>
     );
   };
@@ -403,14 +442,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   fieldBoxFocus: {
-    borderWidth: 2,
+    // Recolor only. Adding elevation/shadow (or bumping borderWidth) here
+    // changes native view properties mid-focus, which on the New Architecture
+    // can move the TextInput in the native hierarchy and drop focus.
     borderColor: Colors.light.primary,
     backgroundColor: Colors.light.card,
-    shadowColor: Colors.light.primary,
-    shadowOpacity: 0.18,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 2,
   },
   fieldBoxError: {
     borderColor: Colors.light.danger,
@@ -445,6 +481,58 @@ const styles = StyleSheet.create({
   },
   areaScroll: {
     maxHeight: 180,
+  },
+  areaSearchInput: {
+    borderWidth: 1.5,
+    marginBottom: Spacing.two,
+  },
+  areaPlaceholder: {
+    color: Colors.light.textMuted,
+  },
+  fieldBoxSelected: {
+    borderColor: Colors.light.primary,
+    backgroundColor: Colors.light.card,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(11, 30, 28, 0.5)',
+    justifyContent: 'center',
+    padding: Spacing.four,
+  },
+  modalCard: {
+    backgroundColor: Colors.light.card,
+    borderRadius: Radius.xl,
+    padding: Spacing.three,
+    maxHeight: '70%',
+    gap: Spacing.two,
+    ...Elevation.pop,
+  },
+  modalTitle: {
+    fontFamily: Fonts.display,
+    fontSize: 18,
+    lineHeight: 24,
+    color: Colors.light.text,
+  },
+  dropdownRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: Spacing.two,
+    borderRadius: Radius.md,
+  },
+  dropdownRowSelected: {
+    backgroundColor: Colors.light.tint,
+  },
+  dropdownRowText: {
+    ...TypeScale.body,
+    fontFamily: Fonts.bodySemi,
+    color: Colors.light.text,
+    flexShrink: 1,
+  },
+  dropdownRowTextSelected: {
+    fontFamily: Fonts.bodyExtra,
+    color: Colors.light.primaryDark,
   },
   muted: {
     ...TypeScale.bodySm,

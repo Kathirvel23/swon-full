@@ -2,9 +2,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import type { ImageSourcePropType } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Enter } from '@/components/motion';
 import { Button } from '@/components/screen';
 import {
   Colors,
@@ -22,151 +31,175 @@ import { en } from '@/i18n/strings';
  * minimal-profile form, which performs POST /me/onboarding (the ONLY place
  * role is written).
  *
- * V3 auth reskin (prototype s-role): full-bleed `--g-home` shell (teal
- * gradient + warm corner glow) with a centred auth-top heading over two
- * prototype `.role-card`s sitting directly on the brand surface — r-xl,
- * 2.5px `--line` border, 52×52 gradient icon tile (teal = work, warm = hire),
- * display title + muted subtitle and a pill flow-chip row. Selected: primary
- * = teal border + tint + lift, secondary = coral border + soft coral + lift.
- * The dashed aside note and full-width primary CTA follow. Selection logic,
- * a11y radio state and routing untouched.
+ * V4 auth reskin (owner reference, 2026-10-05) — the warm "what do you want to
+ * do?" onboarding step after OTP. The screen moves off the teal shell onto the
+ * V3 warm canvas (#F6F3EC) with the SWON wordmark, a "Welcome to SWON" display
+ * heading and the "How do you want to use SWON today?" question over TWO large
+ * selectable cards: "Find work" (teal/mint accent, real work photo) and
+ * "Hire workers" (warm accent, real work photo). Selected = teal border +
+ * mint fill + check badge + lift; the other card stays fully tappable so the
+ * choice can be changed. A dynamic "Continue as a Worker / Host →" CTA (disabled
+ * until a role is picked) and the honest one-role note close the screen.
+ *
+ * UNCHANGED UNDERNEATH: the role VALUES stay 'worker' | 'employer', and the
+ * action still pushes /profile?role=<value> (role is persisted by
+ * POST /me/onboarding on that screen). No API, state or navigation change.
+ * Supporting copy only states product truth (the one-role-per-account rule).
  */
 
 type ChosenRole = 'worker' | 'employer';
 
-/** Prototype `.r-flow` copy — worker journey, verbatim. */
-const WORKER_FLOW = ['Discover', 'Match', 'Flight Request', 'Work', 'Earnings'];
+/** Real, bundled work photos (assets/jobs — CC-licensed, see CREDITS.md). */
+const WORKER_PHOTO = require('../../../assets/jobs/construction.jpg') as ImageSourcePropType;
+const HOST_PHOTO = require('../../../assets/jobs/cleaning.jpg') as ImageSourcePropType;
+const WORDMARK = require('../../../assets/brand/swon-wordmark.png') as ImageSourcePropType;
+const WORD_ASPECT = 323 / 1119;
 
-/** Prototype `.r-flow` copy — host journey, verbatim. */
-const HOST_FLOW = ['Create', 'Discover', 'Bond', 'Attendance', 'Payment'];
+/** Card chips — real product traits, not invented claims. */
+const WORKER_CHIPS = ['Daily / Temporary', 'Flexible hours', 'Trusted hosts'] as const;
+const HOST_CHIPS = ['Construction', 'Events', 'Delivery', 'More'] as const;
 
-/** Alpha-composited theme token (prototype --g-home warm corner glow). */
-function glow(hex: string, alpha: number): string {
-  const rgb = parseInt(hex.replace('#', ''), 16);
-  return `rgba(${(rgb >> 16) & 255}, ${(rgb >> 8) & 255}, ${rgb & 255}, ${alpha})`;
+function RoleCard({
+  role,
+  title,
+  description,
+  chips,
+  photo,
+  icon,
+  active,
+  onSelect,
+}: {
+  role: ChosenRole;
+  title: string;
+  description: string;
+  chips: readonly string[];
+  photo: ImageSourcePropType;
+  icon: keyof typeof Ionicons.glyphMap;
+  active: boolean;
+  onSelect: () => void;
+}) {
+  const isWorker = role === 'worker';
+  const gradient = isWorker ? Gradients.teal : Gradients.warm;
+  return (
+    <Pressable
+      accessibilityRole="radio"
+      accessibilityState={{ selected: active }}
+      accessibilityLabel={`${title}. ${description}`}
+      onPress={onSelect}
+      style={[styles.card, active && styles.cardActive]}
+    >
+      <View style={styles.cardRow}>
+        <LinearGradient
+          colors={[...gradient]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.iconTile}
+        >
+          <Ionicons name={icon} size={22} color={Colors.light.onPrimary} />
+        </LinearGradient>
+        <View style={styles.cardText}>
+          <Text style={styles.cardTitle}>{title}</Text>
+          <Text style={styles.cardDesc}>{description}</Text>
+        </View>
+        <Image source={photo} resizeMode="cover" style={styles.thumb} />
+      </View>
+
+      <View style={styles.chips}>
+        {chips.map((chip) => (
+          <Text
+            key={chip}
+            style={[styles.chip, isWorker ? styles.chipWorker : styles.chipHost]}
+          >
+            {chip}
+          </Text>
+        ))}
+      </View>
+
+      {active ? (
+        <View style={styles.badge} pointerEvents="none">
+          <Ionicons name="checkmark" size={15} color={Colors.light.onPrimary} />
+        </View>
+      ) : null}
+    </Pressable>
+  );
 }
-
-/** --g-home's radial: warm 0.30 at the top-right corner, feathered to 0. */
-const WARM_GLOW = [
-  glow(Colors.light.orange, 0.3),
-  glow(Colors.light.orange, 0.14),
-  glow(Colors.light.orange, 0),
-] as const;
-
 
 export default function RoleScreen() {
   const router = useRouter();
   const [selected, setSelected] = useState<ChosenRole | null>(null);
 
-  const optionCard = (
-    role: ChosenRole,
-    title: string,
-    description: string,
-    flow: readonly string[],
-  ) => {
-    const active = selected === role;
-    const gradient = role === 'worker' ? Gradients.teal : Gradients.warm;
-    const icon: keyof typeof Ionicons.glyphMap =
-      role === 'worker' ? 'briefcase-outline' : 'people-outline';
-    return (
-      <Pressable
-        accessibilityRole="radio"
-        accessibilityState={{ selected: active }}
-        onPress={() => setSelected(role)}
-        style={[
-          styles.option,
-          active && styles.optionActive,
-          active && role === 'employer' && styles.optionActiveHost,
-        ]}
-      >
-        <View style={styles.optionTop}>
-          <LinearGradient
-            colors={[...gradient]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.iconTile}
-          >
-            <Ionicons name={icon} size={24} color={Colors.light.onPrimary} />
-          </LinearGradient>
-          <View style={styles.optionText}>
-            <Text style={styles.optionTitle}>{title}</Text>
-            <Text style={styles.optionDesc}>{description}</Text>
-          </View>
-        </View>
-        <View style={styles.flow}>
-          {flow.map((step) => (
-            <Text key={step} style={styles.flowChip}>
-              {step}
-            </Text>
-          ))}
-        </View>
-      </Pressable>
-    );
-  };
+  const roleLabel =
+    selected === 'worker' ? en.common.roleWorker : selected === 'employer' ? en.common.roleEmployer : '';
 
   return (
     <View style={styles.root}>
-      {/* prototype --g-home: linear-gradient(160deg, #0F766E 0%, #0B4540 78%) */}
-      <LinearGradient
-        colors={[...Gradients.teal]}
-        locations={[0, 0.78]}
-        start={{ x: 0.35, y: 0 }}
-        end={{ x: 0.65, y: 1 }}
-        style={StyleSheet.absoluteFill}
-      />
-      {/* ...plus the warm radial glow in the top-right corner */}
-      <LinearGradient
-        colors={WARM_GLOW}
-        locations={[0, 0.34, 0.72]}
-        start={{ x: 1, y: 0 }}
-        end={{ x: 0.1, y: 0.95 }}
-        style={StyleSheet.absoluteFill}
-      />
+      {/* very faint mint brand shape — decoration only */}
+      <View style={styles.blobA} pointerEvents="none" />
+      <View style={styles.blobB} pointerEvents="none" />
 
-      <SafeAreaView edges={['top']} style={styles.safe}>
+      <SafeAreaView edges={['top']} style={styles.flex}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.inner}>
-            {/* prototype .auth-top — display heading + tag line */}
-            <View style={styles.authTop}>
+            {/* ---- brand + welcome ---- */}
+            <Enter style={styles.brandBlock}>
+              <Image
+                source={WORDMARK}
+                resizeMode="contain"
+                style={styles.wordmark}
+                accessibilityRole="image"
+                accessibilityLabel="SWON"
+              />
               <Text style={styles.heading} accessibilityRole="header">
                 {en.auth.roleTitle}
               </Text>
-              <Text style={styles.tag}>How will you use the marketplace?</Text>
+              <Text style={styles.sub}>{en.auth.roleSub}</Text>
+            </Enter>
+
+            {/* ---- the two paths ---- */}
+            <View style={styles.grid}>
+              <Enter delay={90}>
+                <RoleCard
+                  role="worker"
+                  title={en.auth.roleWorker}
+                  description={en.auth.roleWorkerDesc}
+                  chips={WORKER_CHIPS}
+                  photo={WORKER_PHOTO}
+                  icon="construct-outline"
+                  active={selected === 'worker'}
+                  onSelect={() => setSelected('worker')}
+                />
+              </Enter>
+              <Enter delay={150}>
+                <RoleCard
+                  role="employer"
+                  title={en.auth.roleEmployer}
+                  description={en.auth.roleEmployerDesc}
+                  chips={HOST_CHIPS}
+                  photo={HOST_PHOTO}
+                  icon="briefcase-outline"
+                  active={selected === 'employer'}
+                  onSelect={() => setSelected('employer')}
+                />
+              </Enter>
             </View>
 
-            <View style={styles.roleGrid}>
-              {optionCard(
-                'worker',
-                en.auth.roleWorker,
-                en.auth.roleWorkerDesc,
-                WORKER_FLOW,
-              )}
-              {optionCard(
-                'employer',
-                en.auth.roleEmployer,
-                en.auth.roleEmployerDesc,
-                HOST_FLOW,
-              )}
-            </View>
-
-            <View style={styles.aside}>
-              <Text style={styles.asideText}>{en.auth.roleNote}</Text>
-            </View>
-
-            <View style={styles.actions}>
+            {/* ---- action ---- */}
+            <Enter delay={210} style={styles.actions}>
               <Button
                 variant="primary"
                 size="lg"
-                label={en.auth.roleContinue}
+                label={roleLabel ? en.auth.roleContinueAs(roleLabel) : en.auth.roleContinue}
                 disabled={!selected}
                 onPress={() =>
                   selected && router.push({ pathname: '/profile', params: { role: selected } })
                 }
               />
-            </View>
+            </Enter>
+
+            <Text style={styles.note}>{en.auth.roleNote}</Text>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -177,124 +210,163 @@ export default function RoleScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: Colors.light.primaryDeep,
+    backgroundColor: Colors.light.background, // #F6F3EC warm canvas
   },
-  safe: {
+  flex: {
     flex: 1,
   },
+  blobA: {
+    position: 'absolute',
+    top: -70,
+    right: -60,
+    width: 210,
+    height: 210,
+    borderRadius: 105,
+    backgroundColor: 'rgba(204, 251, 241, 0.45)',
+  },
+  blobB: {
+    position: 'absolute',
+    top: 90,
+    right: -110,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(253, 224, 71, 0.10)',
+  },
   scrollContent: {
-    padding: Spacing.three,
-    paddingTop: 46, // prototype .auth-screen .screen-body { padding-top: 46px }
+    padding: Spacing.three + 4,
+    paddingTop: Spacing.three,
     flexGrow: 1,
   },
   inner: {
     width: '100%',
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
-    gap: Spacing.three,
   },
-  authTop: {
-    alignItems: 'center',
-    marginBottom: -2, // prototype .auth-top { margin-bottom: 14px } (grid gap 16)
+  // ---- brand + welcome ----
+  brandBlock: {
+    marginBottom: 24,
+  },
+  wordmark: {
+    width: 108,
+    height: Math.round(108 * WORD_ASPECT),
+    marginBottom: 20,
   },
   heading: {
-    fontSize: 26,
+    fontSize: 27,
     lineHeight: 32,
-    fontFamily: Fonts.display, // prototype s-role heading (display 26/800)
-    color: Colors.light.onPrimary,
-    textAlign: 'center',
+    fontFamily: Fonts.display,
+    color: Colors.light.text,
   },
-  tag: {
-    marginTop: 7,
-    fontSize: 13.5,
-    lineHeight: 19,
-    fontFamily: Fonts.bodyBold,
-    color: Colors.light.onPrimarySoft,
-    textAlign: 'center',
+  sub: {
+    marginTop: 6,
+    fontSize: 15,
+    lineHeight: 21,
+    fontFamily: Fonts.bodySemi,
+    color: Colors.light.textMuted,
   },
-  roleGrid: {
-    gap: 13, // prototype .role-grid { gap: 13px }
+  // ---- cards ----
+  grid: {
+    gap: 14,
   },
-  option: {
-    borderRadius: Radius.xl, // prototype .role-card radius 24
-    borderWidth: 2.5,
-    borderColor: Colors.light.line,
-    paddingTop: 18,
-    paddingHorizontal: 17,
-    paddingBottom: 17,
+  card: {
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
     backgroundColor: Colors.light.card,
-    gap: 12, // prototype .r-flow { margin-top: 12px }
+    padding: 18,
+    gap: 12,
+    ...Elevation.card,
   },
-  optionActive: {
-    borderColor: Colors.light.primary, // prototype .role-card.on.primary
+  cardActive: {
+    borderWidth: 2,
+    borderColor: Colors.light.primary, // #0F766E
     backgroundColor: Colors.light.tint,
+    padding: 17, // keep the inner box the same size when the border thickens
     ...Elevation.lift,
   },
-  optionActiveHost: {
-    borderColor: Colors.light.coral, // prototype .role-card.on.secondary
-    backgroundColor: Colors.light.dangerSoft,
-  },
-  optionTop: {
+  cardRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.mid,
+    alignItems: 'flex-start',
+    gap: 12,
   },
   iconTile: {
-    width: 52,
-    height: 52,
-    borderRadius: 17, // prototype .role-card .r-ic (52×52 / r17)
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  optionText: {
+  cardText: {
     flex: 1,
-    gap: Spacing.half,
+    gap: 3,
   },
-  optionTitle: {
-    fontSize: 19,
-    lineHeight: 24,
-    fontFamily: Fonts.display, // prototype .r-t (display 19/800)
+  cardTitle: {
+    fontSize: 18,
+    lineHeight: 23,
+    fontFamily: Fonts.display,
     color: Colors.light.text,
   },
-  optionDesc: {
+  cardDesc: {
     fontSize: 13,
     lineHeight: 18,
-    fontFamily: Fonts.bodyBold, // prototype .r-s (13/700 muted)
+    fontFamily: Fonts.bodyBold,
     color: Colors.light.textMuted,
   },
-  flow: {
+  thumb: {
+    width: 68,
+    height: 68,
+    borderRadius: 16,
+    backgroundColor: Colors.light.line,
+  },
+  chips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 5, // prototype .r-flow { gap: 5px }
+    gap: 6,
   },
-  flowChip: {
+  chip: {
     fontSize: 11.5,
     lineHeight: 15,
     fontFamily: Fonts.bodyBold,
-    color: Colors.light.textMuted,
-    backgroundColor: Colors.light.background, // prototype var(--canvas)
-    borderWidth: 1,
-    borderColor: Colors.light.line,
     borderRadius: Radius.pill,
+    borderWidth: 1,
     paddingVertical: 4,
     paddingHorizontal: 9,
     overflow: 'hidden',
   },
-  aside: {
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: Colors.light.border,
-    borderRadius: Radius.lg, // prototype .card.aside-note (r-lg)
-    padding: Spacing.three,
-    backgroundColor: Colors.light.background, // grid gap already gives the prototype's 16px
+  chipWorker: {
+    color: Colors.light.primaryDark,
+    backgroundColor: Colors.light.tint,
+    borderColor: Colors.light.primaryLight,
   },
-  asideText: {
-    fontSize: 13.5,
-    lineHeight: 22, // prototype aside-note (13.5 / 600 / 1.6)
-    fontFamily: Fonts.bodySemi,
-    color: Colors.light.text,
+  chipHost: {
+    color: Colors.light.warning,
+    backgroundColor: Colors.light.warningSoft,
+    borderColor: '#F6D7A8',
   },
+  badge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: Colors.light.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: Colors.light.card,
+  },
+  // ---- action ----
   actions: {
-    marginTop: -12, // grid gap 16 → prototype CTA { margin-top: 4px }
+    marginTop: 22,
+  },
+  note: {
+    marginTop: 14,
+    fontSize: 13,
+    lineHeight: 19,
+    fontFamily: Fonts.bodySemi,
+    color: Colors.light.textMuted,
+    textAlign: 'center',
   },
 });

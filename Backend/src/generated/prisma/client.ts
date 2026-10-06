@@ -152,6 +152,13 @@ export type QuickMatchOffer = Prisma.QuickMatchOfferModel
  */
 export type CrewMember = Prisma.CrewMemberModel
 /**
+ * Model JobStaffAssignment
+ * Event-scoped staff role (owner brief 2026-10-05). A HIRED worker can be
+ * given ATTENDANCE_MANAGER for ONE job — and only that job. It is NOT a global
+ * role: the same person stays a normal worker everywhere else.
+ */
+export type JobStaffAssignment = Prisma.JobStaffAssignmentModel
+/**
  * Model AttendanceRecord
  * 
  */
