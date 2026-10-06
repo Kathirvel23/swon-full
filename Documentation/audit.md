@@ -577,3 +577,45 @@ a11y 6 · i18n 6 · worker UX 8 · host UX 8 · admin 9 => **~8/10**.
   (tokens exist; prototype is light).
 - Web demo: refresh = re-login (tokens memory-only on web by design; devices use
   SecureStore).
+
+---
+
+## 2026-10-07
+
+### Completed
+- **UI-track close-out of the remaining gaps.** Committed the in-flight UI wave
+  as a verified checkpoint (85681aa) then closed every stale entry the earlier
+  audit listed as "Remaining": Admin Dialog/Toast primitives + charts + full
+  state coverage landed (U11), stray-hex sweep to 0, and the last web console
+  errors cleared.
+- **Admin (U11) — now green end-to-end.** New `Admin/src/theme.ts` (tokens
+  mirrored from the mobile brand source), `Toast.tsx`, `Dialog.tsx`, `Charts.tsx`
+  (plain-SVG donut + bar, no new dependency); loading/empty/error states on every
+  page; dashboard charts; confirm dialogs for suspend/ban/hide/release.
+  Verified in-session: admin tsc 0 · `npm run build` 0 (36 modules, 265 kB,
+  82 kB gzip) · 0 hex literals outside theme.ts.
+- **Zero hardcoded styling hex in mobile.** Swept the last 5 real code hex
+  literals (SplashScreen brand gradient/bg, WingMotif stroke, role warm chip
+  border) onto brand tokens; comments still describe token values (harmless).
+- **Fixed the last console errors.** `WingMotif` was leaking unsupported web
+  props (`accessibilityElementsHidden` / `importantForAccessibility`) → replaced
+  with `aria-hidden` on web (e7e172e). Re-verified live: brand surfaces render
+  with **0 console errors**, 0 nested buttons, 5-tab bar.
+- **Live verification (this session):** full stack booted fresh — MySQL 3307 →
+  backend 3000 (health `{"status":"ok"}`) → Expo web 8081. Drove splash → login →
+  dev OTP → role-gated host dashboard with 0 console errors; tokens/job imagery/
+  i18n confirmed wired.
+
+### Fixed
+- WingMotif web a11y prop leak (2 console errors on any brand surface).
+- 5 stray hex literals → brand tokens.
+
+### In Progress
+- none.
+
+### Next
+- Owner hands-on click-through across all roles now that the track is green;
+  Tamil wording / KYC consent / photo-credit approval remain owner-gated before
+  `ta.ts` wiring and legal launch. Then the owner-only launch items (SMS+DLT,
+  store accounts, Gate 0 re-sign) → real deployment. Headline stays 95% (15/15
+  modules built; UI shown on the §1 scorecard, not the frozen module %).
