@@ -1,3 +1,4 @@
+import { Colors } from '@/constants/theme';
 import Svg, { Path } from 'react-native-svg';
 
 /**
@@ -29,21 +30,21 @@ export function WingMotif({
     >
       <Path
         d="M8 108 Q80 44 192 34"
-        stroke="#FFFFFF"
+        stroke={Colors.light.onPrimary}
         strokeOpacity={0.14 * opacity}
         strokeWidth={7}
         strokeLinecap="round"
       />
       <Path
         d="M44 122 Q106 66 194 64"
-        stroke="#FFFFFF"
+        stroke={Colors.light.onPrimary}
         strokeOpacity={0.14 * opacity}
         strokeWidth={7}
         strokeLinecap="round"
       />
       <Path
         d="M88 130 Q134 92 196 96"
-        stroke="#FFFFFF"
+        stroke={Colors.light.onPrimary}
         strokeOpacity={0.14 * opacity}
         strokeWidth={7}
         strokeLinecap="round"

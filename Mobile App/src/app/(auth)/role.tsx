@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
   chipHost: {
     color: Colors.light.warning,
     backgroundColor: Colors.light.warningSoft,
-    borderColor: '#F6D7A8',
+    borderColor: Colors.light.amber,
   },
   badge: {
     position: 'absolute',

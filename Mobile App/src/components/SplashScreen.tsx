@@ -140,7 +140,7 @@ export function SplashScreen({
     <Animated.View style={[StyleSheet.absoluteFill, styles.root, rootStyle]} pointerEvents="auto">
       {/* F1 — deep-teal brand field with a subtle tonal gradient */}
       <LinearGradient
-        colors={['#0B4540', '#0A3A36', '#0B4540']}
+        colors={[Colors.light.primaryDeep, Colors.light.primaryDeep, Colors.light.primaryDeep]}
         locations={[0, 0.55, 1]}
         start={{ x: 0.1, y: 0 }}
         end={{ x: 0.9, y: 1 }}
@@ -206,7 +206,7 @@ function PulseDot({ progress, index }: { progress: { value: number }; index: num
 
 const styles = StyleSheet.create({
   root: {
-    backgroundColor: '#0B4540',
+    backgroundColor: Colors.light.primaryDeep,
     alignItems: 'center',
     justifyContent: 'center',
   },
