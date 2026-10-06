@@ -189,6 +189,27 @@ export function ErrorBanner({ error }: { error: string | null }): ReactElement |
   );
 }
 
+/** Full-panel error state for a failed initial load (data never arrived). */
+export function ErrorState({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry?: () => void;
+}): ReactElement {
+  return (
+    <div className="state-box error" role="alert">
+      <div className="st-t">Something went wrong</div>
+      <div className="st-d">{message}</div>
+      {onRetry ? (
+        <Button variant="primary" onClick={onRetry}>
+          Try again
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
 // -------------------------------------------------------------- table
 
 export type Column<T> = {

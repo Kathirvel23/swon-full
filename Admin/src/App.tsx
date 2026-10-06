@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState, type ReactElement } from 'react';
 
 import { ApiError, api, getTokens, setTokens, type Tokens } from './api';
-import { Button, Card, EmptyState, ErrorBanner, LoadingState, StatusPill, statusTone } from './ui';
+import { useToast } from './components/Toast';
+import { Button, Card, EmptyState, ErrorBanner, ErrorState, LoadingState, StatusPill, statusTone } from './ui';
 import {
   AuditPage,
   ConfigPage,
@@ -147,6 +148,7 @@ type Detail = {
 };
 
 function KycQueuePage(): ReactElement {
+  const toast = useToast();
   const [queue, setQueue] = useState<QueueItem[] | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [detail, setDetail] = useState<Detail | null>(null);
@@ -202,16 +204,24 @@ function KycQueuePage(): ReactElement {
         ...(decision === 'REJECTED' ? { reason: reason.trim() } : {}),
       });
       setSelected(null);
-      setDetail(null);
-      await loadQueue();
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Decision failed');
-    } finally {
-      setBusy(false);
-    }
-  };
+            setDetail(null);
+            await loadQueue();
+            toast.success(decision === 'VERIFIED' ? 'Submission verified' : 'Submission rejected', `Account ${selected}`);
+          } catch (e) {
+            setError(e instanceof ApiError ? e.message : 'Decision failed');
+          } finally {
+            setBusy(false);
+          }
+        };
 
-  if (!queue) return <LoadingState label="Loading the KYC queue…" />;
+        if (error && !queue) {
+          return (
+            <section>
+              <ErrorState message={error} onRetry={() => void loadQueue()} />
+            </section>
+          );
+        }
+        if (!queue) return <LoadingState label="Loading the KYC queue…" />;
 
   return (
     <section>

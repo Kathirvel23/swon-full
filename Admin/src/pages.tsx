@@ -1,12 +1,17 @@
 import { useCallback, useEffect, useState, type ReactElement } from 'react';
 
 import { ApiError, api } from './api';
+import { BarChart, DonutChart } from './components/Charts';
+import { Dialog } from './components/Dialog';
+import { useToast } from './components/Toast';
+import { Colors } from './theme';
 import {
   Button,
   Card,
   DataTable,
   EmptyState,
   ErrorBanner,
+  ErrorState,
   FilterBar,
   LoadingState,
   StatTile,
@@ -61,24 +66,31 @@ export function DashboardPage(): ReactElement {
     { key: 'heldEarnings', label: 'On hold', tone: 'money' },
   ];
 
+  if (error && !stats) {
+    return (
+      <section>
+        <ErrorState message={error} onRetry={() => void load()} />
+      </section>
+    );
+  }
   if (!stats) return <LoadingState label="Loading live counters…" />;
 
   // Accounts by role — only counters /admin/stats really returns are charted.
-  // Roles with no counter in the payload (admin today) are skipped, never
-  // estimated; bar length is scaled to the largest count on screen.
-  const roleCandidates: { key: string; label: string }[] = [
-    { key: 'workers', label: 'Workers' },
-    { key: 'employers', label: 'Employers' },
-    { key: 'admin', label: 'Admins' },
+  const roleSlices = [
+    { label: 'Workers', value: typeof stats['workers'] === 'number' ? stats['workers'] : 0, color: Colors.primary },
+    { label: 'Employers', value: typeof stats['employers'] === 'number' ? stats['employers'] : 0, color: Colors.orange },
+    { label: 'Admins', value: typeof stats['admin'] === 'number' ? stats['admin'] : 0, color: Colors.lavender },
+  ].filter((s) => s.value > 0);
+
+  const opsBars = [
+    { label: 'Live jobs', value: stats['openJobs'] ?? 0, color: Colors.success },
+    { label: 'Hidden', value: stats['hiddenJobs'] ?? 0, color: Colors.danger },
+    { label: 'Open cases', value: stats['openComplaints'] ?? 0, color: Colors.info },
+    { label: 'KYC waiting', value: stats['pendingKyc'] ?? 0, color: Colors.warning },
+    { label: 'Unpaid', value: stats['unpaidEarnings'] ?? 0, color: Colors.green },
+    { label: 'On hold', value: stats['heldEarnings'] ?? 0, color: Colors.amber },
   ];
-  const roleBars = roleCandidates
-    .map((b) => ({ key: b.key, label: b.label, value: stats[b.key] }))
-    .filter((b) => typeof b.value === 'number');
-  const roleMax = roleBars.reduce((max, b) => Math.max(max, b.value ?? 0), 0);
-  // Denominator = the payload's own account total (always >= any role count);
-  // if that counter is ever missing, fall back to scaling on the largest bar.
-  const totalAccounts = typeof stats['accounts'] === 'number' ? stats['accounts'] : null;
-  const barScale = totalAccounts ?? roleMax;
+  const accountsTotal = typeof stats['accounts'] === 'number' ? stats['accounts'] : null;
 
   return (
     <section>
@@ -90,34 +102,38 @@ export function DashboardPage(): ReactElement {
         ))}
       </div>
 
-      {roleBars.length > 0 ? (
-        <Card className="role-bars">
-          <div className="row-between">
-            <strong>Accounts by role</strong>
-            <span className="muted">
-              {totalAccounts !== null
-                ? `Share of ${totalAccounts} accounts · /admin/stats`
-                : 'Scaled to the largest count · /admin/stats'}
-            </span>
-          </div>
-          {roleBars.map((b) => (
-            <div className="bar-row" key={b.key}>
-              <span className="bar-label">{b.label}</span>
-              <div className="bar-track" aria-hidden="true">
-                <div
-                  className="bar-fill"
-                  style={{ width: `${barScale > 0 ? Math.round(((b.value ?? 0) / barScale) * 100) : 0}%` }}
-                />
-              </div>
-              <span className="bar-value">{b.value}</span>
+      <div className="chart-grid">
+        {roleSlices.length > 0 ? (
+          <Card className="chart-card">
+            <div className="row-between">
+              <strong>Accounts by role</strong>
+              <span className="muted">
+                {accountsTotal !== null
+                  ? `of ${accountsTotal} total · /admin/stats`
+                  : 'from live counters · /admin/stats'}
+              </span>
             </div>
-          ))}
-          <p className="muted">
-            Every number is a live counter from the same /admin/stats payload as the tiles; roles without a counter in
-            that payload are left out (no estimated numbers).
-          </p>
+            <DonutChart data={roleSlices} centerLabel="accounts" />
+            <p className="muted">
+              Every number is a live counter from the same /admin/stats payload as the tiles; roles without a
+              counter in that payload are left out (no estimated numbers).
+            </p>
+          </Card>
+        ) : null}
+
+        <Card className="chart-card">
+          <div className="row-between">
+            <strong>Live operations</strong>
+            <span className="muted">open queues today</span>
+          </div>
+          {opsBars.some((b) => b.value > 0) ? (
+            <BarChart data={opsBars} height={190} />
+          ) : (
+            <EmptyState title="No live activity" hint="All queues are empty right now." />
+          )}
+          <p className="muted">Counters from /admin/stats — live job/queue/earnings balances at a glance.</p>
         </Card>
-      ) : null}
+      </div>
     </section>
   );
 }
@@ -140,6 +156,7 @@ type Complaint = {
 const COMPLAINT_STATUSES = ['OPEN', 'UNDER_REVIEW', 'WAITING_ON_PARTY', 'RESOLVED', 'DISMISSED', 'CLOSED_TIMEOUT'];
 
 export function ComplaintsPage(): ReactElement {
+  const toast = useToast();
   const [status, setStatus] = useState<string>('OPEN');
   const [rows, setRows] = useState<Complaint[] | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -168,6 +185,7 @@ export function ComplaintsPage(): ReactElement {
       setNote('');
       setSelected(null);
       await load();
+      toast.success(`Case moved to ${nextStatus}`, `Complaint ${publicId.slice(0, 10)}…`);
     } catch (e) {
       setError(errText(e, 'Decision failed'));
     } finally {
@@ -197,7 +215,11 @@ export function ComplaintsPage(): ReactElement {
 
       <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
         <div style={{ flex: 1, minWidth: 280 }}>
-          {rows === null ? <LoadingState label="Loading the queue…" /> : null}
+          {rows === null && error ? (
+            <ErrorState message={error} onRetry={() => void load()} />
+          ) : rows === null ? (
+            <LoadingState label="Loading the queue…" />
+          ) : null}
           {rows?.length === 0 ? <EmptyState title={`No cases with status ${status.toLowerCase()}.`} /> : null}
           {rows?.map((c) => (
             <Button
@@ -285,6 +307,7 @@ type AccountDetail = AccountRow & {
 };
 
 export function UsersPage(): ReactElement {
+  const toast = useToast();
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [rows, setRows] = useState<AccountRow[] | null>(null);
@@ -294,6 +317,7 @@ export function UsersPage(): ReactElement {
   const [reason, setReason] = useState('');
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -327,6 +351,7 @@ export function UsersPage(): ReactElement {
       setReason('');
       await open(detail.publicId);
       await load();
+      toast.success(`${sanctionType} applied`, `Account ${detail.publicId.slice(0, 8)}…`);
     } catch (e) {
       setError(errText(e, 'Sanction failed'));
     } finally {
@@ -342,6 +367,7 @@ export function UsersPage(): ReactElement {
       setNote('');
       await open(detail.publicId);
       await load();
+      toast.success('Account reinstated', `Sanctions lifted for ${detail.publicId.slice(0, 8)}…`);
     } catch (e) {
       setError(errText(e, 'Reinstate failed'));
     } finally {
@@ -374,7 +400,13 @@ export function UsersPage(): ReactElement {
       <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
         <div style={{ flex: 1, minWidth: 280 }}>
           <p className="muted">{rows?.length ?? 0} matches (latest first, max 25)</p>
-          {rows === null ? <LoadingState label="Searching accounts…" /> : null}
+          {rows === null && error ? (
+            <ErrorState message={error} onRetry={() => void load()} />
+          ) : rows === null ? (
+            <LoadingState label="Searching accounts…" />
+          ) : rows.length === 0 ? (
+            <EmptyState title="No accounts match" hint="Try a different phone, account id or status filter." />
+          ) : null}
           {rows?.map((a) => (
             <Button
               key={a.publicId}
@@ -429,7 +461,11 @@ export function UsersPage(): ReactElement {
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="Reason (min 10 chars) — audited"
                 />
-                <Button variant="primary" disabled={busy || reason.trim().length < 10} onClick={() => void sanction()}>
+                <Button
+                  variant="primary"
+                  disabled={busy || reason.trim().length < 10}
+                  onClick={() => (sanctionType === 'WARN' ? void sanction() : setConfirming(true))}
+                >
                   Apply
                 </Button>
               </div>
@@ -457,6 +493,35 @@ export function UsersPage(): ReactElement {
           )}
         </div>
       </div>
+
+      <Dialog
+        open={confirming}
+        title={`Apply ${sanctionType}?`}
+        onClose={() => setConfirming(false)}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setConfirming(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              disabled={busy}
+              onClick={() => {
+                setConfirming(false);
+                void sanction();
+              }}
+            >
+              Confirm {sanctionType}
+            </Button>
+          </>
+        }
+      >
+        <p>
+          <strong>{sanctionType}</strong> blocks this account{detail ? ` ${detail.publicId.slice(0, 8)}…` : ''}.
+          This is audited and visible to the operator. Reason: “{reason.trim()}”.
+        </p>
+        <p className="muted">You can lift it later from the Reinstate control on this account.</p>
+      </Dialog>
     </section>
   );
 }
@@ -480,12 +545,14 @@ type JobRow = {
 };
 
 export function JobsPage(): ReactElement {
+  const toast = useToast();
   const [hiddenFilter, setHiddenFilter] = useState('');
   const [text, setText] = useState('');
   const [rows, setRows] = useState<JobRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reasons, setReasons] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const [hideTarget, setHideTarget] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -507,6 +574,7 @@ export function JobsPage(): ReactElement {
     try {
       await api.post(`/admin/jobs/${publicId}/hide`, { reason: (reasons[publicId] ?? '').trim() });
       await load();
+      toast.success('Job hidden', `Disabled from discovery (${publicId.slice(0, 8)}…)`);
     } catch (e) {
       setError(errText(e, 'Hide failed'));
     } finally {
@@ -518,6 +586,7 @@ export function JobsPage(): ReactElement {
     try {
       await api.post(`/admin/jobs/${publicId}/restore`);
       await load();
+      toast.success('Job restored', `Back in discovery (${publicId.slice(0, 8)}…)`);
     } catch (e) {
       setError(errText(e, 'Restore failed'));
     } finally {
@@ -546,7 +615,11 @@ export function JobsPage(): ReactElement {
       </FilterBar>
 
       <p className="muted">Hide removes the job from discovery and worker views; the employer keeps access. Fully audited.</p>
-      {rows === null ? <LoadingState label="Loading jobs…" /> : null}
+      {rows === null && error ? (
+        <ErrorState message={error} onRetry={() => void load()} />
+      ) : rows === null ? (
+        <LoadingState label="Loading jobs…" />
+      ) : null}
       {rows?.length === 0 ? <EmptyState title="No jobs match." /> : null}
       {rows?.map((j) => (
         <Card key={j.publicId} style={{ marginBottom: 10 }}>
@@ -572,7 +645,7 @@ export function JobsPage(): ReactElement {
                 <Button
                   variant="danger"
                   disabled={busy || (reasons[j.publicId] ?? '').trim().length < 5}
-                  onClick={() => void hide(j.publicId)}
+                  onClick={() => setHideTarget(j.publicId)}
                 >
                   Hide
                 </Button>
@@ -585,6 +658,38 @@ export function JobsPage(): ReactElement {
           </div>
         </Card>
       ))}
+
+      <Dialog
+        open={hideTarget !== null}
+        title="Hide this job?"
+        onClose={() => setHideTarget(null)}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setHideTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              disabled={busy}
+              onClick={() => {
+                const id = hideTarget;
+                setHideTarget(null);
+                if (id) void hide(id);
+              }}
+            >
+              Confirm hide
+            </Button>
+          </>
+        }
+      >
+        <p>
+          <strong>{rows?.find((j) => j.publicId === hideTarget)?.title ?? 'This job'}</strong> will be removed from
+          discovery and worker views. The employer keeps access. This is fully audited.
+        </p>
+        <p className="muted">
+          Reason: “{(hideTarget ? (reasons[hideTarget] ?? '') : '').trim()}” — you can restore it any time.
+        </p>
+      </Dialog>
     </section>
   );
 }
@@ -616,10 +721,12 @@ const rupees = (paise: string): string =>
   `₹${Math.round(Number(paise) / 100).toLocaleString('en-IN')}`;
 
 export function PaymentsPage(): ReactElement {
+  const toast = useToast();
   const [data, setData] = useState<Overview | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reasons, setReasons] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const [releaseTarget, setReleaseTarget] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -638,6 +745,7 @@ export function PaymentsPage(): ReactElement {
     try {
       await api.post(`/admin/payments/earnings/${publicId}/release-hold`, { reason: (reasons[publicId] ?? '').trim() });
       await load();
+      toast.success('Hold released', `Earning ${publicId.slice(0, 10)}… moves to the payment queue`);
     } catch (e) {
       setError(errText(e, 'Release failed'));
     } finally {
@@ -645,6 +753,13 @@ export function PaymentsPage(): ReactElement {
     }
   };
 
+  if (error && !data) {
+    return (
+      <section>
+        <ErrorState message={error} onRetry={() => void load()} />
+      </section>
+    );
+  }
   if (!data) return <LoadingState label="Loading payments overview…" />;
 
   const awaitingColumns: Column<EarningRow>[] = [
@@ -722,7 +837,7 @@ export function PaymentsPage(): ReactElement {
                 variant="primary"
                 size="sm"
                 disabled={busy || (reasons[e.publicId] ?? '').trim().length < 5}
-                onClick={() => void release(e.publicId)}
+                onClick={() => setReleaseTarget(e.publicId)}
               >
                 Release hold
               </Button>
@@ -748,6 +863,38 @@ export function PaymentsPage(): ReactElement {
         rowKey={(t) => t.publicId}
         empty={<EmptyState title="No payments recorded yet" hint="Recorded payouts will show up here." />}
       />
+
+      <Dialog
+        open={releaseTarget !== null}
+        title="Release this hold?"
+        onClose={() => setReleaseTarget(null)}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setReleaseTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              disabled={busy}
+              onClick={() => {
+                const id = releaseTarget;
+                setReleaseTarget(null);
+                if (id) void release(id);
+              }}
+            >
+              Confirm release
+            </Button>
+          </>
+        }
+      >
+        <p>
+          This releases a held earning into the awaiting-payment queue so it can be paid out. The release reason is
+          audited.
+        </p>
+        <p className="muted">
+          Reason: “{(releaseTarget ? (reasons[releaseTarget] ?? '') : '').trim()}”.
+        </p>
+      </Dialog>
     </section>
   );
 }
@@ -761,6 +908,7 @@ type ConfigView = {
 };
 
 export function ConfigPage(): ReactElement {
+  const toast = useToast();
   const [data, setData] = useState<ConfigView | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [edits, setEdits] = useState<Record<string, string>>({});
@@ -786,6 +934,7 @@ export function ConfigPage(): ReactElement {
       const parsed = JSON.parse(raw) as unknown;
       await api.put(`/admin/config/${key}`, { value: parsed });
       await load();
+      toast.success('Config saved', `Flag ${key} updated (version bumped, audited)`);
     } catch (e) {
       setError(
         e instanceof SyntaxError ? 'Value must be valid JSON' : errText(e, 'Save failed'),
@@ -795,6 +944,12 @@ export function ConfigPage(): ReactElement {
     }
   };
 
+  if (error && !data)
+    return (
+      <section>
+        <ErrorState message={error} onRetry={() => void load()} />
+      </section>
+    );
   if (!data)
     return (
       <section>
@@ -987,18 +1142,22 @@ export function AuditPage(): ReactElement {
         Append-only trail (the app role has no UPDATE/DELETE grant) · showing {rows?.length ?? 0} of up to 100 · newest
         first
       </p>
-      <DataTable
-        label="Audit trail"
-        columns={columns}
-        rows={rows}
-        rowKey={(r) => r.id}
-        empty={
-          <EmptyState
-            title="No audit rows match those filters"
-            hint="Try a wider action, entity type or entity id."
-          />
-        }
-      />
+      {rows === null && error ? (
+        <ErrorState message={error} onRetry={() => void load()} />
+      ) : (
+        <DataTable
+          label="Audit trail"
+          columns={columns}
+          rows={rows}
+          rowKey={(r) => r.id}
+          empty={
+            <EmptyState
+              title="No audit rows match those filters"
+              hint="Try a wider action, entity type or entity id."
+            />
+          }
+        />
+      )}
     </section>
   );
 }
