@@ -46,34 +46,41 @@ async function raw(path: string, init?: RequestInit): Promise<Response> {
   if (tokens) headers.authorization = `Bearer ${tokens.accessToken}`;
   try {
     return await fetch(`${API_BASE}${path}`, { ...init, headers });
-  } catch {
+  } catch (e) {
+    // A cancelled request (AbortController) is not a network failure.
+    if (e instanceof DOMException && e.name === 'AbortError') throw e;
     throw new ApiError('SERVICE_UNAVAILABLE', 'Cannot reach the API. Is the backend running?');
   }
+}
+
+/**
+ * Silent refresh once (§15) — same behaviour as the mobile client.
+ * Returns true when a fresh token pair was stored, false when the session
+ * is dead (caller drops the stored tokens).
+ */
+async function refreshSession(): Promise<boolean> {
+  const tokens = getTokens();
+  if (!tokens) return false;
+  const refreshed = await fetch(`${API_BASE}/auth/refresh`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refreshToken: tokens.refreshToken }),
+  }).catch(() => null);
+  if (!refreshed?.ok) return false;
+  const payload = (await refreshed.json().catch(() => ({}))) as {
+    data?: { accessToken?: string; refreshToken?: string };
+  };
+  if (!payload.data?.accessToken || !payload.data.refreshToken) return false;
+  setTokens({ accessToken: payload.data.accessToken, refreshToken: payload.data.refreshToken });
+  return true;
 }
 
 async function request<T>(path: string, init?: RequestInit, allowRefresh = true): Promise<T> {
   let res = await raw(path, init);
 
-  // Silent refresh once (§15) — same behaviour as the mobile client.
-  if (res.status === 401 && allowRefresh) {
-    const tokens = getTokens();
-    if (tokens) {
-      const refreshed = await fetch(`${API_BASE}/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: tokens.refreshToken }),
-      });
-      if (refreshed.ok) {
-        const payload = (await refreshed.json().catch(() => ({}))) as {
-          data?: { accessToken?: string; refreshToken?: string };
-        };
-        if (payload.data?.accessToken && payload.data.refreshToken) {
-          setTokens({ accessToken: payload.data.accessToken, refreshToken: payload.data.refreshToken });
-          res = await raw(path, init);
-        }
-      }
-      if (res.status === 401) setTokens(null); // dead session → login screen
-    }
+  if (res.status === 401 && allowRefresh && getTokens()) {
+    if (await refreshSession()) res = await raw(path, init);
+    if (res.status === 401) setTokens(null); // dead session → login screen
   }
 
   const body: unknown = await res.json().catch(() => ({}));
@@ -90,15 +97,36 @@ async function request<T>(path: string, init?: RequestInit, allowRefresh = true)
 }
 
 export const api = {
-  get: <T>(path: string) => request<T>(path),
+  /** `init.signal` (AbortController) cancels in-flight list requests. */
+  get: <T>(path: string, init?: RequestInit) => request<T>(path, init),
   post: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: 'POST', body: body === undefined ? undefined : JSON.stringify(body) }),
   put: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: 'PUT', body: body === undefined ? undefined : JSON.stringify(body) }),
-  /** Binary fetch with auth (document preview triggers the VIEW audit row). */
+  delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
+  /**
+   * Binary fetch with auth (document preview triggers the VIEW audit row).
+   * Shares request()'s silent-refresh-once semantics: a stale access token
+   * must not turn a document preview into a dead-end error.
+   */
   blob: async (path: string): Promise<Blob> => {
-    const res = await raw(path);
-    if (!res.ok) throw new ApiError('NOT_FOUND', `Fetch failed (${res.status})`, undefined, res.status);
+    let res = await raw(path);
+    if (res.status === 401 && getTokens()) {
+      if (await refreshSession()) res = await raw(path);
+      if (res.status === 401) setTokens(null);
+    }
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as {
+        error?: { code?: string; message?: string; requestId?: string };
+      };
+      const err = body.error;
+      throw new ApiError(
+        err?.code ?? 'FETCH_FAILED',
+        err?.message ?? `Fetch failed (${res.status})`,
+        err?.requestId,
+        res.status,
+      );
+    }
     return res.blob();
   },
 };

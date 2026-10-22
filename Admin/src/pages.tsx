@@ -1,9 +1,12 @@
-import { useCallback, useEffect, useState, type ReactElement } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactElement } from 'react';
 
 import { ApiError, api } from './api';
 import { BarChart, DonutChart } from './components/Charts';
 import { Dialog } from './components/Dialog';
 import { useToast } from './components/Toast';
+import { CommissionCard } from './CommissionCard';
+import { PaymentsPhase1 } from './PaymentsPhase1';
+import { useDebouncedEffect } from './lib/debounce';
 import { Colors } from './theme';
 import {
   Button,
@@ -155,13 +158,26 @@ type Complaint = {
 
 const COMPLAINT_STATUSES = ['OPEN', 'UNDER_REVIEW', 'WAITING_ON_PARTY', 'RESOLVED', 'DISMISSED', 'CLOSED_TIMEOUT'];
 
+/**
+ * Legal admin moves per current status — mirrors the server's M7 table
+ * (complaints.domain.ts LEGAL, ADMIN rows only; the SYSTEM-only
+ * CLOSED_TIMEOUT sweep is not an admin action).
+ */
+const ADMIN_NEXT_STATUSES: Record<string, string[]> = {
+  OPEN: ['UNDER_REVIEW'], // L1
+  UNDER_REVIEW: ['WAITING_ON_PARTY', 'RESOLVED', 'DISMISSED'], // L2/L4/L5
+  WAITING_ON_PARTY: ['UNDER_REVIEW', 'RESOLVED', 'DISMISSED'], // L3/L4/L5
+  RESOLVED: ['OPEN'], // L7 reopen
+  DISMISSED: ['OPEN'], // L7 reopen
+};
+
 export function ComplaintsPage(): ReactElement {
   const toast = useToast();
   const [status, setStatus] = useState<string>('OPEN');
   const [rows, setRows] = useState<Complaint[] | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [note, setNote] = useState('');
-  const [nextStatus, setNextStatus] = useState('UNDER_REVIEW');
+  const [nextStatus, setNextStatus] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -178,7 +194,14 @@ export function ComplaintsPage(): ReactElement {
     void load();
   }, [load]);
 
+  // The target status belongs to one case only — reset it whenever a
+  // different case is picked so it can never carry over.
+  useEffect(() => {
+    setNextStatus('');
+  }, [selected]);
+
   const decide = async (publicId: string) => {
+    if (!nextStatus) return;
     setBusy(true);
     try {
       await api.post(`/admin/complaints/${publicId}/decision`, { status: nextStatus, note: note.trim() });
@@ -194,6 +217,8 @@ export function ComplaintsPage(): ReactElement {
   };
 
   const detail = rows?.find((r) => r.publicId === selected) ?? null;
+  // Only moves the server would accept from this case's current status.
+  const targets = detail ? ADMIN_NEXT_STATUSES[detail.status] ?? [] : [];
 
   return (
     <section>
@@ -255,26 +280,37 @@ export function ComplaintsPage(): ReactElement {
               ))}
 
               <h3>Next status</h3>
-              <select value={nextStatus} onChange={(e) => setNextStatus(e.target.value)}>
-                {COMPLAINT_STATUSES.filter((s) => !['OPEN'].includes(s)).map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-              <textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Decision note (min 5 chars) — shown in the timeline"
-                rows={3}
-                className="full"
-                style={{ marginTop: 8 }}
-              />
-              <div className="row-inline" style={{ marginTop: 8 }}>
-                <Button variant="primary" disabled={busy || note.trim().length < 5} onClick={() => void decide(detail.publicId)}>
-                  Apply decision
-                </Button>
-              </div>
+              {targets.length === 0 ? (
+                <p className="muted">No further admin moves from {detail.status}.</p>
+              ) : (
+                <>
+                  <select value={nextStatus} onChange={(e) => setNextStatus(e.target.value)} aria-label="Next status">
+                    <option value="">Choose the next status…</option>
+                    {targets.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                  <textarea
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder="Decision note (min 5 chars) — shown in the timeline"
+                    rows={3}
+                    className="full"
+                    style={{ marginTop: 8 }}
+                  />
+                  <div className="row-inline" style={{ marginTop: 8 }}>
+                    <Button
+                      variant="primary"
+                      disabled={busy || !nextStatus || note.trim().length < 5}
+                      onClick={() => void decide(detail.publicId)}
+                    >
+                      Apply decision
+                    </Button>
+                  </div>
+                </>
+              )}
               <p className="muted">
                 Sanctions (warn/suspend/ban) and payment holds are applied from the Users / Payments tabs, or as a
                 remedy inside the decision via API.
@@ -318,21 +354,29 @@ export function UsersPage(): ReactElement {
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
+
+  const abortRef = useRef<AbortController | null>(null);
 
   const load = useCallback(async () => {
+    // Latest-wins: cancel the in-flight search so a slow old response can
+    // never overwrite the results of a newer query.
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
     try {
       const params = new URLSearchParams();
       if (query.trim()) params.set('query', query.trim());
       if (statusFilter) params.set('status', statusFilter);
-      setRows(await api.get<AccountRow[]>(`/admin/accounts?${params.toString()}`));
+      setRows(await api.get<AccountRow[]>(`/admin/accounts?${params.toString()}`, { signal: ctrl.signal }));
       setError(null);
     } catch (e) {
+      if (ctrl.signal.aborted) return; // superseded by a newer request — not an error
       setError(errText(e, 'Search failed'));
     }
   }, [query, statusFilter]);
-  useEffect(() => {
-    void load();
-  }, [load]);
+  useDebouncedEffect(() => void load(), [load]);
 
   const open = async (publicId: string) => {
     try {
@@ -370,6 +414,23 @@ export function UsersPage(): ReactElement {
       toast.success('Account reinstated', `Sanctions lifted for ${detail.publicId.slice(0, 8)}…`);
     } catch (e) {
       setError(errText(e, 'Reinstate failed'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removeAccount = async () => {
+    if (!detail) return;
+    setBusy(true);
+    try {
+      await api.delete(`/admin/accounts/${detail.publicId}`);
+      toast.success('User deleted — phone released', `${detail.phone} can sign up again`);
+      setDeleteOpen(false);
+      setDeleteConfirm('');
+      setDetail(null);
+      await load();
+    } catch (e) {
+      setError(errText(e, 'Delete failed'));
     } finally {
       setBusy(false);
     }
@@ -489,6 +550,22 @@ export function UsersPage(): ReactElement {
                   {new Date(a.at).toLocaleString('en-IN')} · {a.action} · {a.entityType}
                 </p>
               ))}
+
+              <h3 style={{ color: 'var(--danger)', marginTop: 24 }}>Danger zone</h3>
+              <p className="muted">
+                Logs this user out everywhere and frees their phone number. Their history stays for audit. They can
+                sign up again with the same number as a brand-new user.
+              </p>
+              <Button
+                variant="danger"
+                disabled={busy}
+                onClick={() => {
+                  setDeleteConfirm('');
+                  setDeleteOpen(true);
+                }}
+              >
+                Delete user (reset)
+              </Button>
             </Card>
           )}
         </div>
@@ -522,6 +599,42 @@ export function UsersPage(): ReactElement {
         </p>
         <p className="muted">You can lift it later from the Reinstate control on this account.</p>
       </Dialog>
+
+      <Dialog
+        open={deleteOpen}
+        title="Delete user?"
+        onClose={() => setDeleteOpen(false)}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              disabled={busy || deleteConfirm.trim() !== (detail?.phone ?? '')}
+              onClick={() => void removeAccount()}
+            >
+              Delete user
+            </Button>
+          </>
+        }
+      >
+        <p>
+          This logs the user out everywhere and frees <strong>{detail?.phone}</strong> so they can sign up again as a
+          new user.
+        </p>
+        <p className="muted">History is kept for audit. Admin accounts cannot be deleted.</p>
+        <p>
+          <strong>Type the phone number to confirm:</strong>
+        </p>
+        <input
+          className="grow"
+          style={{ width: '100%' }}
+          value={deleteConfirm}
+          onChange={(e) => setDeleteConfirm(e.target.value)}
+          placeholder={detail?.phone}
+        />
+      </Dialog>
     </section>
   );
 }
@@ -554,20 +667,26 @@ export function JobsPage(): ReactElement {
   const [busy, setBusy] = useState(false);
   const [hideTarget, setHideTarget] = useState<string | null>(null);
 
+  const abortRef = useRef<AbortController | null>(null);
+
   const load = useCallback(async () => {
+    // Latest-wins: cancel the in-flight search so a slow old response can
+    // never overwrite the results of a newer query.
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
     try {
       const params = new URLSearchParams();
       if (hiddenFilter) params.set('hidden', hiddenFilter);
       if (text.trim()) params.set('query', text.trim());
-      setRows(await api.get<JobRow[]>(`/admin/jobs?${params.toString()}`));
+      setRows(await api.get<JobRow[]>(`/admin/jobs?${params.toString()}`, { signal: ctrl.signal }));
       setError(null);
     } catch (e) {
+      if (ctrl.signal.aborted) return; // superseded by a newer request — not an error
       setError(errText(e, 'Failed to load jobs'));
     }
   }, [hiddenFilter, text]);
-  useEffect(() => {
-    void load();
-  }, [load]);
+  useDebouncedEffect(() => void load(), [load]);
 
   const hide = async (publicId: string) => {
     setBusy(true);
@@ -895,11 +1014,11 @@ export function PaymentsPage(): ReactElement {
           Reason: “{(releaseTarget ? (reasons[releaseTarget] ?? '') : '').trim()}”.
         </p>
       </Dialog>
+
+      <PaymentsPhase1 />
     </section>
   );
 }
-
-// --------------------------------------------------------------------- config
 
 type ConfigRow = { key: string; valueJson: unknown; scope: string; version: number; updatedAt: string };
 type ConfigView = {
@@ -915,6 +1034,8 @@ export function ConfigPage(): ReactElement {
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
   const [busy, setBusy] = useState(false);
+  const [commissionRate, setCommissionRate] = useState('');
+  const [commissionConfirm, setCommissionConfirm] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -928,17 +1049,28 @@ export function ConfigPage(): ReactElement {
     void load();
   }, [load]);
 
-  const save = async (key: string, raw: string) => {
+  /** Returns true when the write landed (callers can then clear their inputs). */
+  const save = async (key: string, raw: string): Promise<boolean> => {
     setBusy(true);
     try {
       const parsed = JSON.parse(raw) as unknown;
       await api.put(`/admin/config/${key}`, { value: parsed });
       await load();
+      // Drop the local override so the textarea shows the fresh server value
+      // (and Save disables again until the admin actually edits).
+      setEdits((prev) => {
+        if (!(key in prev)) return prev;
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
       toast.success('Config saved', `Flag ${key} updated (version bumped, audited)`);
+      return true;
     } catch (e) {
       setError(
         e instanceof SyntaxError ? 'Value must be valid JSON' : errText(e, 'Save failed'),
       );
+      return false;
     } finally {
       setBusy(false);
     }
@@ -961,7 +1093,9 @@ export function ConfigPage(): ReactElement {
   return (
     <section>
       <ErrorBanner error={error} />
-      <Toolbar onRefresh={() => void load()} hint="platform_config — every write bumps the version and is audited" />
+      <Toolbar onRefresh={() => void load()} hint="platform_config - every write bumps the version and is audited" />
+
+      <CommissionCard flags={data.flags} onSaved={load} />
 
       <Card>
         <strong>Match weights (read-only — v{data.matchWeights.version}, sums to {wSum})</strong>
@@ -1010,7 +1144,14 @@ export function ConfigPage(): ReactElement {
             variant="primary"
             size="sm"
             disabled={busy || !/^[A-Z][A-Z0-9_]{1,59}$/.test(newKey) || newValue.trim().length === 0}
-            onClick={() => void save(newKey, newValue)}
+            onClick={() => {
+              void save(newKey, newValue).then((saved) => {
+                if (saved) {
+                  setNewKey('');
+                  setNewValue('');
+                }
+              });
+            }}
           >
             Save flag
           </Button>
@@ -1042,22 +1183,28 @@ export function AuditPage(): ReactElement {
   const [rows, setRows] = useState<AuditRow[] | null>(null); // client unwraps { data }; meta is dropped
   const [error, setError] = useState<string | null>(null);
 
+  const abortRef = useRef<AbortController | null>(null);
+
   const load = useCallback(async () => {
+    // Latest-wins: cancel the in-flight request so a slow old response can
+    // never overwrite the results of newer filters.
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
     const params = new URLSearchParams();
     if (action.trim()) params.set('action', action.trim());
     if (entityType.trim()) params.set('entityType', entityType.trim());
     if (entityPublicId.trim()) params.set('entityPublicId', entityPublicId.trim());
     params.set('limit', '100');
     try {
-      setRows(await api.get<AuditRow[]>(`/admin/audit?${params.toString()}`));
+      setRows(await api.get<AuditRow[]>(`/admin/audit?${params.toString()}`, { signal: ctrl.signal }));
       setError(null);
     } catch (e) {
+      if (ctrl.signal.aborted) return; // superseded by a newer request — not an error
       setError(errText(e, 'Failed to load the audit trail'));
     }
   }, [action, entityType, entityPublicId]);
-  useEffect(() => {
-    void load();
-  }, [load]);
+  useDebouncedEffect(() => void load(), [load]);
 
   const columns: Column<AuditRow>[] = [
     {

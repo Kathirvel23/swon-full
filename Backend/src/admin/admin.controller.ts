@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Put, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, Req } from '@nestjs/common';
 
 import { Roles, authOf, type AuthenticatedRequest } from '../common/guards.js';
 import { AdminService, type SanctionInput } from './admin.service.js';
@@ -57,6 +57,12 @@ export class AdminController {
     return { data: await this.admin.sanction(this.caller(req), publicId, body) };
   }
 
+  @Delete('accounts/:publicId')
+  @Roles('admin')
+  async deleteAccount(@Req() req: AuthenticatedRequest, @Param('publicId') publicId: string) {
+    return { data: await this.admin.resetAccount(this.caller(req), publicId) };
+  }
+
   @Get('jobs')
   @Roles('admin')
   async jobs(@Query('status') status?: string, @Query('hidden') hidden?: string, @Query('query') query?: string) {
@@ -102,6 +108,80 @@ export class AdminController {
   @Roles('admin')
   async config() {
     return { data: await this.admin.configList() };
+  }
+
+  // ------------------------------------------------- Phase 1 payment oversight
+  @Get('payments/orders')
+  @Roles('admin')
+  async paymentOrders(
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+    @Query('status') status?: string,
+    @Query('jobPublicId') jobPublicId?: string,
+    @Query('reference') reference?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+  ) {
+    return this.admin.paymentsOrders({
+      limit: Number(limit) || undefined,
+      offset: Number(offset) || undefined,
+      status,
+      jobPublicId,
+      reference,
+      from,
+      to,
+    });
+  }
+
+  @Get('payments/orders/:publicId')
+  @Roles('admin')
+  async paymentOrder(@Param('publicId') publicId: string) {
+    return { data: await this.admin.paymentOrderDetail(publicId) };
+  }
+
+  @Post('payments/orders/:publicId/refund')
+  @HttpCode(201)
+  @Roles('admin')
+  async refundOrder(
+    @Req() req: AuthenticatedRequest,
+    @Param('publicId') publicId: string,
+    @Body() body: { reason?: string },
+  ) {
+    return { data: await this.admin.refundOrder(this.caller(req), publicId, body.reason ?? '') };
+  }
+
+  @Get('payments/payouts')
+  @Roles('admin')
+  async paymentPayouts(
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+    @Query('status') status?: string,
+    @Query('jobPublicId') jobPublicId?: string,
+  ) {
+    return this.admin.paymentsPayouts({
+      limit: Number(limit) || undefined,
+      offset: Number(offset) || undefined,
+      status,
+      jobPublicId,
+    });
+  }
+
+  @Post('payments/payouts/:publicId/retry')
+  @HttpCode(201)
+  @Roles('admin')
+  async retryPayout(@Req() req: AuthenticatedRequest, @Param('publicId') publicId: string) {
+    return { data: await this.admin.retryPayout(this.caller(req), publicId) };
+  }
+
+  @Post('payments/payouts/:publicId/fail')
+  @HttpCode(201)
+  @Roles('admin')
+  async failPayout(
+    @Req() req: AuthenticatedRequest,
+    @Param('publicId') publicId: string,
+    @Body() body: { reason?: string },
+  ) {
+    return { data: await this.admin.forceFailPayout(this.caller(req), publicId, body.reason ?? '') };
   }
 
   @Put('config/:key')

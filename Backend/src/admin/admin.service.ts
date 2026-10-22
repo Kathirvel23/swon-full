@@ -5,6 +5,8 @@ import { DispatcherService } from '../notifications/dispatcher.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { releaseTarget } from '../complaints/complaints.domain.js';
 import { WEIGHTS, WEIGHTS_VERSION } from '../matching/matching.domain.js';
+import { parseCommissionPolicy } from '../payments/commission.js';
+import { Phase1PaymentsService } from '../payments/phase1-payments.service.js';
 
 /**
  * Admin oversight service (§14 rows 14–16): dashboard counters, the
@@ -29,6 +31,7 @@ export class AdminService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly dispatcher: DispatcherService,
+    private readonly phase1: Phase1PaymentsService,
   ) {}
 
   // ------------------------------------------------------------------ stats
@@ -252,6 +255,56 @@ export class AdminService {
     return { publicId, status: result.status, sanction: { type: input.type, reason } };
   }
 
+  // -------------------------------------------------------- account reset
+  /**
+   * "Delete user" for the admin console: a safe reset, not a physical row
+   * delete. History rows stay intact (FKs are RESTRICT), sessions are revoked
+   * and the phone is tombstoned so the number is free for a fresh sign-up.
+   */
+  async resetAccount(caller: Caller, publicId: string) {
+    const target = await this.prisma.account.findUnique({
+      where: { publicId },
+      select: { id: true, phone: true, role: true, status: true },
+    });
+    if (!target) throw new ApiError('NOT_FOUND', 'Account not found');
+    if (target.id === caller.accountId) {
+      throw new ApiError('FORBIDDEN', 'You cannot delete your own account');
+    }
+    if (target.role === 'admin') {
+      throw new ApiError('FORBIDDEN', 'Admin accounts cannot be deleted from this console');
+    }
+
+    const tombstone = `deleted+${publicId}@swon.invalid`;
+    if (target.status === 'CLOSED' && target.phone === tombstone) {
+      return { publicId, phoneReleased: true, alreadyDeleted: true };
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.session.updateMany({
+        where: { accountId: target.id, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+      await tx.pushToken.deleteMany({ where: { accountId: target.id } });
+      await tx.account.update({
+        where: { id: target.id },
+        data: { status: 'CLOSED', closedAt: new Date(), phone: tombstone },
+      });
+      await tx.auditLog.create({
+        data: {
+          actorAccountId: caller.accountId,
+          actorRole: 'ADMIN',
+          action: 'ACCOUNT_DELETED',
+          entityType: 'ACCOUNT',
+          entityPublicId: publicId,
+          beforeJson: { status: target.status, role: target.role },
+          afterJson: { status: 'CLOSED', phoneReleased: true },
+        },
+      });
+    });
+
+    return { publicId, phoneReleased: true, alreadyDeleted: false };
+  }
+
   // -------------------------------------------------------- jobs moderation
   async jobsList(q: { status?: string; hidden?: string; query?: string }) {
     const text = (q.query ?? '').trim();
@@ -336,7 +389,7 @@ export class AdminService {
       worker: { select: { fullName: true, accountId: true } },
       holdComplaint: { select: { publicId: true, type: true, status: true } },
     } as const;
-    const [awaiting, held, transactions] = await Promise.all([
+    const [awaiting, held, transactions, collectionAgg, payoutGroups, refundAgg, allocationAgg] = await Promise.all([
       this.prisma.earning.findMany({
         where: { status: 'APPROVED' },
         orderBy: { approvedAt: 'desc' },
@@ -354,7 +407,29 @@ export class AdminService {
         take: 20,
         include: { earnings: { include: { earning: { select: { publicId: true, status: true } } } } },
       }),
+      this.prisma.paymentTransaction.aggregate({
+        where: { kind: 'COLLECTION', status: 'PAID' },
+        _sum: { amountPaise: true, commissionPaise: true },
+        _count: { _all: true },
+      }),
+      this.prisma.payout.groupBy({ by: ['status'], _sum: { amountPaise: true }, _count: { _all: true } }),
+      this.prisma.paymentRefund.aggregate({
+        where: { status: 'SUCCEEDED' },
+        _sum: { amountPaise: true },
+        _count: { _all: true },
+      }),
+      this.prisma.paymentEarning.aggregate({
+        where: { txn: { kind: 'COLLECTION', status: 'PAID' } },
+        _sum: { netPaise: true },
+      }),
     ]);
+    const byStatus = new Map(
+      payoutGroups.map((g) => [g.status, { count: g._count._all, amount: g._sum.amountPaise ?? 0n }]),
+    );
+    const payoutTotal = (states: string[]) =>
+      states.reduce((acc, s) => acc + (byStatus.get(s)?.amount ?? 0n), 0n);
+    const collected = collectionAgg._sum.amountPaise ?? 0n;
+    const commission = collectionAgg._sum.commissionPaise ?? 0n;
     const earningDto = (e: (typeof awaiting)[number]) => ({
       publicId: e.publicId,
       amountPaise: e.amountPaise.toString(),
@@ -366,6 +441,22 @@ export class AdminService {
       updatedAt: e.updatedAt.toISOString(),
     });
     return {
+      metrics: {
+        collectionsCount: collectionAgg._count._all,
+        collectedPaise: collected.toString(),
+        commissionPaise: commission.toString(),
+        workerAllocationsPaise: (collected - commission).toString(),
+        outstandingPayoutsPaise: (payoutTotal(['PENDING']) + payoutTotal(['PROCESSING'])).toString(),
+        paidPayoutsPaise: payoutTotal(['PAID']).toString(),
+        failedPayoutsPaise: payoutTotal(['FAILED']).toString(),
+        refundedPaise: (refundAgg._sum.amountPaise ?? 0n).toString(),
+        refundsCount: refundAgg._count._all,
+        payoutCounts: Object.fromEntries([...byStatus.entries()].map(([k, v]) => [k, v.count])),
+        // Reconciliation: collected gross − commission must equal Σ allocation net.
+        reconciliationDifferencePaise: (
+          collected - commission - (allocationAgg._sum.netPaise ?? 0n)
+        ).toString(),
+      },
       awaitingPayment: awaiting.map(earningDto),
       onHold: held.map(earningDto),
       recentTransactions: transactions.map((t) => ({
@@ -454,6 +545,14 @@ export class AdminService {
         throw new ApiError('VALIDATION_FAILED', 'Match weights must be numeric percentages summing to 100');
       }
     }
+    if (key === 'PAYMENT_COMMISSION_POLICY') {
+      const policy = parseCommissionPolicy(value);
+      // Phase 1 keeps only the current policy, so a future-dated change would
+      // lose the active rate. Require it to be effective now (5-min skew).
+      if (Date.parse(policy.effectiveFrom) > Date.now() + 5 * 60_000) {
+        throw new ApiError('VALIDATION_FAILED', 'effectiveFrom must be now or in the past (Phase 1)');
+      }
+    }
     const existing = await this.prisma.platformConfig.findUnique({ where: { key } });
     const row = await this.prisma.platformConfig.upsert({
       where: { key },
@@ -481,5 +580,210 @@ export class AdminService {
       },
     });
     return { key: row.key, valueJson: row.valueJson, version: row.version, updatedAt: row.updatedAt.toISOString() };
+  }
+
+  // ------------------------------------------------- Phase 1 payment oversight
+
+  private listWindow(q: { limit?: number; offset?: number }): { take: number; skip: number } {
+    const take = Math.min(Math.max(Number(q.limit ?? 50) || 50, 1), 100);
+    const skip = Math.max(Number(q.offset ?? 0) || 0, 0);
+    return { take, skip };
+  }
+
+  async paymentsOrders(q: {
+    limit?: number;
+    offset?: number;
+    status?: string;
+    jobPublicId?: string;
+    reference?: string;
+    from?: string;
+    to?: string;
+  }) {
+    const { take, skip } = this.listWindow(q);
+    const where: Record<string, unknown> = { kind: 'COLLECTION' };
+    if (q.status) where.status = { in: q.status.split(',').map((s) => s.trim()).filter(Boolean) };
+    if (q.reference) where.reference = { contains: q.reference };
+    if (q.jobPublicId) where.job = { publicId: q.jobPublicId };
+    if (q.from || q.to) {
+      where.createdAt = {
+        ...(q.from ? { gte: new Date(q.from) } : {}),
+        ...(q.to ? { lte: new Date(q.to) } : {}),
+      };
+    }
+    const [rows, total] = await Promise.all([
+      this.prisma.paymentTransaction.findMany({
+        where: where as never,
+        orderBy: { id: 'desc' },
+        take,
+        skip,
+        include: {
+          job: { select: { publicId: true, title: true } },
+          _count: { select: { payouts: true } },
+          refund: { select: { publicId: true, status: true } },
+        },
+      }),
+      this.prisma.paymentTransaction.count({ where: where as never }),
+    ]);
+    return {
+      data: rows.map((r) => ({
+        publicId: r.publicId,
+        status: r.status,
+        jobPublicId: r.job?.publicId ?? null,
+        jobTitle: r.job?.title ?? null,
+        grossPaise: r.grossPaise.toString(),
+        commissionPaise: r.commissionPaise.toString(),
+        netPaise: (r.amountPaise - r.commissionPaise).toString(),
+        gatewayFeePaise: r.gatewayFeePaise.toString(),
+        taxPaise: r.taxPaise.toString(),
+        amountPaise: r.amountPaise.toString(),
+        reference: r.reference,
+        provider: r.provider,
+        providerOrderId: r.providerOrderId,
+        failureReason: r.failureReason,
+        payouts: r._count.payouts,
+        refund: r.refund,
+        createdAt: r.createdAt.toISOString(),
+        paidAt: r.paidAt?.toISOString() ?? null,
+      })),
+      meta: { total, take, skip, next: skip + take < total ? skip + take : null },
+    };
+  }
+
+  async paymentOrderDetail(publicId: string) {
+    const order = await this.prisma.paymentTransaction.findUnique({
+      where: { publicId },
+      include: {
+        job: { select: { publicId: true, title: true } },
+        recorder: { select: { publicId: true, phone: true } },
+        earnings: {
+          include: {
+            earning: {
+              select: {
+                publicId: true,
+                status: true,
+                worker: { select: { publicId: true, fullName: true } },
+              },
+            },
+          },
+        },
+        payouts: {
+          include: { worker: { select: { publicId: true, fullName: true } } },
+          orderBy: { id: 'asc' },
+        },
+        refund: true,
+      },
+    });
+    if (!order) throw new ApiError('NOT_FOUND', 'Payment order not found');
+    return {
+      publicId: order.publicId,
+      kind: order.kind,
+      status: order.status,
+      jobPublicId: order.job?.publicId ?? null,
+      jobTitle: order.job?.title ?? null,
+      grossPaise: order.grossPaise.toString(),
+      commissionPaise: order.commissionPaise.toString(),
+      netPaise: (order.amountPaise - order.commissionPaise).toString(),
+      amountPaise: order.amountPaise.toString(),
+      gatewayFeePaise: order.gatewayFeePaise.toString(),
+      taxPaise: order.taxPaise.toString(),
+      currency: order.currency,
+      reference: order.reference,
+      provider: order.provider,
+      providerOrderId: order.providerOrderId,
+      providerPaymentId: order.providerPaymentId,
+      failureReason: order.failureReason,
+      recordedBy: order.recorder,
+      allocations: order.earnings.map((pe) => ({
+        earningPublicId: pe.earning.publicId,
+        earningStatus: pe.earning.status,
+        workerPublicId: pe.earning.worker.publicId,
+        workerName: pe.earning.worker.fullName,
+        grossPaise: (pe.grossPaise ?? pe.amountPaise).toString(),
+        commissionPaise: (pe.commissionPaise ?? 0n).toString(),
+        netPaise: (pe.netPaise ?? pe.amountPaise).toString(),
+      })),
+      payouts: order.payouts.map((p) => ({
+        publicId: p.publicId,
+        status: p.status,
+        amountPaise: p.amountPaise.toString(),
+        workerPublicId: p.worker.publicId,
+        workerName: p.worker.fullName,
+        providerTransferId: p.providerTransferId,
+        attempts: p.attempts,
+        failureReason: p.failureReason,
+        createdAt: p.createdAt.toISOString(),
+        paidAt: p.paidAt?.toISOString() ?? null,
+      })),
+      refund: order.refund
+        ? {
+            publicId: order.refund.publicId,
+            status: order.refund.status,
+            amountPaise: order.refund.amountPaise.toString(),
+            reason: order.refund.reason,
+            providerRefundId: order.refund.providerRefundId,
+            createdAt: order.refund.createdAt.toISOString(),
+          }
+        : null,
+      createdAt: order.createdAt.toISOString(),
+      paidAt: order.paidAt?.toISOString() ?? null,
+    };
+  }
+
+  async paymentsPayouts(q: { limit?: number; offset?: number; status?: string; jobPublicId?: string }) {
+    const { take, skip } = this.listWindow(q);
+    const where: Record<string, unknown> = {};
+    if (q.status) where.status = { in: q.status.split(',').map((s) => s.trim()).filter(Boolean) };
+    if (q.jobPublicId) where.transaction = { job: { publicId: q.jobPublicId } };
+    const [rows, total] = await Promise.all([
+      this.prisma.payout.findMany({
+        where: where as never,
+        orderBy: { id: 'desc' },
+        take,
+        skip,
+        include: {
+          worker: { select: { publicId: true, fullName: true } },
+          earning: { select: { publicId: true } },
+          transaction: { select: { publicId: true, job: { select: { publicId: true, title: true } } } },
+        },
+      }),
+      this.prisma.payout.count({ where: where as never }),
+    ]);
+    return {
+      data: rows.map((p) => ({
+        publicId: p.publicId,
+        status: p.status,
+        amountPaise: p.amountPaise.toString(),
+        workerPublicId: p.worker.publicId,
+        workerName: p.worker.fullName,
+        earningPublicId: p.earning.publicId,
+        orderPublicId: p.transaction.publicId,
+        jobPublicId: p.transaction.job?.publicId ?? null,
+        jobTitle: p.transaction.job?.title ?? null,
+        providerTransferId: p.providerTransferId,
+        attempts: p.attempts,
+        failureReason: p.failureReason,
+        createdAt: p.createdAt.toISOString(),
+        paidAt: p.paidAt?.toISOString() ?? null,
+      })),
+      meta: { total, take, skip, next: skip + take < total ? skip + take : null },
+    };
+  }
+
+  async refundOrder(caller: Caller, orderPublicId: string, reason: string) {
+    const clean = (reason ?? '').trim();
+    if (clean.length < 5) throw new ApiError('VALIDATION_FAILED', 'A refund reason is required');
+    return this.phase1.refundCollection(caller.accountId, orderPublicId, clean);
+  }
+
+  async retryPayout(caller: Caller, payoutPublicId: string) {
+    await this.phase1.retryPayout(caller.accountId, payoutPublicId);
+    return { publicId: payoutPublicId, retried: true };
+  }
+
+  async forceFailPayout(caller: Caller, payoutPublicId: string, reason: string) {
+    const clean = (reason ?? '').trim();
+    if (clean.length < 5) throw new ApiError('VALIDATION_FAILED', 'A failure reason is required');
+    await this.phase1.failPayout(caller.accountId, payoutPublicId, clean);
+    return { publicId: payoutPublicId, status: 'FAILED' };
   }
 }
